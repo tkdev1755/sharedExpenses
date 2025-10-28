@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.mds.sharedexpenses"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.mds.sharedexpenses"
