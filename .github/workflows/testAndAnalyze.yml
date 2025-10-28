@@ -1,0 +1,19 @@
+name : Test&Analyze
+on :
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+
+  linting:
+    runs-on: ubuntu latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Kotlin Linter
+        uses: vroy/gha-kotlin-linter@v4
