@@ -4,5 +4,6 @@ data class Group(val id: String, val name: String, val members: List<User>) // T
 
 interface GroupRepositoryInterface {
     fun createGroup(group: Group)
-    // TODO: ...
+    fun deleteGroup(group: Group)
+    fun updateGroup(group: Group)
 }

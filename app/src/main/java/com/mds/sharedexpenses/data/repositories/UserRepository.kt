@@ -1,5 +1,5 @@
 package com.mds.sharedexpenses.data.repositories
-data class User(val id: String, val email: String) // TODO: feel free to change :)
+data class User(val id: String, val email: String) // TODO: please adopt
 
 interface UserRepositoryInterface {
     fun getUserById(id: String): User?
