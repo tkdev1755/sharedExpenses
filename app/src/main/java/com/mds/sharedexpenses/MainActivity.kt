@@ -45,6 +45,6 @@ fun Greeting(
 @Composable
 fun GreetingPreview() {
     SharedExpensesTheme {
-        Greeting("Android")
+        Greeting("World!")
     }
 }
