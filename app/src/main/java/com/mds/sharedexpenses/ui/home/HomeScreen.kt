@@ -27,12 +27,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 
 @Composable
 fun HomeScreen(
+    navController: NavController,
     viewModel: HomeViewModel = HomeViewModel()
 ) {
     Scaffold(
