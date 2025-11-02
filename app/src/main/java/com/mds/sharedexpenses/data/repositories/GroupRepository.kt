@@ -1,9 +1,10 @@
-        package com.mds.sharedexpenses.data.repositories
+package com.mds.sharedexpenses.data.repositories
 
+// In Kotlin, a data class is used to represent data objects
 data class Group(
     val id: String = "",
-    val name: String = "",
-    val description: String = "",
+    var name: String = "",
+    var description: String = "",
     val users: List<Int> = emptyList(),
     val expenses: List<Int> = emptyList(),
     val transactions : List<Int> = emptyList())

@@ -1,12 +1,12 @@
 package com.mds.sharedexpenses.data.repositories
 
-
+// In Kotlin, a data class is used to represent data objects
 data class Transaction(
     val id: Int = 0,
     val expense: Int = 0,
     val amount: Double = 0.0,
     val issuer: String = "",
-    val receiver: String = "") // TODO: please adoptx
+    val receiver: String = "")
 
 /* interface UserRepositoryInterface {
     fun getUserById(id: String): User?
