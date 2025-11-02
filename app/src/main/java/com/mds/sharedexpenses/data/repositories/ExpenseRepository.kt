@@ -1,6 +1,5 @@
 package com.mds.sharedexpenses.data.repositories
 
-import androidx.annotation.Nullable
 
 //In Kotlin, a data class is used to represent data objects
 data class Expense(val id: Int,
@@ -10,10 +9,34 @@ data class Expense(val id: Int,
                     var name: String = "",
                     var description: String = "") {
 
+
     fun amountPerPerson(): Double {
         return if (deptors.isNotEmpty()) amount / deptors.size else 0.0
     }
 
+    fun checkTotalDepts(): Boolean {
+        if(deptors.isEmpty())  return false
+        return kotlin.math.abs(amountPerPerson() * deptors.size - amount) < 0.001
+    }
+
+    fun addDebtors (userId : String,): Expense {
+        val newDebtors = deptors.toMutableList()
+        newDebtors.add(userId)
+        return copy(deptors = newDebtors)
+    }
+
+    fun removeDebtors (userId : String,): Expense {
+        val newDebtors = deptors.toMutableList()
+        newDebtors.remove(userId)
+        return copy(deptors = newDebtors)
+    }
+
+    fun checkDebtors (userId : String,): Boolean {
+        for(debtorId in deptors) {
+            if(debtorId == userId) return true
+        }
+        return false
+    }
 
 }
 
