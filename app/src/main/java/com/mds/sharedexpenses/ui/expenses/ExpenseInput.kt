@@ -1,9 +1,12 @@
 package com.mds.sharedexpenses.ui.expenses
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,9 +35,14 @@ fun ExpenseInputBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .imePadding()
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
+
+        var datePickerOpen by remember { mutableStateOf(false) }
+
             Text("Add expense", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
 
@@ -43,7 +51,7 @@ fun ExpenseInputBottomSheet(
                 onValueChange = onDescriptionChange,
                 label = { Text("Description") },
                 trailingIcon = {
-                    IconButton(onClick = { /* attachment later */ }) {
+                    IconButton(onClick = { /* action later */ }) {
                         Icon(Icons.Default.Add, contentDescription = "Add attachment")
                     }
                 },
@@ -63,8 +71,29 @@ fun ExpenseInputBottomSheet(
                 value = date,
                 onValueChange = onDateChange,
                 label = { Text("Date") },
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { datePickerOpen = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Select date")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            if (datePickerOpen) {
+                DatePickerModal(
+                    onDateSelected = { millis ->
+                        millis?.let {
+                            val localDate = java.time.Instant.ofEpochMilli(it)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            onDateChange(localDate.toString())
+                        }
+                    },
+                    onDismiss = { datePickerOpen = false }
+                )
+            }
+
 
             Spacer(Modifier.height(16.dp))
 
@@ -100,6 +129,7 @@ fun ExpenseInputBottomSheet(
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PayerSelectionBottomSheet(
@@ -115,7 +145,9 @@ fun PayerSelectionBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .imePadding()
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
             Text("Select payers", style = MaterialTheme.typography.titleLarge)
@@ -140,7 +172,7 @@ fun PayerSelectionBottomSheet(
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier
@@ -152,7 +184,7 @@ fun PayerSelectionBottomSheet(
                     onClick = onDismiss,
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp)
+                        .height(35.dp)
                 ) {
                     Text("dismiss")
                 }
@@ -169,6 +201,48 @@ fun PayerSelectionBottomSheet(
     }
 }
 
+//DATE PICKER -----------------------------------------------------------
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerModal(
+    onDateSelected: (Long?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState()
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(datePickerState.selectedDateMillis)
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DatePickerModalPreview() {
+    SharedExpensesTheme {
+        DatePickerModal(
+            onDateSelected = {},
+            onDismiss = {}
+        )
+    }
+}
+
+// -------------------------------------------------------------------
+// PREVIEW BOTTOM SHEETS
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
@@ -211,3 +285,4 @@ private fun ExpenseFlowPreview() {
         }
     }
 }
+
