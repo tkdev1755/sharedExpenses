@@ -1,15 +1,11 @@
 package com.mds.sharedexpenses.data.repositories
 
+import com.mds.sharedexpenses.data.models.User
+
 // In Kotlin, a data class is used to represent data objects
-data class User(
-    val id: String = "",
-    var name: String = "",
-    var email: String = "",
-    val groups: List<String> = emptyList(),
-    val debts: List<Int> = emptyList()){
 
 
-    fun addToGroup(groupId: String): User {
+/* fun addToGroup(groupId: String): User {
         if (groups.contains(groupId)) return this
 
         val newGroups = groups.toMutableList()
@@ -44,7 +40,7 @@ data class User(
         }
         return copy(debts = newDebts)
     }
-}
+} */
 
 interface UserRepositoryInterface {
     fun getUserById(id: String): User?
