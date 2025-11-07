@@ -1,7 +1,21 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
-class GroupDetailViewModel {
+import androidx.lifecycle.ViewModel
+import com.mds.sharedexpenses.data.repositories.Expense
+
+data class GroupDetailUiState(
+    val isLoading: Boolean = true,
+    val groupedExpenses: Map<String, List<Expense>> = emptyMap(),
+    val errorMessage: String? = null
+)
+class GroupDetailViewModel(
+): ViewModel() {
     fun onButtonClicked(){
         println("Button clicked!")
     }
+    fun onExpenseClick(){
+        println("Expense clicked!")
+    }
+
+
 }

@@ -15,10 +15,10 @@ fun AppNavigation(){
         startDestination = Screen.Home.route
     ) {
         composable(route = Screen.Home.route) {
-            HomeScreen(navController = navController)
+            HomeScreen(/*navController = navController*/)
         }
         composable(route = Screen.GroupDetail.route) {
-            HomeScreen(navController = navController)
+            HomeScreen(/*navController = navController*/)
         }
 }}
 

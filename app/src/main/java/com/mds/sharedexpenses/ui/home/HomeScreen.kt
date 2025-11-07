@@ -34,7 +34,7 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 @Composable
 fun HomeScreen(
-    navController: NavController,
+    //    navController: NavController,
     viewModel: HomeViewModel = HomeViewModel()
 ) {
     Scaffold(
