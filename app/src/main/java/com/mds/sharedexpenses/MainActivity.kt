@@ -11,8 +11,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.mds.sharedexpenses.data.datasource.FirebaseService
+import com.mds.sharedexpenses.data.repositories.FirebaseRepositoryImpl
+import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.ui.navigation.AppNavigation
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
+import com.mds.sharedexpenses.domain.usecase.GetUserUseCase
+import com.mds.sharedexpenses.domain.usecase.LoginUseCase
+import com.mds.sharedexpenses.domain.usecase.SaveNotificationTokenUseCase
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

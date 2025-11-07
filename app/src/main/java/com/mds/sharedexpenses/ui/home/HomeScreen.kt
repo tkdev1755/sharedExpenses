@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = HomeViewModel()
+    viewModel: HomeViewModel = HomeModelFactory.createHomeViewModel()
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
