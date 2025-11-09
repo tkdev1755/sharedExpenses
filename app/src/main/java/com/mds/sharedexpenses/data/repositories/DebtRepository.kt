@@ -1,32 +1,11 @@
 package com.mds.sharedexpenses.data.repositories
 
+import com.mds.sharedexpenses.data.models.Debt
+
 // In Kotlin, a data class is used to represent data objects
-data class Debt(
-    val id: Int = 0,
-    val group: String = "",
-    val user: String = "",
-    val expenses: List<Int> = emptyList()){
 
-    
-    fun addExpense (expenseId : Int): Debt {
-        if (expenses.contains(expenseId)) return this
-
-        val newExpense = expenses.toMutableList()
-        newExpense.add(expenseId)
-        return copy(expenses = newExpense)
-    }
-
-    fun removeExpense (expenseId : Int): Debt {
-        val newExpenses = expenses.toMutableList()
-        if (!newExpenses.remove(expenseId)) {
-            return this
-        }
-        return copy(expenses = newExpenses)
-    }
-    fun checkExpenses (expenseId : Int): Boolean {
-        for(expense in expenses) {
-            if(expense == expenseId) return true
-        }
-        return false
-    }
+interface DebtRepositoryInterface {
+    fun createDebt(debt: Debt)
+    fun updateDebt(expense: Debt)
+    fun deleteDebt(expense: Debt)
 }
