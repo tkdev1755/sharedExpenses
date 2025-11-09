@@ -1,7 +1,7 @@
 package com.mds.sharedexpenses.data.models
 
 data class Debt(
-    val id: Int = 0,
+    val id: String,
     val group: String = "",
     val user: String = "",
     val expenses: List<Int> = emptyList()){
