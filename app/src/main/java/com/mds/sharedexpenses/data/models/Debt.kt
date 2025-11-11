@@ -2,12 +2,12 @@ package com.mds.sharedexpenses.data.models
 
 data class Debt(
     val id: String,
-    val group: String = "",
-    val user: String = "",
-    val expenses: List<Int> = emptyList()){
+    val group: Group,
+    val user: User,
+    val expenses: Expense){
 
 
-    fun addExpense (expenseId : Int): Debt {
+    /*fun addExpense (expenseId : Int): Debt {
         if (expenses.contains(expenseId)) return this
 
         val newExpense = expenses.toMutableList()
@@ -27,5 +27,5 @@ data class Debt(
             if(expense == expenseId) return true
         }
         return false
-    }
+    }*/
 }

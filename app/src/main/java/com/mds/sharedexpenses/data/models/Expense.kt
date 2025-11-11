@@ -1,15 +1,15 @@
 package com.mds.sharedexpenses.data.models
 
 data class Expense(val id: String,
-                   var payer: String = "",
-                   val debtors: List<String> = emptyList(),
-                   val amount: Double = 0.0,
+                   var payer: User,
+                   val debtors: List<User> = emptyList(),
+                   val amount: Double,
                    var name: String = "",
                    var description: String = "",
                    var icon: String = "") {
 
 
-    fun amountPerPerson(): Double {
+    /*fun amountPerPerson(): Double {
         return if (debtors.isNotEmpty()) amount / debtors.size else 0.0
     }
 
@@ -35,6 +35,10 @@ data class Expense(val id: String,
             if(debtorId == userId) return true
         }
         return false
+    }*/
+
+    fun toJson() {
+        TODO("Not yet implemented")
     }
 
 }
