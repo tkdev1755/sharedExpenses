@@ -66,6 +66,7 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
                 receiver = receiverUser
             )
         }?.toMutableList() ?: mutableListOf()
+
         return Group(
             id = data["id"] as? String ?: return null,
             name = data["name"] as? String ?: "",
@@ -80,7 +81,7 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
     //Here begins the getters
 
 
-    //Get the groups according to the current user and return Map<userId, userName>
+    //Get the users according to the current group and return Map<userId, userName>
     suspend fun getUsersByGroup (group_id : String) : Map<String,*>? {
         val groupRepository = firebaseRepository.getGroupDirectory(group_id)
         val dataRes : DataResult<Map<String,*>> = firebaseRepository.fetchDBRef<Map<String,*>>(groupRepository)
@@ -113,5 +114,40 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
         else{
             return false
         }
+    }
+
+    //Get the expenses according to the current group and return Map<ExpId, Expense>
+    suspend fun getExpensesForGroup(groupId: String): Map<String, Expense>? {
+        val groupRef = firebaseRepository.getGroupDirectory(groupId)
+        val dataRes: DataResult<Map<String, *>> = firebaseRepository.fetchDBRef(groupRef)
+        if (dataRes is DataResult.Success) {
+            val expensesMap = dataRes.data["expenses"] as? Map<String, Map<String, Any>> ?: return null
+            val usersMap = dataRes.data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
+            val usersList = usersMap.map { (uid, uData) ->
+                User(
+                    id = uid,
+                    name = uData["name"] as? String ?: "",
+                    email = uData["email"] as? String ?: "",
+                    groups = mutableListOf()
+                )
+            }
+
+            return expensesMap.mapValues { (_, expData) ->
+                val payerId = expData["payer"] as? String ?: ""
+                val payerUser = usersList.firstOrNull { it.id == payerId } ?: User(id = payerId, name = "", email = "", groups = mutableListOf())
+                val debtorIds = expData["debtors"] as? List<String> ?: emptyList()
+                val debtorUsers = debtorIds.map { did ->
+                    usersList.firstOrNull { it.id == did } ?: User(id = did, name = "", email = "", groups = mutableListOf()) }.toMutableList()
+                Expense(
+                    id = expData["id"] as? String ?: "",
+                    payer = payerUser,
+                    debtors = debtorUsers,
+                    amount = (expData["amount"] as? Number)?.toDouble() ?: 0.0,
+                    name = expData["name"] as? String ?: "",
+                    description = expData["description"] as? String ?: ""
+                )
+            }
+        }
+        return null
     }
 }
