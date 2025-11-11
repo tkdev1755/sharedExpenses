@@ -5,7 +5,8 @@ data class Expense(val id: String,
                    val debtors: List<String> = emptyList(),
                    val amount: Double = 0.0,
                    var name: String = "",
-                   var description: String = "") {
+                   var description: String = "",
+                   var icon: String = "") {
 
 
     fun amountPerPerson(): Double {
