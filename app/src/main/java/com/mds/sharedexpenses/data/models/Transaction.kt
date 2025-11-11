@@ -7,7 +7,7 @@ data class Transaction(
     val issuer: User,
     val receiver: User){
 
-
+/*
     fun isValid(): Boolean {
         return amount > 0 && issuer.isNotBlank() && receiver.isNotBlank() && issuer != receiver
     }

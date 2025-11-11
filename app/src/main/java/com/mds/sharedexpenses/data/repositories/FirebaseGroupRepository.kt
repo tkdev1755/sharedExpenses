@@ -6,35 +6,10 @@ import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
+import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.Transaction
 
 class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository) {
-    fun serializeGroup(group: Group): Map<String, *> {
-        return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
-    }
-
-    suspend fun deserializeGroup(data: Map<String, *>?): Group? {
-        if (data == null) return null
-        val usersList = data?.keys?.map { id ->
-            User(
-                id = id,
-                name = "",
-                email = "",
-                groups = mutableListOf()
-            )
-        }?.toMutableList() ?: mutableListOf()
-        val isOwner = checkOwners(data)
-        return Group(
-            id = data["id"] as? String ?: return null,
-            name = data["name"] as? String ?: "",
-            description = data["description"] as? String ?: "",
-            users = usersList,
-            expenses = data["expenses"] as? Map<String, Boolean> ?: emptyMap(),
-            transactions = data["transactions"] as? Map<String, Boolean> ?: emptyMap(),
-            isOwner = isOwner
-        )
-    }
-
-    //Here begins the getters
 
     //Check if the current user is owner of the group
     fun checkOwners(data: Map<String,*>?): Boolean? {
@@ -43,6 +18,68 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
         val currentUserData = usersMap[currentUID] as? Map<String, Any>
         return currentUserData?.get("owner") as? Boolean ?: false
     }
+    fun serializeGroup(group: Group): Map<String, *> {
+        return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
+    }
+
+    suspend fun deserializeGroup(data: Map<String, *>?): Group? {
+        if (data == null) return null
+        val is_Owner = checkOwners(data) ?: false
+        val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
+        val usersList = usersMap.map { (userId, userData) ->
+            User(
+                id = userId,
+                name = userData["name"] as? String ?: "",
+                email = userData["email"] as? String ?: "",
+                groups = mutableListOf()
+            )
+        }?.toMutableList() ?: mutableListOf()
+
+        val expensesMap = data["expenses"] as? Map<String, Map<String, Any>> ?: emptyMap()
+        val expensesList = expensesMap.map { (expenseId, expData) ->
+            val payerId = expData["payer"] as? String ?: ""
+            val payerUser = usersList.firstOrNull { user -> user.id == payerId } ?: User(id = payerId, name = "", email = "", groups = mutableListOf())
+            val debtorIds = expData["debtors"] as? List<String> ?: emptyList()
+            val debtorUsers = debtorIds.map { debtorId -> usersList.firstOrNull { user -> user.id == debtorId } ?: User(id = debtorId, name = "", email = "", groups = mutableListOf()) }.toMutableList()
+            Expense(
+                id = expenseId,
+                payer = payerUser,
+                amount = 0.0,
+                debtors = debtorUsers,
+                name = expData["name"] as? String ?: ""
+            )
+        }?.toMutableList() ?: mutableListOf()
+
+        val transactionsMap = data["transactions"] as? Map<String, Map<String, Any>> ?: emptyMap()
+        val transactionsList = transactionsMap.map { (transacId, transacData) ->
+            val expId = transacData["expense_id"] as? String ?: ""
+            val linkExpense = expensesList.firstOrNull { expense -> expense.id == expId } ?: Expense(id = expId, payer = usersList.first(), amount = 0.0, debtors = mutableListOf())
+            val issuerId = transacData["issuer"] as? String ?: ""
+            val issuerUser = usersList.firstOrNull { user -> user.id == issuerId } ?: User(id = issuerId, name = "", email = "", groups = mutableListOf())
+            val receiverId = transacData["issuer"] as? String ?: ""
+            val receiverUser = usersList.firstOrNull { user -> user.id == receiverId } ?: User(id = receiverId, name = "", email = "", groups = mutableListOf())
+            Transaction(
+                id = transacId,
+                expense = linkExpense,
+                amount = (transacData["amount"] as? Number)?.toDouble() ?: 0.0,
+                issuer = issuerUser,
+                receiver = receiverUser
+            )
+        }?.toMutableList() ?: mutableListOf()
+        return Group(
+            id = data["id"] as? String ?: return null,
+            name = data["name"] as? String ?: "",
+            description = data["description"] as? String ?: "",
+            users = usersList,
+            expenses = expensesList,
+            transactions = transactionsList,
+            isOwner = is_Owner
+        )
+    }
+
+    //Here begins the getters
+
+
     //Get the groups according to the current user and return Map<userId, userName>
     suspend fun getUsersByGroup (group_id : String) : Map<String,*>? {
         val groupRepository = firebaseRepository.getGroupDirectory(group_id)

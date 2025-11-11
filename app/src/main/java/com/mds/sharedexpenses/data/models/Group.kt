@@ -8,7 +8,8 @@ data class Group(
     val expenses: MutableList<Expense> = mutableListOf<Expense>(),
     val transactions : MutableList<Transaction> = mutableListOf<Transaction>(),
     val debts : MutableList<Debt> = mutableListOf<Debt>(),
-    val isOwner : Boolean = false)
+    val isOwner : Boolean? = false
+)
 /*{
 
     companion object{
