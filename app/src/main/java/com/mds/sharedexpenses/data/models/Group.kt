@@ -4,9 +4,10 @@ data class Group(
     val id: String = "",
     var name: String = "",
     var description: String = "",
-    val users: List<String> = emptyList(),
-    val expenses: List<Int> = emptyList(),
-    val transactions : List<Int> = emptyList()){
+    val users: List<User> = emptyList(),
+    val expenses: List<Expense> = emptyList(),
+    val transactions : List<Transaction> = emptyList(),
+    val isOwner : Boolean = false){
 
 
     fun addUser(userId: String): Group {

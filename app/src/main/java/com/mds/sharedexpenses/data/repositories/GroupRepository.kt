@@ -6,6 +6,8 @@ import com.mds.sharedexpenses.data.models.Group
 
 
 interface GroupRepositoryInterface {
+    fun serializeGroup(group: Group)
+    suspend fun deserializeGroup(data: Map<String, *>?)
     suspend fun createGroup(group: Group)
     fun deleteGroup(group: Group)
     fun updateGroup(group: Group)
