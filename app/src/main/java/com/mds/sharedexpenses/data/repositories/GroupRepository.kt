@@ -6,7 +6,7 @@ import com.mds.sharedexpenses.data.models.Group
 
 
 interface GroupRepositoryInterface {
-    fun createGroup(group: Group)
+    suspend fun createGroup(group: Group)
     fun deleteGroup(group: Group)
     fun updateGroup(group: Group)
 }
