@@ -9,7 +9,7 @@ import com.mds.sharedexpenses.data.models.User
 
 class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository) {
     fun serializeGroup(group: Group): Map<String, *> {
-        return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions)
+        return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
     }
 
     suspend fun deserializeGroup(data: Map<String, *>?): Group? {
@@ -19,10 +19,9 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
                 id = id,
                 name = "",
                 email = "",
-                groups = emptyList(),
-                debts = emptyList()
+                groups = mutableListOf()
             )
-        } ?: emptyList()
+        }?.toMutableList() ?: mutableListOf()
         val isOwner = checkOwners(data)
         return Group(
             id = data["id"] as? String ?: return null,

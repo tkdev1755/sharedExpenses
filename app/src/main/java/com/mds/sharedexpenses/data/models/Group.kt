@@ -3,11 +3,13 @@ package com.mds.sharedexpenses.data.models
 data class Group(
     val id: String = "",
     var name: String = "",
-    val is_owner : Boolean = false,
     var description: String = "",
     val users: MutableList<User> = mutableListOf<User>(),
     val expenses: MutableList<Expense> = mutableListOf<Expense>(),
-    val transactions : MutableList<Transaction> = mutableListOf<Transaction>()){
+    val transactions : MutableList<Transaction> = mutableListOf<Transaction>(),
+    val debts : MutableList<Debt> = mutableListOf<Debt>(),
+    val isOwner : Boolean = false)
+/*{
 
     companion object{
         fun fromJson(groupID:String , data : Map<String, Any>, userData : Map<String,*>) : Group{
@@ -119,3 +121,4 @@ data class Group(
 private fun User.toJson() {
     TODO("Not yet implemented")
 }
+*/
