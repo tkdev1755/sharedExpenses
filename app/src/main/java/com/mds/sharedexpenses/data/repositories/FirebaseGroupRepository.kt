@@ -9,6 +9,18 @@ import com.mds.sharedexpenses.data.models.Group
 class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository) {
 
     //Get the groups according to the current user
+    suspend fun getUsersByGroup (group_id : String) : Map<String,*>? {
+        val groupRepository = firebaseRepository.getGroupDirectory(group_id)
+        val dataRes : DataResult<Map<String,*>> = firebaseRepository.fetchDBRef<Map<String,*>>(groupRepository)
+        if(dataRes is DataResult.Success) {
+            val usersMap : Map<String,*>? = dataRes.data
+            return usersMap
+        }
+        else{
+            return null
+        }
+    }
+
     //Create a group
     suspend fun createGroup(group : Group) : Boolean {
         val groupsDirectory = firebaseRepository.getGroupsDirectory()

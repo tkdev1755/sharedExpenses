@@ -1,6 +1,6 @@
 package com.mds.sharedexpenses.data.models
 
-data class Expense(val id: String,
+data class Expense(val id: String = "",
                    var payer: String = "",
                    val debtors: List<String> = emptyList(),
                    val amount: Double = 0.0,

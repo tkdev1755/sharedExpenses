@@ -1,7 +1,7 @@
 package com.mds.sharedexpenses.data.models
 
 data class Transaction(
-    val id: String,
+    val id: String = "",
     val expense: Int = 0,
     val amount: Double = 0.0,
     val issuer: String = "",
