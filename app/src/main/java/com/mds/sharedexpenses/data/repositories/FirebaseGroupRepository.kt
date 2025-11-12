@@ -24,7 +24,7 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
         return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
     }
 
-    suspend fun deserializeGroup(data: Map<String, *>?): Group? {
+    fun deserializeGroup(data: Map<String, *>?): Group? {
         if (data == null) return null
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
