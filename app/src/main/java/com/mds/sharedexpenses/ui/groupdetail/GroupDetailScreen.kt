@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,10 +57,12 @@ fun StatsBox(
     amount: Number,
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier) {
-       /* TODO: show the following
-            - Text: Your current balance: <amount>
-            - Button: pay off (-> onClickListener)
-       */
+    Column {
+        Text("Your current balance: $amount")
+        Button(onClick = { onButtonClick }) {
+            Text(text = "Pay Off")
+        }
+    }
 }
 
 @Composable
