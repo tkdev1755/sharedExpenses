@@ -20,11 +20,11 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
         val currentUserData = usersMap[currentUID] as? Map<String, Any>
         return currentUserData?.get("owner") as? Boolean ?: false
     }
-    fun serializeGroup(group: Group): Map<String, *> {
+    fun toJson(group: Group): Map<String, *> {
         return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
     }
 
-    fun deserializeGroup(data: Map<String, *>?): Group? {
+    fun fromJson(data: Map<String, *>?): Group? {
         if (data == null) return null
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
@@ -108,7 +108,7 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
         else {
             return false
         }
-        val jsonGroup : Map<String,*> = serializeGroup(group)
+        val jsonGroup : Map<String,*> = toJson(group)
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory, jsonGroup)
         if(dataRes is DataResult.Success) {
             return true

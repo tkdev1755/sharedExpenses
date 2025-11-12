@@ -1,15 +1,13 @@
 package com.mds.sharedexpenses.data.repositories
 
-import com.google.firebase.database.DatabaseReference
-import com.mds.sharedexpenses.data.utils.DataResult
+
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
-import com.mds.sharedexpenses.data.models.Expense
 
 class FirebaseTransactionRepository(private val firebaseRepository: FirebaseRepository) {
 
-    fun serialize(transaction: Transaction): Map<String, Any?> {
+    fun toJson(transaction: Transaction): Map<String, Any?> {
         return mapOf(
             "id" to transaction.id,
             "expense_id" to transaction.expense.id,
@@ -19,33 +17,25 @@ class FirebaseTransactionRepository(private val firebaseRepository: FirebaseRepo
         )
     }
 
-    suspend fun deserialize(data: Map<String, Any?>, groupId: String): Transaction? {
+    suspend fun fromJson(data: Map<String, Any?>, groupId: String): Transaction? {
         val expensesRes = FirebaseGroupRepository(firebaseRepository).getExpensesForGroup(groupId)
         val expenses = expensesRes ?: emptyMap()
         val expenseId = data["expense_id"] as? String ?: return null
         val expense = expenses[expenseId] ?: return null
         val issuerId = data["issuer"] as? String ?: return null
         val receiverId = data["receiver"] as? String ?: return null
-        val usersMap = (FirebaseGroupRepository(firebaseRepository).getUsersByGroup(groupId) ?: emptyMap()) as Map<String, String>
-        val issuerUser = User(
-            id = issuerId,
-            name = usersMap[issuerId] ?: "",
-            email = "",
-            groups = mutableListOf()
-        )
-        val receiverUser = User(
-            id = receiverId,
-            name = usersMap[receiverId] ?: "",
-            email = "",
-            groups = mutableListOf()
-        )
-
+        val usersData = FirebaseGroupRepository(firebaseRepository).getUsersByGroup(groupId)
+        val usersMap: Map<String, User> = usersData?.mapValues { (_, userData) -> (userData as? User ?: User()) as User } ?: emptyMap()
         return Transaction(
             id = data["id"] as? String ?: "",
             expense = expense,
             amount = (data["amount"] as? Number)?.toDouble() ?: 0.0,
-            issuer = issuerUser,
-            receiver = receiverUser
+            issuer = usersMap[issuerId] ?: User(id = issuerId, name = "", email = "", groups = mutableListOf()),
+            receiver = usersMap[receiverId] ?: User(id = receiverId, name = "", email = "", groups = mutableListOf())
         )
     }
+
+    //Here begins the getters
+
+
 }
