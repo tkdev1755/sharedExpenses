@@ -6,6 +6,8 @@ import com.mds.sharedexpenses.data.models.Transaction
 
 
 interface TransactionRepositoryInterface {
+    fun serialize(transaction: Transaction)
+    suspend fun deserialize(data: Map<String, Any?>, groupId: String)
     fun createTransaction(transaction: Transaction)
     fun deleteTransaction(transaction: Transaction)
     fun updateTransaction(transaction: Transaction)
