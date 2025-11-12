@@ -6,7 +6,13 @@ data class Debt(
     val user: User,
     val expenses: Expense){
 
-
+    fun toJson(): Map<String, Any> {
+        return mapOf(
+            "group" to group.id,
+            "user" to user.id,
+            "expenses" to expenses.id
+        )
+    }
     /*fun addExpense (expenseId : Int): Debt {
         if (expenses.contains(expenseId)) return this
 

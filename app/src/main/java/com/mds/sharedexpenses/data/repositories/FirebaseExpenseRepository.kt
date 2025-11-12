@@ -33,32 +33,30 @@ class FIRExpenseRepository(private val firebaseRepository : FirebaseRepository){
         val expansesDirectory : DatabaseReference = getGroupExpensesDirectory(group.id)
 
         val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(expansesDirectory)
-        var newDebtDirectory : DatabaseReference? = null
-        // This will give us a database reference like this
-        // debts ↳
-        //        new_id ↳
-        //              **our debt  data will go here**
+        var newExpenseDirectory : DatabaseReference? = null
 
-        // Always check if everything went successfully with the DataResult type
+
         if (result is DataResult.Success){
-            // Now we know that the operation has been successful
-            newDebtDirectory = result.data
+            newExpenseDirectory = result.data
         }
         else{
-            println("Error: Could not create a new child reference in Firebase. $createRefResult")
-            return false // Stop execution
+            throw Exception("Error: Could not create a new Expense child reference in Firebase. $result")
         }
 
-        // Now that it's sorted out, we can write the code to "write" our serialized data to the database
-        // To serialize means to turn something (like an object in memory) into a sequence of bytes, a string, JSON, XML, or another transportable format.
-        // Don't forget that the value that you have to write have to be basic json Object, not types that we have in the app
-        val jsonDebt: Map<String,*> =  mapOf("amount" to 20, "description" to "JE") // Here put when available a debt.toJson() for example
-        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newDebtDirectory!!, jsonDebt)
-        // Now check if the data was successfully written
-        dataRes
+        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newExpenseDirectory!!, expense.toJson())
+
         if(dataRes is DataResult.Success) {
             println("Success !")
         }
+        else{
+            println("Fail !")
+        }
+    }
 
+    suspend fun removeGroupExpense(group: Group, expense: Expense){
+        val groupExpansesDirectory : DatabaseReference = getGroupExpensesDirectory(group.id)
+
+        val expenseDirectory : DatabaseReference = groupExpansesDirectory.child(expense.id.toString())
+        firebaseRepository.deleteDBRef(expenseDirectory)
     }
 }
