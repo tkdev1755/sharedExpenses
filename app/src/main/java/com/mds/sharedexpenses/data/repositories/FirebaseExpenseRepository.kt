@@ -14,14 +14,13 @@ class FIRExpenseRepository(private val firebaseRepository : FirebaseRepository){
         return groupDirectory.child("expenses")
     }
 
-
     suspend fun getGroupExpenses(group: Group) : Map<String,*>?{
         val  expensesDirectory : DatabaseReference = getGroupExpensesDirectory(group.id)
         val dataRes : DataResult<Map<String,*>> = firebaseRepository.fetchDBRef<Map<String,*>>(expensesDirectory)
 
         if(dataRes is DataResult.Success) {
-            val debtMap : Map<String,*>? = dataRes.data
-            return debtMap
+            val expenseMap : Map<String,*>? = dataRes.data
+            return expenseMap
         }
         else{
             return null
@@ -34,12 +33,11 @@ class FIRExpenseRepository(private val firebaseRepository : FirebaseRepository){
         val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(expensesDirectory)
         var newExpenseDirectory : DatabaseReference? = null
 
-
         if (result is DataResult.Success){
             newExpenseDirectory = result.data
         }
         else{
-            return DataResult.Error("FIREBASE_ERROR", "Failed to create child reference.")
+            return DataResult.Error("FIREBASE_ERROR", "Failed to create expense child reference.")
         }
 
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newExpenseDirectory!!, expense.toJson())
@@ -48,7 +46,7 @@ class FIRExpenseRepository(private val firebaseRepository : FirebaseRepository){
             return DataResult.Success("Success")
         }
 
-        return DataResult.Error("FIREBASE_ERROR", "Failed to write to new database reference.")
+        return DataResult.Error("FIREBASE_ERROR", "Failed to write to new expense database reference.")
     }
 
     suspend fun removeGroupExpense(group: Group, expense: Expense){
