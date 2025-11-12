@@ -120,12 +120,9 @@ data class Group(
 }
 
 public fun User.toJson(): Map<String, Any> {
-    val groupIds = groups.map { it.id }
-
     return mapOf(
         "id" to id,
         "name" to name,
         "email" to email,
-        "groups" to groupIds
     )
 }
