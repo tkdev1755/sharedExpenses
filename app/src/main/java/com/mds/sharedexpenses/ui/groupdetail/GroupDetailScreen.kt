@@ -68,7 +68,7 @@ fun MonthHeader(
     year: Number,
     modifier: Modifier = Modifier
 ) {
-    // TODO: display month name and year
+    Text("$name $year")
 }
 
 @Composable
