@@ -8,6 +8,8 @@ import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Transaction
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository) {
 
@@ -145,6 +147,41 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
                     amount = (expData["amount"] as? Number)?.toDouble() ?: 0.0,
                     name = expData["name"] as? String ?: "",
                     description = expData["description"] as? String ?: ""
+                )
+            }
+        }
+        return null
+    }
+
+    //Get the transactions according to the current group and return Map<ExpId, Transactions>
+    suspend fun getTransactionsbyGroup(groupId : String) : Map<String, Transaction>? {
+        val groupRef = firebaseRepository.getGroupDirectory(groupId)
+        val dataRes: DataResult<Map<String, *>> = firebaseRepository.fetchDBRef(groupRef)
+        if (dataRes is DataResult.Success) {
+            val transactionssMap = dataRes.data["transactions"] as? Map<String, Map<String, Any>> ?: return null
+            val expensesMap = getExpensesForGroup(groupId) ?: emptyMap()
+            val usersMap = dataRes.data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
+            val usersList = usersMap.map { (uid, uData) ->
+                User(
+                    id = uid,
+                    name = uData["name"] as? String ?: "",
+                    email = uData["email"] as? String ?: "",
+                    groups = mutableListOf()
+                )
+            }
+            return transactionssMap.mapValues { (_,transacData) ->
+                var expenseId = transacData["expense_id"] as? String ?: ""
+                val linkedExpense = expensesMap[expenseId] ?: Expense(id = expenseId, payer = User(id = "", name = "", email = "", groups = mutableListOf()), amount = 0.0, debtors = mutableListOf())
+                val issuerId = transacData["payer"] as? String ?: ""
+                val issuerser = usersList.firstOrNull { it.id == issuerId } ?: User(id = issuerId, name = "", email = "", groups = mutableListOf())
+                val receiverId = transacData["payer"] as? String ?: ""
+                val receiverUser = usersList.firstOrNull { it.id == receiverId } ?: User(id = receiverId, name = "", email = "", groups = mutableListOf())
+                Transaction(
+                    id = transacData["id"] as? String ?: "",
+                    expense = linkedExpense,
+                    amount = (transacData["amount"] as? Number)?.toDouble() ?: 0.0,
+                    issuer = issuerser,
+                    receiver = receiverUser
                 )
             }
         }
