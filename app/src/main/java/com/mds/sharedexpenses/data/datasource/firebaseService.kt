@@ -76,6 +76,7 @@ class FirebaseService private constructor(){
         return db.getReference("users/${getCurrentUserUID()}")
     }
 
+
     fun getGroupsDirectory() : DatabaseReference {
         return db.getReference("groups")
     }

@@ -16,7 +16,12 @@ data class Transaction(
         return issuer == userId || receiver == userId
     }*/
 
-    fun toJson() {
-        TODO("Not yet implemented")
+    fun toJson(): Map<String, Any> {
+        return mapOf(
+            "expense_id" to expense.id,
+            "amount" to amount,
+            "issuer" to issuer.id,
+            "receiver" to receiver.id
+        )
     }
 }
