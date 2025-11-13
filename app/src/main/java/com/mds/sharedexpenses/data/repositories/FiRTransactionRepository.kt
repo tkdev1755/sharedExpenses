@@ -2,6 +2,7 @@ package com.mds.sharedexpenses.data.repositories
 
 
 import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
@@ -41,9 +42,21 @@ class FiRTransactionRepository(private val firebaseRepository: FirebaseRepositor
 
 
     //Get the participants fro a specific transactions
-    fun getTransactionParticipants(transaction : Transaction): Pair<User,User> {
+    fun getTransactionParticipants(transaction : Transaction): Pair<User,User>? {
         return Pair(transaction.issuer, transaction.receiver)
     }
+
+    //Get the total amount of transaction in a group
+    fun getTotalAmountTransaction(group : Group): Double?{
+        return group.transactions.sumOf { it.amount }
+    }
+
+    //Get all the transaction between two specific user
+    fun GetTransactionBetweenUsers(group : Group, useraId: String, userbId : String): List<Transaction>?{
+        return group.transactions.filter { it.issuer.id == useraId && it.receiver.id == userbId
+                                            it.issuer.id == userbId && it.receiver.id == useraId}
+    }
+
 
 
 }
