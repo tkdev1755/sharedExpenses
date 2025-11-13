@@ -39,4 +39,13 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
                 icon = expensesMap["icon"] as? String ?: ""
             )
     }
+
+
+    //Here is the getters
+    //Get a specific Expense
+    fun getExpensebyId(expenseId:String, group: Group): Expense?{
+        return group.expenses.firstOrNull() {it.id == expenseId}
+    }
+
+
 }
