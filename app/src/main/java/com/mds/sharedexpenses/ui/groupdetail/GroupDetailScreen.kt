@@ -15,10 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.repositories.Expense
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
@@ -136,6 +138,6 @@ fun ExpenseRecord(
 @Composable
 fun GroupDetailScreenPreview() {
     SharedExpensesTheme {
-        GroupDetailScreen(navController = NavController(context = androidx.compose.ui.platform.LocalContext.current))
+        GroupDetailScreen(navController = NavController(context = LocalContext.current))
     }
 }
