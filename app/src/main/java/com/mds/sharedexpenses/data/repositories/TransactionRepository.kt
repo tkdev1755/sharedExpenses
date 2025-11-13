@@ -8,8 +8,8 @@ import com.mds.sharedexpenses.data.models.Transaction
 interface TransactionRepositoryInterface {
     fun toJson(transaction: Transaction)
     suspend fun fromJson(data: Map<String, Any?>, groupId: String)
+    fun getTransactionParticipants(transaction : Transaction)
     fun createTransaction(transaction: Transaction)
     fun deleteTransaction(transaction: Transaction)
     fun updateTransaction(transaction: Transaction)
-    fun getTransactionbyGroup (transaction: Transaction)
 }

@@ -11,7 +11,7 @@ import com.mds.sharedexpenses.data.models.Transaction
 import kotlin.collections.component1
 import kotlin.collections.component2
 
-class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository) {
+class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
 
     //Check if the current user is owner of the group
     fun checkOwners(data: Map<String,*>?): Boolean? {
@@ -172,9 +172,9 @@ class FirebaseGroupRepository(private val firebaseRepository: FirebaseRepository
             return transactionssMap.mapValues { (_,transacData) ->
                 var expenseId = transacData["expense_id"] as? String ?: ""
                 val linkedExpense = expensesMap[expenseId] ?: Expense(id = expenseId, payer = User(id = "", name = "", email = "", groups = mutableListOf()), amount = 0.0, debtors = mutableListOf())
-                val issuerId = transacData["payer"] as? String ?: ""
+                val issuerId = transacData["issuer"] as? String ?: ""
                 val issuerser = usersList.firstOrNull { it.id == issuerId } ?: User(id = issuerId, name = "", email = "", groups = mutableListOf())
-                val receiverId = transacData["payer"] as? String ?: ""
+                val receiverId = transacData["receiver"] as? String ?: ""
                 val receiverUser = usersList.firstOrNull { it.id == receiverId } ?: User(id = receiverId, name = "", email = "", groups = mutableListOf())
                 Transaction(
                     id = transacData["id"] as? String ?: "",
