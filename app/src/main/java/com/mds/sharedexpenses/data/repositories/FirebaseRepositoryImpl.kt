@@ -10,6 +10,14 @@ import kotlinx.coroutines.tasks.await
 class FirebaseRepositoryImpl(
     private val firebaseService: FirebaseService
 ) : FirebaseRepository {
+
+
+    companion object{
+        // This is the name of the function to call when wanting to notify a user about a unpaid expense
+        public val notifyUserFunction = "notifyUser"
+        // This is the name of the function to call when wanting to invite a user to a group
+        public val inviteUserFunction = "inviteUser"
+    }
     /**
      * Logs the selected user in
      * @return True if the user is correctly logged in, false otherwise
@@ -88,17 +96,53 @@ class FirebaseRepositoryImpl(
         return firebaseService.getGroupsDirectory()
     }
 
-    override suspend fun callCloudFunction(functionName: String, data: Map<String, *>) {
-        return firebaseService.callCloudFunction(functionName, data)
-    }
     /**
-     * Fetches data from a given DatabaseReference and returns a DataResult.
+     * Calls a given cloud function with the provided data
      *
      * This is a generic function. The caller specifies the expected return type.
      *
      * @return A [DataResult] which is either:
      *         - [DataResult.Success<T>] containing the data if the fetch was successful.
      *         - [DataResult.Error] with an error code and message if the fetch failed.
+     *         - [DataResult.NotFound] if the data does not exist at the specified location.
+     */
+    override suspend fun callCloudFunction(functionName: String, data: Map<String, *>): DataResult<Boolean> {
+        val errorCodes = mapOf(
+            "USER_NOT_FOUND" to "404",
+            "PERMISSION_ERROR" to "403",
+            "SERVER_ERROR" to 500,
+        )
+        try {
+            val functionResult = firebaseService.callCloudFunction(functionName, data)
+            functionResult.await()
+            if (functionResult.isSuccessful){
+                val data = functionResult.result
+                when (data) {
+                   "invite_successful;;" -> return DataResult.Success(true)
+                   "invite_failed;${errorCodes["USER_NOT_FOUND"]};" -> return DataResult.Error("${errorCodes["USER_NOT_FOUND"]}", "Invite failed because the user does not exist")
+                    "invite_failed;${errorCodes["PERMISSION_ERROR"]};" -> return DataResult.Error("${errorCodes["PERMISSION_ERROR"]}", "Invite failed because the user does not have permission to invite other users")
+                }
+            }
+            else{
+                val errorInfo = functionResult.exception
+                return DataResult.Error("${errorCodes["SERVER_ERROR"]}", "${errorInfo?.message}")
+            }
+        }
+        catch (e: Exception){
+         return DataResult.Error("404", e.message)
+        }
+
+        return DataResult.Error("500", "Unknown error")
+    }
+
+    /**
+     * Fetches data from a given DatabaseReference and returns a DataResult.
+     *
+     * This is a generic function. The caller specifies the expected return type.
+     *
+     * @return A [DataResult] which is either:
+     *         - [DataResult.Success<Boolean>] containing true if the cloud function execution was successful.
+     *         - [DataResult.Error] with an error code and message if the cloud function failed.
      *         - [DataResult.NotFound] if the data does not exist at the specified location.
      */
     override suspend fun <T> fetchDBRef(dbRef: DatabaseReference): DataResult<T> {

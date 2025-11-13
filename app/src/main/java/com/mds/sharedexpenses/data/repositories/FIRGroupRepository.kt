@@ -81,18 +81,28 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         )
     }
 
-    private fun inviteUser(text: String): Task<String> {
+    private suspend fun inviteUser(email: String): DataResult<Boolean> {
         // Create the arguments to the callable function.
         val data = hashMapOf(
-            "text" to text,
-            "push" to true,
+            "email" to email,
         )
-
-        return firebaseRepositoryfunctions
+        return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.inviteUserFunction, data)
 
     }
     //Here begins the getters
 
+    public suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
+        val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id }
+        if (associatedDebt == null) {return DataResult.Error("","") }
+        val data = hashMapOf(
+            "group" to group.id,
+            "user" to user.id,
+            "expense" to expense.id,
+            "amount"  to associatedDebt.amount,
+            "name" to expense.name
+        )
+        return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.notifyUserFunction, data)
+    }
 
     //Get the users according to the current group and return Map<userId, userName>
     suspend fun getUsersByGroup (group_id : String) : Map<String,*>? {

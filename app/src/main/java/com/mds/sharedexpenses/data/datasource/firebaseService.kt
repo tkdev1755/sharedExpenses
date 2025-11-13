@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.data.datasource
 
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -97,8 +98,8 @@ class FirebaseService private constructor(){
             e.printStackTrace()
         }
     }
-    suspend fun callCloudFunction(name : String, data : Map<String,*>){
-        functions.getHttpsCallable("addMessage")
+    fun callCloudFunction(name : String, data : Map<String,*>) : Task<String> {
+        return functions.getHttpsCallable("addMessage")
             .call(data)
             .continueWith { task ->
                 // This continuation runs on either success or failure, but if the task
