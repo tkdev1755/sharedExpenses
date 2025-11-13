@@ -1,12 +1,14 @@
 package com.mds.sharedexpenses.data.repositories
 
 
+
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
+import kotlin.math.abs
 
 class FiRTransactionRepository(private val firebaseRepository: FirebaseRepository) {
 
@@ -52,9 +54,31 @@ class FiRTransactionRepository(private val firebaseRepository: FirebaseRepositor
     }
 
     //Get all the transaction between two specific user
-    fun GetTransactionBetweenUsers(group : Group, useraId: String, userbId : String): List<Transaction>?{
-        return group.transactions.filter { it.issuer.id == useraId && it.receiver.id == userbId
+    fun getTransactionBetweenUsers(group : Group, useraId: String, userbId : String): List<Transaction>?{
+        return group.transactions.filter { it.issuer.id == useraId && it.receiver.id == userbId ||
                                             it.issuer.id == userbId && it.receiver.id == useraId}
+    }
+
+    //Calculate the total payed by a user in a group
+    fun getTotalPaid(group: Group, userId : String): Double?{
+        return group.transactions.filter { it.issuer.id == userId }.sumOf { it.amount }
+    }
+
+    //Calculate how much a user have received in a group
+    fun getUserTotalReceived(group : Group, userId : String): Double?{
+        return group.transactions.filter { it.receiver.id == userId }.sumOf { it.amount }
+    }
+
+    //Calculate how much an user received and payed in a group
+    fun getUserBalance(group: Group, userId : String): Double?{
+        val paid = getTotalPaid(group, userId) ?: 0.0
+        val received = getUserTotalReceived(group, userId) ?: 0.0
+        return paid-received
+    }
+
+    //Get the last transaction
+    fun getLastTransaction(group: Group): Transaction?{
+        return group.transactions.lastOrNull()
     }
 
 
