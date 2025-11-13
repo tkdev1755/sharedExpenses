@@ -1,31 +1,52 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.PersonPin
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.mds.sharedexpenses.data.repositories.Expense
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
-
-//Sample Data
-val sampleExpense : Expense = Expense(12.0, "Sample Expense")
-
 
 @Composable
 fun GroupDetailScreen(
     viewModel: GroupDetailViewModel = GroupDetailViewModel()
 ) {
+    val expenses: Map<String, List<Expense>> = mapOf(
+        "January 2025" to listOf(
+            Expense(45.90, "Groceries – Lidl"),
+            Expense(120.00, "Electricity Bill"),
+            Expense(15.49, "Coffee – Studenterhuset")
+        ),
+        "February" to listOf(
+            Expense(32.10, "Groceries – Rema1000"),
+            Expense(60.00, "Phone Bill"),
+            Expense(9.99, "Spotify")
+        ),
+        "March" to listOf(
+            Expense(55.70, "Groceries – Føtex"),
+            Expense(18.00, "Laundry"),
+            Expense(45.00, "Night out – Lambda")
+        )
+    )
+
+    val totalOwe = expenses.values.sumOf { list -> list.sumOf { it.amount } }
+
     Scaffold(
         topBar = {
             NavigationTopBar(
@@ -35,24 +56,28 @@ fun GroupDetailScreen(
             )
         }
     ) { innerPadding ->
-        // only for quick prototyping
-        // replace with LazyList later and dynamically fetch data
         Column(modifier = Modifier
-            .fillMaxSize()
             .padding(innerPadding)
+            .padding(PaddingValues(16.dp))
+            .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            StatsBox(12, { /* show Modal*/ }, modifier = Modifier)
-            MonthHeader("January", 2025)
-            ExpenseRecord(sampleExpense, { /* impl */ }, { /* impl */ })
-            ExpenseRecord(sampleExpense, { /* impl */ }, { /* impl */ })
+            StatsBox(totalOwe, { /* show Modal*/ }, modifier = Modifier)
+
+            expenses.forEach { (month, entries) ->
+                Text(month, modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold)
+                entries.forEach { entry ->
+                    HorizontalDivider()
+                    ExpenseRecord(
+                        expense = entry,
+                        onClickDelete = { },
+                        onClickEdit = { },
+                        modifier = Modifier
+                    )
+                }
+            }
         }
-        // Lazy List to replace with
-//        LazyColumn(modifier = Modifier
-//            .fillMaxSize()
-//            .padding(innerPadding)
-//        ) {
-//
-//        }
     }
 }
 
@@ -61,21 +86,16 @@ fun StatsBox(
     amount: Number,
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier) {
-    Column {
-        Text("Your current balance: $amount")
+    Row (
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("You owe €$amount")
         Button(onClick = { onButtonClick }) {
             Text(text = "Pay Off")
         }
     }
-}
-
-@Composable
-fun MonthHeader(
-    name: String,
-    year: Number,
-    modifier: Modifier = Modifier
-) {
-    Text("$name $year")
 }
 
 @Composable
@@ -85,18 +105,28 @@ fun ExpenseRecord(
     onClickEdit: () -> Unit,
     modifier: Modifier = Modifier) {
 
-    Row {
-        Text("19th")
-        Row {
-            Icon()
-            Column {
-                Text("Føtex")
-                Text("Max paid €11,21")
+    Row (
+        modifier = modifier.fillMaxWidth().padding(all = 2.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("19th", modifier = modifier.weight(1.5F), textAlign = TextAlign.Center)
+        Row (
+            modifier = modifier.weight(4.0F)
+        ) {
+            Column (
+                modifier = modifier.fillMaxWidth()
+            ) {
+                Text(expense.description)
+                Text("Max paid €11,21", color = Color.Gray)
             }
         }
-        Column {
-            Text("You owe")
-            Text("€ ${expense.amount}")
+        Column (
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.weight(2.0F)
+        ) {
+            Text("You owe", color = Color.Gray)
+            Text("€${expense.amount}")
         }
     }
 }
