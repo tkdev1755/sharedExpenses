@@ -29,8 +29,15 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Profile", color = MaterialTheme.colorScheme.onPrimary) },
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Profile",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                //add navigation back to home
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -40,7 +47,7 @@ fun ProfileScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             )

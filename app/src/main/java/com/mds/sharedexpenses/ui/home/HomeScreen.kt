@@ -8,17 +8,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = HomeViewModel()
+    viewModel: HomeViewModel = HomeViewModel(),
+    onProfileClick: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Home", color = MaterialTheme.colorScheme.onPrimary) },
-                colors = TopAppBarDefaults.topAppBarColors(
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Home",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                actions = {
+                    IconButton(onClick = { /*profileButton*/ }) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             )
