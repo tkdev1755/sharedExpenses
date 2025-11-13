@@ -1,6 +1,7 @@
 package com.mds.sharedexpenses.data.repositories
 
 import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
 
 
@@ -13,5 +14,11 @@ interface ExpenseRepositoryInterface {
     fun updateExpense(expense: Expense)
     fun deleteExpense(expense: Expense)
     fun getExpensesByGroup(groupId: String): List<Expense>
+    fun getExpensebyId(expenseId:String, group: Group)
+    fun getPayedbyUser(group: Group, userId: String)
+    fun getOwnedbyUser(group: Group, userId: String)
+    fun getTotalGroupExpenses(group: Group)
+    fun getExpensesByPayer(group: Group, payerId : String)
+    fun getDebtorsForExpense(group: Group, expenseId : String)
 }
 

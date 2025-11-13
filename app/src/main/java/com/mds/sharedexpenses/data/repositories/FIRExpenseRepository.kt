@@ -48,12 +48,27 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
     }
 
     //Calculate how much an user have payed in a group
-    fun getPayedbyUser(group: Group, userId: String): Double {
+    fun getPayedbyUser(group: Group, userId: String): Double?{
         return group.expenses.filter{it.payer.id == userId}.sumOf {it.amount}
     }
 
     //Calculte how much an user should pay in a group
-    fun getOwnedbyUser(group: Group, userId: String): Double{
+    fun getOwnedbyUser(group: Group, userId: String): Double?{
         return group.expenses.filter{it.debtors.any{debtor-> debtor.id == userId}}.sumOf { it.amount }
+    }
+
+    //Calculate the total expense of the group
+    fun getTotalGroupExpenses(group: Group): Double?{
+        return group.expenses.sumOf { it.amount }
+    }
+
+    //Get all the expenses creates by a specific payer
+    fun getExpensesByPayer(group: Group, payerId : String): List<Expense>?{
+        return group.expenses.filter{it.payer.id == payerId}
+    }
+
+    //Get all the debtors for a specific expense
+     fun getDebtorsForExpense(group: Group, expenseId : String): List<User>?{
+        return getExpensebyId(expenseId, group)?.debtors ?: emptyList()
     }
 }
