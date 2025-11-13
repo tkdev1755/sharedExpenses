@@ -50,6 +50,11 @@ fun HomeScreen(
             }) {
                 Text(text = "Navigate to group detail")
             }
+            Button(onClick = {
+                navController.navigate(Screen.Profile.route)
+            }) {
+                Text(text = "Navigate to profile page")
+            }
         }
     }
 

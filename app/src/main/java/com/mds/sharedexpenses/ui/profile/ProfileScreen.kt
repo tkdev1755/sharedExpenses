@@ -14,11 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     viewModel: ProfileViewModel = ProfileViewModel(),
     onBackClick: () -> Unit = {}
 ) {
@@ -79,20 +81,12 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = uiState.email,
+                onValueChange = { viewModel.onEmailChange(it) },
                 label = { Text("E-Mail") },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = newPassword,
-                onValueChange = { newPassword = it },
-                label = { Text("New password") },
-                modifier = Modifier.fillMaxWidth()
-            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -104,8 +98,8 @@ fun ProfileScreen(
             ) {
                 Text(text = "Allow notifications")
                 Switch(
-                    checked = notificationsEnabled,
-                    onCheckedChange = { notificationsEnabled = it },
+                    checked = uiState.notificationsEnabled,
+                    onCheckedChange = { viewModel.onNotificationsChange(it) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colorScheme.primary,
                         checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
@@ -132,6 +126,6 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenPreview() {
     SharedExpensesTheme {
-        ProfileScreen()
+        ProfileScreen(navController = NavController(context = androidx.compose.ui.platform.LocalContext.current))
     }
 }

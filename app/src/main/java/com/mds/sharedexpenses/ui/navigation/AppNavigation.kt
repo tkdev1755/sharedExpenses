@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailScreen
 import com.mds.sharedexpenses.ui.home.HomeScreen
+import com.mds.sharedexpenses.ui.profile.ProfileScreen
 
 
 @Composable
@@ -20,6 +21,9 @@ fun AppNavigation(){
         }
         composable(route = Screen.GroupDetail.route) {
             GroupDetailScreen(navController = navController)
+        }
+        composable(route = Screen.Profile.route) {
+            ProfileScreen(navController = navController)
         }
 }}
 

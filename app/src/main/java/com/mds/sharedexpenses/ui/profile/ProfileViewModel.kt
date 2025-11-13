@@ -23,16 +23,12 @@ class ProfileViewModel {
     }
 
     fun updateDetailsButtonClicked() {
-        // Now the ViewModel has access to the current state when the button is clicked
         val currentState = _uiState.value
         println("Updating details: Name=${currentState.name}, Email=${currentState.email}, Notifications=${currentState.notificationsEnabled}")
-        // TODO: Add logic to save this data to a repository or Firebase
-
+        // TODO: save data in firebase!
     }
 
-    // You would add similar functions for name and email changes
     fun onNameChange(newName: String) {
-        println("New Name: ${newName}")
         _uiState.update { it.copy(name = newName) }
     }
 
