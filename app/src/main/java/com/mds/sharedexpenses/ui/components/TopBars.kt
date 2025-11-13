@@ -39,7 +39,7 @@ fun NavigationTopBar(
         },
         navigationIcon = {
             if(canNavigateBack){
-                IconButton(onClick = { /* logic */ }) {
+                IconButton(onClick = { onNavigateBack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "go to previous page"
