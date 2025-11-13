@@ -25,6 +25,7 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 @Composable
 fun GroupDetailScreen(
+    navController: NavController,
     viewModel: GroupDetailViewModel = GroupDetailViewModel()
 ) {
     val expenses: Map<String, List<Expense>> = mapOf(
@@ -135,6 +136,6 @@ fun ExpenseRecord(
 @Composable
 fun GroupDetailScreenPreview() {
     SharedExpensesTheme {
-        GroupDetailScreen()
+        GroupDetailScreen(navController = NavController(context = androidx.compose.ui.platform.LocalContext.current))
     }
 }

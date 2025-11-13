@@ -34,16 +34,20 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 @Composable
 fun HomeScreen(
-    //    navController: NavController,
+    navController: NavController,
     viewModel: HomeViewModel = HomeViewModel()
 ) {
     Scaffold(
         topBar = {
             HeaderTopBar("<add title!>")
         },
-//        floatingActionButton = {
-//            FloatingActionButton()
-//        }
+        floatingActionButton = {
+            CustomActionButton(
+                imageVector = Icons.Filled.GroupAdd,
+                iconContentDescription = "Click to create a new Group",
+                text = "Create Group",
+                onClick = {viewModel.onButtonClicked()})
+        }
     ){ innerPadding ->
         Column(
             modifier = Modifier
@@ -54,9 +58,9 @@ fun HomeScreen(
         ) {
             Text(text = "home screen :D")
             Button(onClick = {
-                viewModel.onButtonClicked()
+                navController.navigate(Screen.GroupDetail.route)
             }) {
-                Text(text = "Click me")
+                Text(text = "Navigate to group detail")
             }
         }
     }
@@ -71,6 +75,6 @@ fun HomeScreen(
 @Composable
 fun HomeScreenPreview() {
     SharedExpensesTheme {
-        HomeScreen()
+        HomeScreen(navController = NavController(context = androidx.compose.ui.platform.LocalContext.current))
     }
 }
