@@ -18,6 +18,7 @@ interface TransactionRepositoryInterface {
     fun getUserTotalReceived(group : Group, userId : String)
     fun getUserBalance(group: Group, userId : String)
     fun getLastTransaction(group: Group)
+    fun getTransactionsCountUser(group : Group, userId : String)
     fun createTransaction(transaction: Transaction)
     fun deleteTransaction(transaction: Transaction)
     fun updateTransaction(transaction: Transaction)

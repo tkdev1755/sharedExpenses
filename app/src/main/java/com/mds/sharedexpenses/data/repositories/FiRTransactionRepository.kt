@@ -81,6 +81,8 @@ class FiRTransactionRepository(private val firebaseRepository: FirebaseRepositor
         return group.transactions.lastOrNull()
     }
 
-
-
+    //Get the amount transactions mad by an user
+    fun getTransactionsCountUser(group : Group, userId : String): Int?{
+        return group.transactions.count{it.issuer.id == userId || it.receiver.id == userId}
+    }
 }
