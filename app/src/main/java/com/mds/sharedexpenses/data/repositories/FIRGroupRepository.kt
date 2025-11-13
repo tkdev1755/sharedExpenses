@@ -187,4 +187,14 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         }
         return null
     }
+
+    //Calculate the nets solde to see if a user is creditor or debtor within a group
+    fun getUserBalanceInGroup(transactions: List<Transaction>, userId: String): Double{
+        var balance = 0.0
+        for(transaction in transactions) {
+            if(userId == transaction.id) balance += transaction.amount
+            if(userId == transaction.id) balance -= transaction.amount
+        }
+        return balance
+    }
 }
