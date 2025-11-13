@@ -89,7 +89,6 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.inviteUserFunction, data)
 
     }
-    //Here begins the getters
 
     public suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
         val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id }
@@ -103,6 +102,10 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         )
         return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.notifyUserFunction, data)
     }
+    
+    //Here begins the getters
+
+
 
     //Get the users according to the current group and return Map<userId, userName>
     suspend fun getUsersByGroup (group_id : String) : Map<String,*>? {
