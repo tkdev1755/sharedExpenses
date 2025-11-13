@@ -22,6 +22,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = ProfileViewModel(),
     onBackClick: () -> Unit = {}
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     var name by remember { mutableStateOf(TextFieldValue("")) }
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var newPassword by remember { mutableStateOf(TextFieldValue("")) }
@@ -68,8 +70,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = uiState.name,
+                onValueChange = {  viewModel.onNameChange(it) },
                 label = { Text("Name") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -116,7 +118,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { viewModel.onButtonClicked() },
+                onClick = { viewModel.updateDetailsButtonClicked() },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "Update Details")
