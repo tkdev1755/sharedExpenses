@@ -1,10 +1,14 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PersonPin
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -80,7 +84,21 @@ fun ExpenseRecord(
     onClickDelete: () -> Unit,
     onClickEdit: () -> Unit,
     modifier: Modifier = Modifier) {
-    // TODO: display expense data
+
+    Row {
+        Text("19th")
+        Row {
+            Icon()
+            Column {
+                Text("Føtex")
+                Text("Max paid €11,21")
+            }
+        }
+        Column {
+            Text("You owe")
+            Text("€ ${expense.amount}")
+        }
+    }
 }
 
 @Preview(showBackground = true)
