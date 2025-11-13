@@ -47,5 +47,8 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
         return group.expenses.firstOrNull() {it.id == expenseId}
     }
 
-
+    //Calculte how much an user have payed in a group
+    fun getPayedbyUser(group: Group, userId: String): Double {
+        return group.expenses.filter{it.payer.id == userId}.sumOf {it.amount}
+    }
 }
