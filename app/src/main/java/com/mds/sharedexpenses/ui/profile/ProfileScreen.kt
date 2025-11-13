@@ -14,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mds.sharedexpenses.ui.components.HeaderTopBar
+import com.mds.sharedexpenses.ui.components.NavigationTopBar
+import com.mds.sharedexpenses.ui.components.sharedColorPallete
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,29 +32,10 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Profile",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                //add navigation back to home
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        }
+            NavigationTopBar(title = "Profile", canNavigateBack = true)
+        },
+        
+        
     ) { innerPadding ->
         Column(
             modifier = Modifier

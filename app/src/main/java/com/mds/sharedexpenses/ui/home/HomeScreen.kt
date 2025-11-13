@@ -5,17 +5,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.mds.sharedexpenses.ui.components.CustomActionButton
+import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    navController: NavController,
     viewModel: HomeViewModel = HomeViewModel(),
     onProfileClick: () -> Unit = {},
     onAddGroupClick: () -> Unit = {},
@@ -23,30 +29,16 @@ fun HomeScreen(
 ) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Home",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                actions = {
-                    IconButton(onClick = onProfileClick) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(40.dp)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            )
+            HeaderTopBar (title = "Home", onProfileClick)},
+
+        floatingActionButton = {
+            CustomActionButton(
+                imageVector = Icons.Filled.GroupAdd,
+                iconContentDescription = "Click to create a new Group",
+                text = "Create Group",
+                onClick = {viewModel.onButtonClicked()})
         }
-    ) { innerPadding ->
+        ) { innerPadding ->
         HomeContent(
             modifier = Modifier
                 .fillMaxSize()
@@ -55,6 +47,7 @@ fun HomeScreen(
             onAddGroupClick = onAddGroupClick,
             onGroupClick = onGroupClick
         )
+
     }
 }
 
@@ -150,21 +143,6 @@ private fun GroupsSection(
                 }
             }
         }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Button(
-                    onClick = onAddGroupClick,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Add Group")
-                }
-            }
-        }
     }
 }
 
@@ -172,6 +150,6 @@ private fun GroupsSection(
 @Composable
 fun HomeScreenPreview() {
     SharedExpensesTheme {
-        HomeScreen()
+        HomeScreen(navController = NavController(context = androidx.compose.ui.platform.LocalContext.current))
     }
 }
