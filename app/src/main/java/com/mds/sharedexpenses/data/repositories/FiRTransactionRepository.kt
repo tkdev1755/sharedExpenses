@@ -1,6 +1,7 @@
 package com.mds.sharedexpenses.data.repositories
 
 
+import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
@@ -18,21 +19,21 @@ class FiRTransactionRepository(private val firebaseRepository: FirebaseRepositor
         )
     }
 
-    suspend fun fromJson(data: Map<String, Any?>, groupId: String): Transaction? {
-        val expensesRes = FIRGroupRepository(firebaseRepository).getExpensesForGroup(groupId)
-        val expenses = expensesRes ?: emptyMap()
-        val expenseId = data["expense_id"] as? String ?: return null
-        val expense = expenses[expenseId] ?: return null
-        val issuerId = data["issuer"] as? String ?: return null
-        val receiverId = data["receiver"] as? String ?: return null
-        val usersData = FIRGroupRepository(firebaseRepository).getUsersByGroup(groupId)
-        val usersMap: Map<String, User> = usersData?.mapValues { (_, userData) -> (userData as? User ?: User()) as User } ?: emptyMap()
+    fun fromJsonTransaction(data: Map<String, Any>?, usersList: List<User>, transactionId: String, expensesList: List<Expense>): Transaction? {
+        if(data == null) return null
+        val transactionsMap = data[transactionId] as? Map<String, Map<String, Any>> ?: emptyMap()
+        val expId = transactionsMap["expense_id"] as? String ?: ""
+        val linkExpense = expensesList.firstOrNull { expense -> expense.id == expId } ?: Expense(id = expId, payer = usersList.first(), amount = 0.0, debtors = mutableListOf())
+        val issuerId = transactionsMap["issuer"] as? String ?: ""
+        val issuerUser = usersList.firstOrNull { user -> user.id == issuerId } ?: User(id = issuerId, name = "", email = "", groups = mutableListOf())
+        val receiverId = transactionsMap["receiver"] as? String ?: ""
+        val receiverUser = usersList.firstOrNull { user -> user.id == receiverId } ?: User(id = receiverId, name = "", email = "", groups = mutableListOf())
         return Transaction(
-            id = data["id"] as? String ?: "",
-            expense = expense,
-            amount = (data["amount"] as? Number)?.toDouble() ?: 0.0,
-            issuer = usersMap[issuerId] ?: User(id = issuerId, name = "", email = "", groups = mutableListOf()),
-            receiver = usersMap[receiverId] ?: User(id = receiverId, name = "", email = "", groups = mutableListOf())
+            id = transactionId,
+            expense = linkExpense,
+            amount = 0.0,
+            issuer = issuerUser,
+            receiver = receiverUser
         )
     }
 

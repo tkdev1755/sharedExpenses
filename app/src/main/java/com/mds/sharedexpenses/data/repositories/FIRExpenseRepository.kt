@@ -1,8 +1,11 @@
 package com.mds.sharedexpenses.data.repositories
 
 import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
+import kotlin.math.exp
 
 // Add the functions that will communicate with the Firebase
 class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
@@ -13,41 +16,27 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
             "payer" to expense.payer.id,
             "debtors" to expense.debtors,
             "amount" to expense.amount,
-            "amount" to expense.name,
+            "name" to expense.name,
             "description" to expense.description,
             "icon" to expense.icon
         )
     }
 
-    suspend fun fromJson(data: Map<String, Any?>, groupId: String): Transaction? {
-        val expensesRes = FIRGroupRepository(firebaseRepository).getExpensesForGroup(groupId)
-        val expenses = expensesRes ?: emptyMap()
-        val expenseId = data["expense_id"] as? String ?: return null
-        val expense = expenses[expenseId] ?: return null
-        val issuerId = data["issuer"] as? String ?: return null
-        val receiverId = data["receiver"] as? String ?: return null
-        val usersData = FIRGroupRepository(firebaseRepository).getUsersByGroup(groupId)
-        val usersMap: Map<String, com.mds.sharedexpenses.data.models.User> =
-            usersData?.mapValues { (_, userData) ->
-                (userData as? com.mds.sharedexpenses.data.models.User
-                    ?: User()) as com.mds.sharedexpenses.data.models.User
-            } ?: emptyMap()
-        return Transaction(
-            id = data["id"] as? String ?: "",
-            expense = expense,
-            amount = (data["amount"] as? Number)?.toDouble() ?: 0.0,
-            issuer = usersMap[issuerId] ?: User(
-                id = issuerId,
-                name = "",
-                email = "",
-                groups = mutableListOf()
-            ),
-            receiver = usersMap[receiverId] ?: User(
-                id = receiverId,
-                name = "",
-                email = "",
-                groups = mutableListOf()
+    fun fromJsonExpense(data: Map<String, Any>?, usersList: List<User>, expenseId: String): Expense? {
+        if(data == null) return null
+        val expensesMap = data[expenseId] as? Map<String, Map<String, Any>> ?: emptyMap()
+        val payerId = expensesMap["payer"] as? String ?: ""
+        val payerUser = usersList.firstOrNull { user -> user.id == payerId } ?: User(id = payerId, name = "", email = "", groups = mutableListOf())
+        val debtorIds = expensesMap["debtors"] as? List<String> ?: emptyList()
+        val debtorUsers = debtorIds.map { debtorId -> usersList.firstOrNull { user -> user.id == debtorId } ?: User(id = debtorId, name = "", email = "", groups = mutableListOf()) }.toMutableList()
+        return Expense(
+                id = expenseId,
+                payer = payerUser,
+                amount = 0.0,
+                debtors = debtorUsers,
+                name = expensesMap["name"] as? String ?: "",
+                description = expensesMap["description"] as? String ?: "",
+                icon = expensesMap["icon"] as? String ?: ""
             )
-        )
     }
 }
