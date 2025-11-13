@@ -99,7 +99,7 @@ fun EditBottomSheet(open: Boolean, onDismiss: () -> Unit) {
 @Composable
 fun GroupDetailScreen(
     navController: NavController,
-    viewModel: GroupDetailViewModel = GroupDetailViewModel()
+    viewModel: GroupDetailViewModel
 ) {
     var isEditOpen by remember { mutableStateOf(false) }
 

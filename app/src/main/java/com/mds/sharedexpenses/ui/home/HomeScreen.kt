@@ -34,7 +34,7 @@ fun HomeScreen(
                 imageVector = Icons.Filled.GroupAdd,
                 iconContentDescription = "Click to create a new Group",
                 text = "Create Group",
-                onClick = {viewModel.onButtonClicked()})
+                onClick = {viewModel.onAddNewGroupClicked()})
         }
     ){ innerPadding ->
         Column(
@@ -46,7 +46,7 @@ fun HomeScreen(
         ) {
             Text(text = "home screen :D")
             Button(onClick = {
-                navController.navigate(Screen.GroupDetail.route)
+                navController.navigate(Screen.GroupDetail.createRoute("add-group-id"))
             }) {
                 Text(text = "Navigate to group detail")
             }
