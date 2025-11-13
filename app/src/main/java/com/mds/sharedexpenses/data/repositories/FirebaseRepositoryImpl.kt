@@ -2,10 +2,11 @@ package com.mds.sharedexpenses.data.repositories
 import com.google.firebase.database.DatabaseException
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.datasource.FirebaseService
+import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import kotlinx.coroutines.tasks.await
-
+import com.mds.sharedexpenses.data.models.User
 
 class FirebaseRepositoryImpl(
     private val firebaseService: FirebaseService
@@ -33,9 +34,10 @@ class FirebaseRepositoryImpl(
     override fun getCurrentUser(): User? {
         val data = firebaseService.getCurrentUser() ?: return null
         return User(
-            uid = data["uid"] as String,
+            data["uid"] as String,
             email = data["email"] as? String ?: "",
-            name = data["name"] as? String ?:""
+            groups = mutableListOf<Group>(),
+            name = data["name"] as? String ?:"",
         )
     }
 

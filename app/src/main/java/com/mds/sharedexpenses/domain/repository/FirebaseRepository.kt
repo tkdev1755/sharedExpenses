@@ -2,7 +2,7 @@ package com.mds.sharedexpenses.domain.repository
 
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
-import com.mds.sharedexpenses.data.repositories.User
+import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
 
 interface FirebaseRepository {
