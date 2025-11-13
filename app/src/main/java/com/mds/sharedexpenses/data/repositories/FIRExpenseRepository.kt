@@ -47,8 +47,13 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
         return group.expenses.firstOrNull() {it.id == expenseId}
     }
 
-    //Calculte how much an user have payed in a group
+    //Calculate how much an user have payed in a group
     fun getPayedbyUser(group: Group, userId: String): Double {
         return group.expenses.filter{it.payer.id == userId}.sumOf {it.amount}
+    }
+
+    //Calculte how much an user should pay in a group
+    fun getOwnedbyUser(group: Group, userId: String): Double{
+        return group.expenses.filter{it.debtors.any{debtor-> debtor.id == userId}}.sumOf { it.amount }
     }
 }
