@@ -19,4 +19,5 @@ interface FirebaseRepository {
     suspend fun deleteDBRef(dbRef : DatabaseReference) : DataResult<Boolean>
     fun getGroupDirectory(id : String): DatabaseReference
     suspend fun saveNotificationToken(token: String)
+    suspend fun callCloudFunction(functionName:String, data:Map<String,*>)
 }

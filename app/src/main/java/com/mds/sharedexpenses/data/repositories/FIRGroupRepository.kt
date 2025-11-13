@@ -1,6 +1,7 @@
 package com.mds.sharedexpenses.data.repositories
 
 // Add the functions that will communicate with the Firebase
+import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
@@ -80,6 +81,16 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         )
     }
 
+    private fun inviteUser(text: String): Task<String> {
+        // Create the arguments to the callable function.
+        val data = hashMapOf(
+            "text" to text,
+            "push" to true,
+        )
+
+        return firebaseRepositoryfunctions
+
+    }
     //Here begins the getters
 
 

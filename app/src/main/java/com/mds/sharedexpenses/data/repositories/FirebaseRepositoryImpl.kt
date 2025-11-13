@@ -88,7 +88,9 @@ class FirebaseRepositoryImpl(
         return firebaseService.getGroupsDirectory()
     }
 
-
+    override suspend fun callCloudFunction(functionName: String, data: Map<String, *>) {
+        return firebaseService.callCloudFunction(functionName, data)
+    }
     /**
      * Fetches data from a given DatabaseReference and returns a DataResult.
      *
@@ -220,4 +222,6 @@ class FirebaseRepositoryImpl(
     override fun getGroupDirectory(id : String ): DatabaseReference {
         return firebaseService.getGroupDirectory(id)
     }
+
+
 }

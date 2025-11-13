@@ -3,6 +3,7 @@ package com.mds.sharedexpenses.data.datasource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
 
@@ -10,6 +11,7 @@ class FirebaseService private constructor(){
     val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     val db: FirebaseDatabase by lazy {  FirebaseDatabase.getInstance()}
     val messaging: FirebaseMessaging by lazy { FirebaseMessaging.getInstance()}
+    val functions : FirebaseFunctions by lazy {FirebaseFunctions.getInstance()}
     companion object{
         @Volatile private var instance: FirebaseService? = null
         fun getInstance() = instance ?: synchronized(this){
@@ -94,6 +96,17 @@ class FirebaseService private constructor(){
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+    suspend fun callCloudFunction(name : String, data : Map<String,*>){
+        functions.getHttpsCallable("addMessage")
+            .call(data)
+            .continueWith { task ->
+                // This continuation runs on either success or failure, but if the task
+                // has failed then result will throw an Exception which will be
+                // propagated down.
+                val result = task.result?.data as String
+                result
+            }
     }
 }
 
