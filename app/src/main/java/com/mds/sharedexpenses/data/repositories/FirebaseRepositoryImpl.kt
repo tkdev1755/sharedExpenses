@@ -79,6 +79,7 @@ class FirebaseRepositoryImpl(
         return firebaseService.getUserDirectory()
     }
 
+
     /**
      * Returns the groupsDirectory database Reference
      *

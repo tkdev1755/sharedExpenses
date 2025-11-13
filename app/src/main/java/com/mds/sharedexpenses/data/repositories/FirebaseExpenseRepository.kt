@@ -27,7 +27,7 @@ class FIRExpenseRepository(private val firebaseRepository : FirebaseRepository){
         }
     }
 
-    suspend fun addGroupExpense(group: Group, expense: Expense): DataResult<String> {
+    suspend fun addGroupExpense(group: Group, expense: Expense): DataResult<Boolean> {
         val expensesDirectory : DatabaseReference = getGroupExpensesDirectory(group.id)
 
         val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(expensesDirectory)
@@ -43,13 +43,13 @@ class FIRExpenseRepository(private val firebaseRepository : FirebaseRepository){
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newExpenseDirectory!!, expense.toJson())
 
         if(dataRes is DataResult.Success) {
-            return DataResult.Success("Success")
+            return dataRes
         }
 
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to new expense database reference.")
     }
 
-    suspend fun removeGroupExpense(group: Group, expense: Expense){
+    suspend fun removeGroupExpense(group: Group, expense: Expense) {
         val groupExpensesDirectory : DatabaseReference = getGroupExpensesDirectory(group.id)
 
         val expenseDirectory : DatabaseReference = groupExpensesDirectory.child(expense.id.toString())

@@ -27,7 +27,7 @@ class FIRTransactionRepository(private val firebaseRepository : FirebaseReposito
         }
     }
 
-    suspend fun addGroupTransaction(group: Group, transaction: Transaction): DataResult<String> {
+    suspend fun addGroupTransaction(group: Group, transaction: Transaction): DataResult<Boolean> {
         val  transactionsDirectory : DatabaseReference = getGroupTransactionsDirectory(group.id)
 
         val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(transactionsDirectory)
@@ -44,7 +44,7 @@ class FIRTransactionRepository(private val firebaseRepository : FirebaseReposito
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newTransactionDirectory!!, transaction.toJson())
 
         if(dataRes is DataResult.Success) {
-            return DataResult.Success("Success")
+            return dataRes
         }
 
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new transaction database reference.")

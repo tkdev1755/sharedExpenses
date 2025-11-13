@@ -118,11 +118,3 @@ data class Group(
         return users.size
     }*/
 }
-
-public fun User.toJson(): Map<String, Any> {
-    return mapOf(
-        "id" to id,
-        "name" to name,
-        "email" to email,
-    )
-}
