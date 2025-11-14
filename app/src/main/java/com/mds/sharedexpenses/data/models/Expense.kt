@@ -6,7 +6,7 @@ data class Expense(val id: String,
                    val amount: Double,
                    var name: String = "",
                    var description: String = "",
-                   var icon: String ="") {
+                   var icon: String = "") {
 
 
     /*fun amountPerPerson(): Double {
@@ -37,8 +37,17 @@ data class Expense(val id: String,
         return false
     }*/
 
-    fun toJson() {
-        TODO("Not yet implemented")
+    fun toJson(): Map<String, Any> {
+        val debtorIds = debtors.map { it.id }
+
+        return mapOf(
+            "payer" to payer.id,
+            "debtors" to debtorIds,
+            "amount" to amount,
+            "name" to name,
+            "description" to description,
+            "icon" to icon
+        )
     }
 
 }

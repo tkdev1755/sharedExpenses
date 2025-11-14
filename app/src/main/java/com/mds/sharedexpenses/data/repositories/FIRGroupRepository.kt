@@ -1,6 +1,7 @@
 package com.mds.sharedexpenses.data.repositories
 
 // Add the functions that will communicate with the Firebase
+import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
@@ -66,7 +67,30 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         )
     }
 
+    private suspend fun inviteUser(email: String): DataResult<Boolean> {
+        // Create the arguments to the callable function.
+        val data = hashMapOf(
+            "email" to email,
+        )
+        return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.inviteUserFunction, data)
+
+    }
+
+    public suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
+        val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id }
+        if (associatedDebt == null) {return DataResult.Error("","") }
+        val data = hashMapOf(
+            "group" to group.id,
+            "user" to user.id,
+            "expense" to expense.id,
+            "amount"  to associatedDebt.amount,
+            "name" to expense.name
+        )
+        return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.notifyUserFunction, data)
+    }
+    
     //Here begins the getters
+
 
 
     //Get the users according to the current group and return Map<userId, userName>

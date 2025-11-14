@@ -4,9 +4,16 @@ data class Debt(
     val id: String,
     val group: Group,
     val user: User,
+    val amount: Double,
     val expenses: Expense){
 
-
+    fun toJson(): Map<String, Any> {
+        return mapOf(
+            "group" to group.id,
+            "user" to user.id,
+            "expenses" to expenses.id
+        )
+    }
     /*fun addExpense (expenseId : Int): Debt {
         if (expenses.contains(expenseId)) return this
 
