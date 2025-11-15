@@ -51,9 +51,9 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         val transactionsList = mutableListOf<Transaction>()
         for(transaction in transactionsMap.entries) {
             val transactionId = transaction.key
-            val expenseRepo = FiRTransactionRepository(firebaseRepository)
-            val expense = expenseRepo.fromJsonTransaction(expensesMap, usersList, transactionId, expensesList)
-            if(expense != null) transactionsList.add(transaction)
+            val transactionRepo = FiRTransactionRepository(firebaseRepository)
+            val transaction = transactionRepo.fromJsonTransaction(expensesMap, usersList, transactionId, expensesList)
+            if(transaction != null) transactionsList.add(transaction)
         }
 
         return Group(
