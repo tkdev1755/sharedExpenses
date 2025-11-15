@@ -2,10 +2,39 @@ package com.mds.sharedexpenses.data.repositories
 
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.models.Debt
+import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.data.models.Transaction
+import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 
 class FIRDebtRepository(private val firebaseRepository : FirebaseRepository) {
+    fun toJson(debt : Debt): Map <String,Any>? {
+        return mapOf(
+            "id" to debt.id,
+            "group" to debt.group.id,
+            "user" to debt.user.id,
+            "amount" to debt.amount,
+            "expense" to debt.expenses.id
+        )
+    }
+
+    fun fromJson(data : Map<String, Any>?, usersList : List<User>, expensesList: List<Expense>, debtId : String, group : Group): Debt? {
+        if(data == null) return null
+        val debtsMap = data[debtId] as? Map<String, Map<String, Any>> ?: emptyMap()
+        val expId = debtsMap["expense_id"] as? String ?: ""
+        val linkExpense = expensesList.firstOrNull { expense -> expense.id == expId } ?: Expense(id = expId, payer = usersList.first(), amount = 0.0, debtors = mutableListOf())
+        val userId = debtsMap["user"] as? String ?: ""
+        val linkUser = usersList.firstOrNull { user -> user.id == userId } ?: User(id = userId, name = "", email = "", groups = mutableListOf())
+        return Debt(
+            id = debtId,
+            group = group,
+            user = linkUser,
+            amount = (data["amount"] as? Number)?.toDouble() ?: 0.0,
+            expenses = linkExpense
+        )
+    }
     fun getUserDebtDirectory() : DatabaseReference{
         val userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
         return userDirectory.child("debt")
