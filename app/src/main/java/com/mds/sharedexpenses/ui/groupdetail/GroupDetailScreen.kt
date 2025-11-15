@@ -7,16 +7,31 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,11 +40,69 @@ import com.mds.sharedexpenses.data.repositories.Expense
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditBottomSheet(open: Boolean, onDismiss: () -> Unit) {
+    var nameValue by remember { mutableStateOf(TextFieldValue("")) }
+    var descriptionValue by remember { mutableStateOf(TextFieldValue("")) }
+
+    if (open == false) return;
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        // this fixes the preview
+        sheetState = rememberStandardBottomSheetState(
+            initialValue = SheetValue.Expanded
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 32.dp)
+                .padding(bottom = 64.dp)
+                .fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = nameValue,
+                onValueChange = { nameValue = it },
+                label = { Text("Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = descriptionValue,
+                onValueChange = { descriptionValue = it },
+                label = { Text("Description") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+            Text("Group Members", style = TextStyle(fontWeight = FontWeight.Bold))
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                for (i in 1..3) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("${i}")
+                        Button(onClick = {}) { Text("Remove") }
+                    }
+                }
+            }
+            Button(onClick = {}) {
+                Text("Add Member")
+            }
+        }
+    }
+}
+
 @Composable
 fun GroupDetailScreen(
     navController: NavController,
     viewModel: GroupDetailViewModel = GroupDetailViewModel()
 ) {
+    var isEditOpen by remember { mutableStateOf(false) }
+
     val expenses: Map<String, List<Expense>> = mapOf(
         "January 2025" to listOf(
             Expense(45.90, "Groceries – Lidl"),
@@ -54,8 +127,15 @@ fun GroupDetailScreen(
         topBar = {
             NavigationTopBar(
                 title = "Group Name", // TODO: add real title
-                canNavigateBack = true,
-                onNavigateBack = { /* viewModel.navigateBack() */ }
+                onNavigateBack = { /* viewModel.navigateBack() */ },
+                actions = {
+                    IconButton(onClick = { isEditOpen = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = "Edit",
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -81,6 +161,8 @@ fun GroupDetailScreen(
                 }
             }
         }
+
+        EditBottomSheet(open = isEditOpen, onDismiss = { isEditOpen = false })
     }
 }
 
@@ -106,8 +188,8 @@ fun ExpenseRecord(
     expense: Expense,
     onClickDelete: () -> Unit,
     onClickEdit: () -> Unit,
-    modifier: Modifier = Modifier) {
-
+    modifier: Modifier = Modifier
+) {
     Row (
         modifier = modifier.fillMaxWidth().padding(all = 2.dp),
         horizontalArrangement = Arrangement.SpaceAround,
@@ -139,5 +221,13 @@ fun ExpenseRecord(
 fun GroupDetailScreenPreview() {
     SharedExpensesTheme {
         GroupDetailScreen(navController = NavController(context = LocalContext.current))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomSheetPreview() {
+    SharedExpensesTheme {
+        EditBottomSheet(open = true, onDismiss = {})
     }
 }

@@ -1,9 +1,7 @@
 package com.mds.sharedexpenses.ui.components
 
-import android.preference.PreferenceActivity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.rounded.PersonPin
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,8 +26,7 @@ fun sharedColorPallete() = TopAppBarDefaults.topAppBarColors(
 @Composable
 fun NavigationTopBar(
     title: String,
-    canNavigateBack: Boolean,
-    onNavigateBack: () -> Unit = {},
+    onNavigateBack: (() -> Unit)? = {},
     actions: @Composable () -> Unit = {}
 ) {
     MediumTopAppBar(
@@ -38,7 +35,7 @@ fun NavigationTopBar(
             Text(text = title)
         },
         navigationIcon = {
-            if(canNavigateBack){
+            if (onNavigateBack != null ) {
                 IconButton(onClick = { onNavigateBack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -47,17 +44,7 @@ fun NavigationTopBar(
                 }
             }
         },
-        actions = {
-            actions()
-            /* example
-            *IconButton(onClick = { /* logic */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "show profile"
-                )
-            }
-            * */
-        },
+        actions = { actions() },
     )
 }
 
@@ -87,7 +74,7 @@ fun HeaderTopBar(
 @Composable
 fun NavigationTopBarPreview() {
     SharedExpensesTheme {
-        NavigationTopBar(title = "Shared Test", canNavigateBack = true)
+        NavigationTopBar(title = "Shared Test", onNavigateBack = {})
     }
 }
 
