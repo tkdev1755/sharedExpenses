@@ -5,13 +5,13 @@ data class Debt(
     val group: Group,
     val user: User,
     val amount: Double,
-    val expenses: Expense){
+    val expense: Expense){
 
     fun toJson(): Map<String, Any> {
         return mapOf(
             "group" to group.id,
             "user" to user.id,
-            "expenses" to expenses.id
+            "expenses" to expense.id
         )
     }
     /*fun addExpense (expenseId : Int): Debt {
