@@ -6,6 +6,9 @@ import com.mds.sharedexpenses.data.models.User
 
 
 interface UserRepositoryInterface {
+    fun toJsonUser(user : User)
+    suspend fun getJoinedGroupsForUser()
+    suspend fun fromJsonUser(data: Map<String,Any>?)
     fun getUserById(id: String): User?
     fun getUserByEmail(email: String): User?
     fun createUser(user: User)

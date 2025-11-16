@@ -10,6 +10,7 @@ interface GroupRepositoryInterface {
     fun toJsonGroup(group: Group)
     fun fromJsonGroup(data: Map<String, *>?)
     fun checkOwners(data: Map<String,*>?)
+    suspend fun getGroupById(groupId: String)
     suspend fun getUsersByGroup (group_id : String)
     suspend fun getExpensesForGroup(groupId: String)
     suspend fun getTransactionsbyGroup(groupId : String)

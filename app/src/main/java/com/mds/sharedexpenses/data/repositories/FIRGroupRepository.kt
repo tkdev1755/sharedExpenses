@@ -108,7 +108,15 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     }
     
     //Here begins the getters
-
+    //Get a group base on his id and fetch this data from the firebase
+    suspend fun getGroupById(groupId: String): Group? {
+        val groupRef = firebaseRepository.getGroupDirectory(groupId)
+        val dataRes: DataResult<Map<String, Any>> = firebaseRepository.fetchDBRef(groupRef)
+        if (dataRes is DataResult.Success) {
+            return fromJsonGroup(dataRes.data)
+        }
+        return null
+    }
 
 
     //Get the users according to the current group and return Map<userId, userName>
