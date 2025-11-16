@@ -10,7 +10,7 @@ import kotlin.math.exp
 // Add the functions that will communicate with the Firebase
 class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
 
-    fun toJson(expense: Expense): Map<String, Any?> {
+    fun toJsonExpense(expense: Expense): Map<String, Any?> {
         return mapOf(
             "id" to expense.id,
             "payer" to expense.payer.id,

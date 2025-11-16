@@ -10,7 +10,7 @@ import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 
 class FIRDebtRepository(private val firebaseRepository : FirebaseRepository) {
-    fun toJson(debt : Debt): Map <String,Any>? {
+    fun toJsonDebt(debt : Debt): Map <String,Any>? {
         return mapOf(
             "id" to debt.id,
             "group" to debt.group.id,
@@ -20,7 +20,7 @@ class FIRDebtRepository(private val firebaseRepository : FirebaseRepository) {
         )
     }
 
-    fun fromJson(data : Map<String, Any>?, usersList : List<User>, expensesList: List<Expense>, debtId : String, group : Group): Debt? {
+    fun fromJsonDebt(data : Map<String, Any>?, usersList : List<User>, expensesList: List<Expense>, debtId : String, group : Group): Debt? {
         if(data == null) return null
         val debtsMap = data[debtId] as? Map<String, Map<String, Any>> ?: emptyMap()
         val expId = debtsMap["expense_id"] as? String ?: ""
@@ -34,6 +34,19 @@ class FIRDebtRepository(private val firebaseRepository : FirebaseRepository) {
             amount = (data["amount"] as? Number)?.toDouble() ?: 0.0,
             expenses = linkExpense
         )
+    }
+
+    //Here are the getters
+    fun getDebtorName(debt: Debt): String? {
+        return debt.user.name
+    }
+
+    fun getPayerofDebt(debt: Debt): User?{
+        return debt.expenses.payer
+    }
+
+    fun isDebtofUser(debt: Debt, userId: String): Boolean? {
+        return debt.user.id == userId
     }
     fun getUserDebtDirectory() : DatabaseReference{
         val userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()

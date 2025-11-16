@@ -9,6 +9,7 @@ import com.mds.sharedexpenses.data.models.User
 
 
 interface ExpenseRepositoryInterface {
+    fun toJsonExpense(expense: Expense)
     fun fromJsonExpense(data: Map<String, Any>?, usersList: List<User>, expenseId: String)
     fun createExpense(expense: Expense)
     fun updateExpense(expense: Expense)
