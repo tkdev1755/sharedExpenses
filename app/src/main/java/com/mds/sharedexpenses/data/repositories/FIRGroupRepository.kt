@@ -233,7 +233,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     }
 
     //Get the expenses for a user
-    suspend fun getExpensebyforUser(groupId: String, userId: String): List<Expense>? {
+    suspend fun getExpenseforUser(groupId: String, userId: String): List<Expense>? {
         val expenses = getExpensesForGroup(groupId)?.values ?: return emptyList()
         return expenses.filter{it.payer.id == userId || it.debtors.any{debtor -> debtor.id == userId}}
     }
@@ -242,5 +242,17 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     suspend fun getTransactionbyId(groupId : String, transactionId : String): Transaction? {
         val transactions = getTransactionsbyGroup(groupId)
         return transactions?.get(transactionId)
+    }
+
+    //Get the transactions for a user
+    suspend fun getTransactionsforUser(groupId : String, userId : String): List<Transaction>? {
+        val transactions = getTransactionsbyGroup(groupId)?.values ?: return emptyList()
+        return transactions.filter{it.issuer.id == userId || it.receiver.id == userId}
+    }
+
+    //Get all the transactions link to an expense
+    suspend fun getTransactionsForExpense(groupId: String, expenseId: String): List<Transaction> {
+        val transactions = getTransactionsbyGroup(groupId)?.values ?: return emptyList()
+        return transactions.filter { it.expense.id == expenseId }
     }
 }
