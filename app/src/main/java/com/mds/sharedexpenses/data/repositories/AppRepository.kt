@@ -1,7 +1,5 @@
 package com.mds.sharedexpenses.data.repositories
 import com.mds.sharedexpenses.data.datasource.FirebaseService
-import com.mds.sharedexpenses.data.models.User
-import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 
 // /data/repositories/AppRepository.kt
