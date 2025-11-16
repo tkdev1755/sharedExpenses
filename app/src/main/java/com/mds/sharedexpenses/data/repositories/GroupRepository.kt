@@ -7,8 +7,8 @@ import com.mds.sharedexpenses.data.models.Transaction
 
 
 interface GroupRepositoryInterface {
-    fun serializeGroup(group: Group)
-    fun deserializeGroup(data: Map<String, *>?)
+    fun toJsonGroup(group: Group)
+    fun fromJsonGroup(data: Map<String, *>?)
     fun checkOwners(data: Map<String,*>?)
     suspend fun getUsersByGroup (group_id : String)
     suspend fun getExpensesForGroup(groupId: String)

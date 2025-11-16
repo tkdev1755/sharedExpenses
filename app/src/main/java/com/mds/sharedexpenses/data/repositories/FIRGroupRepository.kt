@@ -3,6 +3,7 @@ package com.mds.sharedexpenses.data.repositories
 // Add the functions that will communicate with the Firebase
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
+import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.data.models.Group
@@ -21,11 +22,11 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         val currentUserData = usersMap[currentUID] as? Map<String, Any>
         return currentUserData?.get("owner") as? Boolean ?: false
     }
-    fun toJson(group: Group): Map<String, *> {
+    fun toJsonGroup(group: Group): Map<String, *> {
         return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
     }
 
-    fun fromJson(data: Map<String, *>?): Group? {
+    fun fromJsonGroup(data: Map<String, *>?): Group? {
         if (data == null) return null
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
@@ -40,20 +41,36 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
 
         val expensesMap = data["expenses"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val expensesList = mutableListOf<Expense>()
+        val expenseRepo = FIRExpenseRepository(firebaseRepository)
         for(expense in expensesMap.entries) {
             val expenseId = expense.key
-            val expenseRepo = FIRExpenseRepository(firebaseRepository)
             val expense = expenseRepo.fromJsonExpense(expensesMap, usersList, expenseId)
             if(expense != null) expensesList.add(expense)
         }
 
         val transactionsMap = data["transactions"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val transactionsList = mutableListOf<Transaction>()
+        val transactionRepo = FiRTransactionRepository(firebaseRepository)
         for(transaction in transactionsMap.entries) {
             val transactionId = transaction.key
-            val transactionRepo = FiRTransactionRepository(firebaseRepository)
             val transaction = transactionRepo.fromJsonTransaction(expensesMap, usersList, transactionId, expensesList)
             if(transaction != null) transactionsList.add(transaction)
+        }
+
+        val debtList = mutableListOf<Debt>()
+        val debtRepo = FIRDebtRepository(firebaseRepository)
+        for ((userId, userData) in usersMap) {
+            val userDebtsMap = userData["debts"] as? Map<String, Map<String, Any>> ?: continue
+            for ((debtId, debtData) in userDebtsMap) {
+                val debt = debtRepo.fromJsonDebt(debtData, usersList, expensesList, debtId,
+                    Group(
+                        id = data["id"] as? String ?: "",
+                        name = data["name"] as? String ?: "",
+                        description = data["description"] as? String ?: ""
+                    )
+                )
+                if (debt != null) debtList.add(debt)
+            }
         }
 
         return Group(
@@ -63,6 +80,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
             users = usersList,
             expenses = expensesList,
             transactions = transactionsList,
+            debts = debtList,
             isOwner = is_Owner
         )
     }
@@ -118,7 +136,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         else {
             return false
         }
-        val jsonGroup : Map<String,*> = toJson(group)
+        val jsonGroup : Map<String,*> = toJsonGroup(group)
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory, jsonGroup)
         if(dataRes is DataResult.Success) {
             return true
