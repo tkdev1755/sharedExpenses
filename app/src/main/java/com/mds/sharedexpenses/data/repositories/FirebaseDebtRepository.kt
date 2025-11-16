@@ -36,18 +36,33 @@ class FIRDebtRepository(private val firebaseRepository : FirebaseRepository) {
         )
     }
 
+
     //Here are the getters
+    //Get the name of the debtor
     fun getDebtorName(debt: Debt): String? {
         return debt.user.name
     }
 
+    //Get the payer that cause the debt
     fun getPayerofDebt(debt: Debt): User?{
         return debt.expenses.payer
     }
 
+    //Check is a debt is link to the current user
     fun isDebtofUser(debt: Debt, userId: String): Boolean? {
         return debt.user.id == userId
     }
+
+    //Get the name of the expense link to debt
+    fun getExpenseName(debt: Debt): String?{
+        return debt.expenses.name
+    }
+
+    //Get the description of the expense link to debt
+    fun getExpenseDescription(debt: Debt): String? {
+        return debt.expenses.description
+    }
+
     fun getUserDebtDirectory() : DatabaseReference{
         val userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
         return userDirectory.child("debt")
