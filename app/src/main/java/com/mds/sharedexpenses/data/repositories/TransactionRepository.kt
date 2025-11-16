@@ -9,7 +9,7 @@ import com.mds.sharedexpenses.data.models.User
 
 
 interface TransactionRepositoryInterface {
-    fun toJson(transaction: Transaction)
+    fun toJsonTransaction(transaction: Transaction)
     fun fromJsonTransaction(data: Map<String, Any>?, usersList: List<User>, transactionId: String, expensesList: List<Expense>)
     fun getTransactionParticipants(transaction : Transaction)
     fun getTotalAmountTransaction(group : Group)
@@ -19,7 +19,8 @@ interface TransactionRepositoryInterface {
     fun getUserBalance(group: Group, userId : String)
     fun getLastTransaction(group: Group)
     fun getTransactionsCountUser(group : Group, userId : String)
-    fun createTransaction(transaction: Transaction)
-    fun deleteTransaction(transaction: Transaction)
-    fun updateTransaction(transaction: Transaction)
+    fun getGroupTransactionsDirectory(groupID: String)
+    suspend fun getGroupTransactions(group: Group)
+    suspend fun addGroupTransaction(group: Group, transaction: Transaction)
+    suspend fun removeGroupTransaction(group: Group, transaction: Transaction)
 }

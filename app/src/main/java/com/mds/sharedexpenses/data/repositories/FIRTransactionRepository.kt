@@ -2,17 +2,17 @@ package com.mds.sharedexpenses.data.repositories
 
 
 
+import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
-import kotlin.math.abs
 
-class FiRTransactionRepository(private val firebaseRepository: FirebaseRepository) {
+class FIRTransactionRepository(private val firebaseRepository: FirebaseRepository) {
 
-    fun toJson(transaction: Transaction): Map<String, Any?> {
+    fun toJsonTransaction(transaction: Transaction): Map<String, Any?> {
         return mapOf(
             "id" to transaction.id,
             "expense_id" to transaction.expense.id,
@@ -41,7 +41,6 @@ class FiRTransactionRepository(private val firebaseRepository: FirebaseRepositor
     }
 
     //Here begins the getters
-
 
     //Get the participants fro a specific transactions
     fun getTransactionParticipants(transaction : Transaction): Pair<User,User>? {
@@ -84,5 +83,52 @@ class FiRTransactionRepository(private val firebaseRepository: FirebaseRepositor
     //Get the amount transactions mad by an user
     fun getTransactionsCountUser(group : Group, userId : String): Int?{
         return group.transactions.count{it.issuer.id == userId || it.receiver.id == userId}
+    }
+
+    //Get the path to a specific transaction in the firebase
+    fun getGroupTransactionsDirectory(groupID: String) : DatabaseReference{
+        val groupDirectory : DatabaseReference = firebaseRepository.getGroupDirectory(groupID)
+        return groupDirectory.child("transactions")
+    }
+
+    //Get a specific in a transaction for a specific group
+    suspend fun getGroupTransactions(group: Group) : Map<String,*>?{
+        val  transactionsDirectory : DatabaseReference = getGroupTransactionsDirectory(group.id)
+        val dataRes : DataResult<Map<String,*>> = firebaseRepository.fetchDBRef<Map<String,*>>(transactionsDirectory)
+
+        if(dataRes is DataResult.Success) {
+            val transactionMap : Map<String,*>? = dataRes.data
+            return transactionMap
+        }
+        else{
+            return null
+        }
+    }
+
+    suspend fun addGroupTransaction(group: Group, transaction: Transaction): DataResult<Boolean> {
+        val  transactionsDirectory : DatabaseReference = getGroupTransactionsDirectory(group.id)
+        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(transactionsDirectory)
+        var newTransactionDirectory : DatabaseReference? = null
+        if (result is DataResult.Success){
+            newTransactionDirectory = result.data
+        }
+        else{
+            return DataResult.Error("FIREBASE_ERROR", "Failed to create transaction child reference.")
+        }
+
+        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newTransactionDirectory!!, toJsonTransaction(transaction))
+
+        if(dataRes is DataResult.Success) {
+            return dataRes
+        }
+
+        return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new transaction database reference.")
+    }
+
+    suspend fun removeGroupTransaction(group: Group, transaction: Transaction) {
+        val groupExpensesDirectory : DatabaseReference = getGroupTransactionsDirectory(group.id)
+
+        val expenseDirectory : DatabaseReference = groupExpensesDirectory.child(transaction.id.toString())
+        firebaseRepository.deleteDBRef(expenseDirectory)
     }
 }

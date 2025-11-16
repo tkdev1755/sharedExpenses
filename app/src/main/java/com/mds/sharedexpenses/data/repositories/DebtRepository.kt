@@ -15,7 +15,6 @@ interface DebtRepositoryInterface {
     fun isDebtofUser(debt: Debt, userId: String)
     fun getExpenseName(debt: Debt)
     fun getExpenseDescription(debt: Debt)
-    fun createDebt(debt: Debt)
-    fun updateDebt(expense: Debt)
-    fun deleteDebt(expense: Debt)
+    fun getUserDebtDirectory()
+    suspend fun getUserDebt()
 }

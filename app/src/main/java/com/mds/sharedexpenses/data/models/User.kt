@@ -5,12 +5,5 @@ data class User(
     var name: String = "",
     var email: String = "",
     var phone: String = "",
-    val groups: MutableList<Group>) {
-
-    fun toJson(): Map<String, Any> {
-        return mapOf(
-            "name" to name,
-            "email" to email,
-        )
-    }
-}
+    val groups: MutableList<Group>
+)

@@ -1,7 +1,6 @@
 package com.mds.sharedexpenses.data.repositories
 
 // Add the functions that will communicate with the Firebase
-import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.utils.DataResult
@@ -22,6 +21,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         val currentUserData = usersMap[currentUID] as? Map<String, Any>
         return currentUserData?.get("owner") as? Boolean ?: false
     }
+
     fun toJsonGroup(group: Group): Map<String, *> {
         return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
     }
@@ -50,7 +50,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
 
         val transactionsMap = data["transactions"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val transactionsList = mutableListOf<Transaction>()
-        val transactionRepo = FiRTransactionRepository(firebaseRepository)
+        val transactionRepo = FIRTransactionRepository(firebaseRepository)
         for(transaction in transactionsMap.entries) {
             val transactionId = transaction.key
             val transaction = transactionRepo.fromJsonTransaction(expensesMap, usersList, transactionId, expensesList)
@@ -94,7 +94,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
 
     }
 
-    public suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
+    suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
         val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id }
         if (associatedDebt == null) {return DataResult.Error("","") }
         val data = hashMapOf(
@@ -131,27 +131,6 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
             return if (result.isEmpty()) null else result
             }
         else{return null}
-    }
-
-    //Create a group
-    suspend fun createGroup(group : Group) : Boolean {
-        val groupsDirectory = firebaseRepository.getGroupsDirectory()
-        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(groupsDirectory)
-        var newGroupDirectory : DatabaseReference? = null
-        if (result is DataResult.Success){
-            newGroupDirectory = result.data
-        }
-        else {
-            return false
-        }
-        val jsonGroup : Map<String,*> = toJsonGroup(group)
-        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory, jsonGroup)
-        if(dataRes is DataResult.Success) {
-            return true
-        }
-        else{
-            return false
-        }
     }
 
     //Get the expenses according to the current group and return Map<ExpId, Expense>
@@ -262,5 +241,57 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     suspend fun getTransactionsForExpense(groupId: String, expenseId: String): List<Transaction> {
         val transactions = getTransactionsbyGroup(groupId)?.values ?: return emptyList()
         return transactions.filter { it.expense.id == expenseId }
+    }
+
+    //Get the database path for a user into a group within Json object
+    fun getGroupUsersDirectory(groupID: String) : DatabaseReference{
+        val groupDirectory : DatabaseReference = firebaseRepository.getGroupDirectory(groupID)
+        return groupDirectory.child("users")
+    }
+
+    //requires to have the owner in the users mutable list
+    suspend fun createGroup(group: Group): DataResult<Boolean> {
+        val groupsDirectory: DatabaseReference = firebaseRepository.getGroupsDirectory()
+        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(groupsDirectory)
+        var newGroupDirectory : DatabaseReference? = null
+        if (result is DataResult.Success){
+            newGroupDirectory = result.data
+        }
+        else{
+            return DataResult.Error("FIREBASE_ERROR", "Failed to create group child reference.")
+        }
+        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory!!, toJsonGroup(group))
+        if(dataRes is DataResult.Success) {
+            if(group.users.size > 0) {
+                return addGroupUser(group, group.users.get(0))
+            }
+            else {
+                return DataResult.Error("FUNCTION_PARAMETER_ERROR", "Owner was not added to the users mutable list")
+            }
+        }
+        return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new group database reference.")
+    }
+
+    //Add an user to a specific group
+    suspend fun addGroupUser(group: Group, user: User): DataResult<Boolean> {
+        val groupUserDirection : DatabaseReference = getGroupUsersDirectory(group.id)
+        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(groupUserDirection)
+        var newGroupUserDirection : DatabaseReference? = null
+        if (result is DataResult.Success){
+            newGroupUserDirection = result.data
+        }
+        else{
+            return DataResult.Error("FIREBASE_ERROR", "Failed to create user child reference.")
+        }
+        val transactionRepo = FIRUserRepository(firebaseRepository)
+        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupUserDirection!!, transactionRepo.toJsonUser(user))
+        if(dataRes is DataResult.Success) {
+            return dataRes
+        }
+        return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new user database reference.")
+    }
+
+    suspend fun removeGroupUser(group: Group, user: User) {
+        //call cloud func
     }
 }

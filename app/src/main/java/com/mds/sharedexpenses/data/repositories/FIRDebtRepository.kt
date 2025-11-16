@@ -4,7 +4,6 @@ import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
-import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
