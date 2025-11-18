@@ -91,7 +91,8 @@ class FirebaseService private constructor(){
         return currentUser != null
     }
 
-    suspend fun saveNotificationToken(token: String) {
+    suspend fun saveNotificationToken() {
+        val token = messaging.token
         val uid = auth.currentUser?.uid ?: return
         try {
             db.getReference("users/$uid/fcmToken").setValue(token).await()
@@ -100,7 +101,7 @@ class FirebaseService private constructor(){
         }
     }
     fun callCloudFunction(name : String, data : Map<String,*>) : Task<String> {
-        return functions.getHttpsCallable("addMessage")
+        return functions.getHttpsCallable(name)
             .call(data)
             .continueWith { task ->
                 // This continuation runs on either success or failure, but if the task

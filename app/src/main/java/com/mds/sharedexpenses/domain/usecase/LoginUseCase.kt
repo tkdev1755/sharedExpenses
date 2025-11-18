@@ -13,14 +13,14 @@ class GetUserUseCase(private val repository: FirebaseRepository) {
 }
 
 class SaveNotificationTokenUseCase(private val repository: FirebaseRepository) {
-    suspend operator fun invoke(token: String) = repository.saveNotificationToken(token)
+    suspend operator fun invoke(token: String) = repository.saveNotificationToken()
 }
 
 class CheckLoginStatusUseCase(private val repository: FirebaseRepository){
     suspend operator fun invoke() = repository.checkLoginStatus()
 }
 class AddDebtCase(private val repository: FirebaseRepository) {
-    suspend operator fun invoke(debt: Debt) = FIRDebtRepository(repository).addUserDebt(debt);
+
 }
 class LoadDebtCase(private val repository: FirebaseRepository) {
     suspend operator fun invoke() = FIRDebtRepository(repository).getUserDebt();

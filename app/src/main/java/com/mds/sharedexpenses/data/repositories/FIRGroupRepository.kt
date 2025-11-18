@@ -5,6 +5,7 @@ import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
+
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.models.Expense
@@ -96,7 +97,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     }
 
     public suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
-        val associatedDebt = group.debts.firstOrNull { it.expense.id == expense.id }
+        val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id }
         if (associatedDebt == null) {return DataResult.Error("","") }
         val data = hashMapOf(
             "group" to group.id,
@@ -110,13 +111,16 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     
     //Here begins the getters
     //Get a group base on his id and fetch this data from the firebase
-    suspend fun getGroupById(groupId: String): Group? {
+    suspend fun getGroupById(groupId: String): DataResult<Group> {
         val groupRef = firebaseRepository.getGroupDirectory(groupId)
         val dataRes: DataResult<Map<String, Any>> = firebaseRepository.fetchDBRef(groupRef)
         if (dataRes is DataResult.Success) {
-            return fromJsonGroup(dataRes.data)
+            return DataResult.Success(fromJsonGroup(dataRes.data)!!)
         }
-        return null
+        else if (dataRes is DataResult.Error){
+            return DataResult.Error(dataRes.errorCode, dataRes.errorMessage)
+        }
+        return DataResult.Error("FIREBASE_ERROR", "Failed to fetch group data from Firebase.")
     }
 
 
@@ -134,26 +138,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         else{return null}
     }
 
-    //Create a group
-    suspend fun createGroup(group : Group) : Boolean {
-        val groupsDirectory = firebaseRepository.getGroupsDirectory()
-        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(groupsDirectory)
-        var newGroupDirectory : DatabaseReference? = null
-        if (result is DataResult.Success){
-            newGroupDirectory = result.data
-        }
-        else {
-            return false
-        }
-        val jsonGroup : Map<String,*> = toJson(group)
-        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory, jsonGroup)
-        if(dataRes is DataResult.Success) {
-            return true
-        }
-        else{
-            return false
-        }
-    }
+
 
     //Get the expenses according to the current group and return Map<ExpId, Expense>
     suspend fun getExpensesForGroup(groupId: String): Map<String, Expense>? {
@@ -278,13 +263,14 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         var newGroupDirectory : DatabaseReference? = null
         if (result is DataResult.Success){
             newGroupDirectory = result.data
+            group.id = newGroupDirectory.key!!
         }
         else{
             return DataResult.Error("FIREBASE_ERROR", "Failed to create group child reference.")
         }
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory!!, toJsonGroup(group))
         if(dataRes is DataResult.Success) {
-            if(group.users.size > 0) {
+            if(group.users.isNotEmpty()) {
                 return addGroupUser(group, group.users.get(0))
             }
             else {
@@ -296,24 +282,28 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
 
     //Add an user to a specific group
     suspend fun addGroupUser(group: Group, user: User): DataResult<Boolean> {
-        val groupUserDirection : DatabaseReference = getGroupUsersDirectory(group.id)
-        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(groupUserDirection)
-        var newGroupUserDirection : DatabaseReference? = null
-        if (result is DataResult.Success){
-            newGroupUserDirection = result.data
+        val groupDirectory : DatabaseReference = getGroupUsersDirectory(group.id)
+        val newGroupUserDirectory : DatabaseReference = groupDirectory.child("users/${user.id}")
+
+        if (group.users.size == 0){
+            return DataResult.Error("FUNCTION_PARAMETER_ERROR", "Owner was not added to the users mutable list")
         }
-        else{
-            return DataResult.Error("FIREBASE_ERROR", "Failed to create user child reference.")
-        }
-        val transactionRepo = FIRUserRepository(firebaseRepository)
-        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupUserDirection!!, transactionRepo.toJsonUser(user))
+        val userData = mapOf(
+            "owner" to true
+        )
+        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupUserDirectory, userData)
         if(dataRes is DataResult.Success) {
             return dataRes
         }
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new user database reference.")
     }
 
-    suspend fun removeGroupUser(group: Group, user: User) {
-        //call cloud func
+    // Removes a given user from a specific group
+    suspend fun removeGroupUser(group: Group, user: User) : DataResult<Boolean>  {
+        val data = mapOf(
+            "group" to group.id,
+            "user" to user.id
+        )
+        return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.removeUserFunction, data)
     }
 }
