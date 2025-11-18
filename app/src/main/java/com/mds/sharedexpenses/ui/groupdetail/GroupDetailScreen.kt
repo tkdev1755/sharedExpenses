@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
+import com.mds.sharedexpenses.ui.profile.ProfileViewModel
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -205,9 +206,12 @@ fun ExpenseRecord(
 @Preview(showBackground = true)
 @Composable
 fun GroupDetailScreenPreview() {
-    SharedExpensesTheme {
-        GroupDetailScreen(navController = NavController(context = LocalContext.current))
-    }
+//    SharedExpensesTheme {
+//        GroupDetailScreen(
+//            navController = NavController(context = LocalContext.current),
+//            viewModel = GroupDetailViewModel(androidx.lifecycle.SavedStateHandle())
+//        )
+//    }
 }
 
 @Preview(showBackground = true)

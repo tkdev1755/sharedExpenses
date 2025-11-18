@@ -23,7 +23,7 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: HomeViewModel = HomeViewModel()
+    viewModel: HomeViewModel
 ) {
     Scaffold(
         topBar = {
@@ -64,7 +64,11 @@ fun HomeScreen(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    SharedExpensesTheme {
-        HomeScreen(navController = NavController(context = androidx.compose.ui.platform.LocalContext.current))
-    }
+//    SharedExpensesTheme {
+//        val dummyViewModel = HomeViewModel()
+//        HomeScreen(
+//            navController = NavController(context = androidx.compose.ui.platform.LocalContext.current),
+//            viewModel = dummyViewModel
+//        )
+//    }
 }

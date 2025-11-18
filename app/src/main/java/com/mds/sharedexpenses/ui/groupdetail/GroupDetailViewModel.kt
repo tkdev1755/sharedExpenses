@@ -2,8 +2,8 @@ package com.mds.sharedexpenses.ui.groupdetail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.mds.sharedexpenses.data.repositories.Expense
-import com.mds.sharedexpenses.data.repositories.Group
+import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.Group
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 

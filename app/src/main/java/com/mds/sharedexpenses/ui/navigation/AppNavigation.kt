@@ -10,7 +10,9 @@ import androidx.navigation.navArgument
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailScreen
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailViewModel
 import com.mds.sharedexpenses.ui.home.HomeScreen
+import com.mds.sharedexpenses.ui.home.HomeViewModel
 import com.mds.sharedexpenses.ui.profile.ProfileScreen
+import com.mds.sharedexpenses.ui.profile.ProfileViewModel
 
 
 @Composable
@@ -21,7 +23,11 @@ fun AppNavigation(){
         startDestination = Screen.Home.route
     ) {
         composable(route = Screen.Home.route) {
-            HomeScreen(navController = navController)
+            val homeViewModel : HomeViewModel = viewModel()
+            HomeScreen(
+                navController = navController,
+            viewModel = homeViewModel
+            )
         }
         composable(
             route = Screen.GroupDetail.route,
@@ -35,7 +41,11 @@ fun AppNavigation(){
             )
         }
         composable(route = Screen.Profile.route) {
-            ProfileScreen(navController = navController)
+            val profileViewModel : ProfileViewModel = viewModel()
+            ProfileScreen(
+                navController = navController,
+                viewModel = profileViewModel
+            )
         }
 }}
 
