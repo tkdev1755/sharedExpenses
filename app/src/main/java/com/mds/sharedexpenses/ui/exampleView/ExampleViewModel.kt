@@ -1,16 +1,14 @@
-package com.mds.sharedexpenses.ui.groupdetail
+package com.mds.sharedexpenses.ui.exampleView
 
-import androidx.activity.result.launch
-import androidx.compose.ui.tooling.data.UiToolingDataApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mds.sharedexpenses.data.models.Expense
-import com.mds.sharedexpenses.data.utils.DataResult
-import com.mds.sharedexpenses.domain.di.AppContainer
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
+import com.mds.sharedexpenses.data.utils.DataResult
+import com.mds.sharedexpenses.domain.di.AppContainer
 import kotlinx.coroutines.launch
 
 class ExampleViewModel : ViewModel() {
