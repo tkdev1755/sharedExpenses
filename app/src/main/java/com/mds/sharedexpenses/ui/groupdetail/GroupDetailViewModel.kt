@@ -1,7 +1,7 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
 import androidx.lifecycle.ViewModel
-import com.mds.sharedexpenses.data.repositories.Expense
+import com.mds.sharedexpenses.data.models.Expense
 
 data class GroupDetailUiState(
     val isLoading: Boolean = true,

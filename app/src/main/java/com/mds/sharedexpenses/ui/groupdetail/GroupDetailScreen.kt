@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mds.sharedexpenses.data.repositories.Expense
+import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
@@ -104,21 +104,7 @@ fun GroupDetailScreen(
     var isEditOpen by remember { mutableStateOf(false) }
 
     val expenses: Map<String, List<Expense>> = mapOf(
-        "January 2025" to listOf(
-            Expense(45.90, "Groceries – Lidl"),
-            Expense(120.00, "Electricity Bill"),
-            Expense(15.49, "Coffee – Studenterhuset")
-        ),
-        "February" to listOf(
-            Expense(32.10, "Groceries – Rema1000"),
-            Expense(60.00, "Phone Bill"),
-            Expense(9.99, "Spotify")
-        ),
-        "March" to listOf(
-            Expense(55.70, "Groceries – Føtex"),
-            Expense(18.00, "Laundry"),
-            Expense(45.00, "Night out – Lambda")
-        )
+
     )
 
     val totalOwe = expenses.values.sumOf { list -> list.sumOf { it.amount } }
