@@ -1,20 +1,37 @@
 package com.mds.sharedexpenses.ui.home
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.mds.sharedexpenses.data.datasource.FirebaseService
-import com.mds.sharedexpenses.data.repositories.FirebaseRepositoryImpl
-import com.mds.sharedexpenses.domain.usecase.GetUserUseCase
-import com.mds.sharedexpenses.domain.usecase.LoginUseCase
-import com.mds.sharedexpenses.domain.usecase.SaveNotificationTokenUseCase
-import kotlinx.coroutines.launch
+import com.mds.sharedexpenses.data.models.Group
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+data class HomeUiState(
+    val groupWithRecentActivity: Group? = null, // TODO: if there are no groups with recent activity, dont show the corresponding block
+    val groups: List<Group> = emptyList()
+)
+
+class HomeViewModel : ViewModel() {
+    // TODO: add Group Repository
+    // private val groupRepository = GroupRepository()
+
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState = _uiState.asStateFlow()
 
 
-class HomeViewModel() : ViewModel() {
-    fun onButtonClicked(){
-        
-        fun callback (success: Boolean) = {println("This message is called when the function ends ? ${success}")}
+    init {
+        fetchGroups()
+    }
 
-        println("Button clicked!")
+    private fun fetchGroups() {
+        // TODO: fetch groups from repository
+    }
+
+    fun onGroupClicked(group: Group) {
+        // TODO: navigate to group details page
+        // (but maybe its simpler to handle that in the composable. Not the cleanest approach, but probably the quickest one to get working)
+    }
+
+    fun onAddNewGroupClicked(){
+
     }
 }
