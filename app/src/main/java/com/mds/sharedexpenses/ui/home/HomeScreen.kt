@@ -4,18 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material3.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.GroupAdd
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,16 +25,17 @@ fun HomeScreen(
 ) {
     Scaffold(
         topBar = {
-            HeaderTopBar (title = "Home", onProfileClick)},
+            HeaderTopBar(title = "Home", onProfileClick)
+        },
 
         floatingActionButton = {
             CustomActionButton(
                 imageVector = Icons.Filled.GroupAdd,
                 iconContentDescription = "Click to create a new Group",
                 text = "Create Group",
-                onClick = {viewModel.onAddNewGroupClicked()})
+                onClick = { viewModel.onAddNewGroupClicked() })
         }
-        ) { innerPadding ->
+    ) { innerPadding ->
         HomeContent(
             modifier = Modifier
                 .fillMaxSize()
