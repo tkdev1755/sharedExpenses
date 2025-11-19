@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.ui.profile
 
+import com.mds.sharedexpenses.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -10,7 +11,7 @@ data class ProfileUiState(
     val notificationsEnabled: Boolean = false
 )
 
-class ProfileViewModel {
+class ProfileViewModel : BaseViewModel() {
     // TODO: uncomment when a user Repositry exists
     // private val userRepository = UserRepository()
 
@@ -30,6 +31,8 @@ class ProfileViewModel {
 //                }
 //            }
 //        }
+        // in case of an error:
+        showErrorMessage("oh no! error! \uD83C\uDF89")
     }
     fun onNotificationsChange(isEnabled: Boolean) {
         _uiState.update { currentState ->
