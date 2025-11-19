@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
@@ -15,7 +16,7 @@ data class GroupDetailUiState(
 
 class GroupDetailViewModel(
     savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : BaseViewModel() {
     // TODO: add group repository
     // private val groupRepository = GroupRepository()
 
@@ -32,6 +33,8 @@ class GroupDetailViewModel(
 
     private fun loadGroupDetails() {
         // TODO: fetch group details from repository
+        //on error:
+        showErrorMessage("oh no error!")
     }
 
 
