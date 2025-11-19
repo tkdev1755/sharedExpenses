@@ -7,6 +7,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,10 +31,7 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: HomeViewModel = HomeViewModel(),
-    onProfileClick: () -> Unit = {},
-    onAddGroupClick: () -> Unit = {},
-    onGroupClick: (String) -> Unit = {}
+    viewModel: HomeViewModel
 ) {
     Scaffold(
         topBar = {
@@ -36,7 +42,7 @@ fun HomeScreen(
                 imageVector = Icons.Filled.GroupAdd,
                 iconContentDescription = "Click to create a new Group",
                 text = "Create Group",
-                onClick = {viewModel.onButtonClicked()})
+                onClick = {viewModel.onAddNewGroupClicked()})
         }
         ) { innerPadding ->
         HomeContent(

@@ -26,8 +26,7 @@ fun sharedColorPallete() = TopAppBarDefaults.topAppBarColors(
 @Composable
 fun NavigationTopBar(
     title: String,
-    canNavigateBack: Boolean,
-    onNavigateBack: () -> Unit = {},
+    onNavigateBack: (() -> Unit)? = {},
     actions: @Composable () -> Unit = {}
 ) {
     MediumTopAppBar(
@@ -36,8 +35,8 @@ fun NavigationTopBar(
             Text(text = title)
         },
         navigationIcon = {
-            if(canNavigateBack){
-                IconButton(onClick = { /* logic */ }) {
+            if (onNavigateBack != null ) {
+                IconButton(onClick = { onNavigateBack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "go to previous page"
@@ -45,17 +44,7 @@ fun NavigationTopBar(
                 }
             }
         },
-        actions = {
-            actions()
-            /* example
-            *IconButton(onClick = { /* logic */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "show profile"
-                )
-            }
-            * */
-        },
+        actions = { actions() },
     )
 }
 
@@ -85,7 +74,7 @@ fun HeaderTopBar(
 @Composable
 fun NavigationTopBarPreview() {
     SharedExpensesTheme {
-        NavigationTopBar(title = "Shared Test", canNavigateBack = true)
+        NavigationTopBar(title = "Shared Test", onNavigateBack = {})
     }
 }
 
