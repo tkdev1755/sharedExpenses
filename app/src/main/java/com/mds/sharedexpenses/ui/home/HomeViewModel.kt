@@ -2,6 +2,7 @@ package com.mds.sharedexpenses.ui.home
 
 import androidx.lifecycle.ViewModel
 import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -10,7 +11,7 @@ data class HomeUiState(
     val groups: List<Group> = emptyList()
 )
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel : BaseViewModel() {
     // TODO: add Group Repository
     // private val groupRepository = GroupRepository()
 
@@ -24,6 +25,8 @@ class HomeViewModel : ViewModel() {
 
     private fun fetchGroups() {
         // TODO: fetch groups from repository
+        //on error:
+        showErrorMessage("oh no error!")
     }
 
     fun onGroupClicked(group: Group) {
