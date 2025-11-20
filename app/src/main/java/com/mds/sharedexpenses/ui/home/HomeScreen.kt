@@ -21,10 +21,12 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: HomeViewModel
 ) {
     Scaffold(
+        modifier = modifier,
         topBar = {
             HeaderTopBar(title = "Home", { navController.navigate(Screen.Profile.route) })
         },

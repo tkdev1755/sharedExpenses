@@ -37,7 +37,6 @@ fun AppNavigation(){
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
     NavHost(
-        modifier = Modifier.padding(innerPadding),
         navController = navController,
         startDestination = Screen.Home.route
     ) {
