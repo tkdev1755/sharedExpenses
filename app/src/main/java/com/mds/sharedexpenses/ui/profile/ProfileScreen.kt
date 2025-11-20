@@ -54,14 +54,9 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var name by remember { mutableStateOf(TextFieldValue("")) }
-    var email by remember { mutableStateOf(TextFieldValue("")) }
-    var newPassword by remember { mutableStateOf(TextFieldValue("")) }
-    var notificationsEnabled by remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
-            NavigationTopBar(title = "Profile", canNavigateBack = true)
+            NavigationTopBar(title = "Profile", onNavigateBack = onBackClick)
         },
         
         

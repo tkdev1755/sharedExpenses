@@ -22,7 +22,6 @@ class HomeViewModel : BaseViewModel() {
     init {
         fetchGroups()
     }
-
     private fun fetchGroups() {
         // TODO: fetch groups from repository
         //on error:

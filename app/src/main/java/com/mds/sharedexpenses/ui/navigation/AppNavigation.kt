@@ -44,7 +44,7 @@ fun AppNavigation(){
             val homeViewModel : HomeViewModel = viewModel()
             HomeScreen(
                 navController = navController,
-            viewModel = homeViewModel
+                viewModel = homeViewModel
             )
         }
         composable(
@@ -62,7 +62,8 @@ fun AppNavigation(){
             val profileViewModel : ProfileViewModel = viewModel()
             ProfileScreen(
                 navController = navController,
-                viewModel = profileViewModel
+                viewModel = profileViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
 }}}
