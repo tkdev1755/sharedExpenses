@@ -1,14 +1,16 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -19,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,129 +43,52 @@ import com.mds.sharedexpenses.data.repositories.Expense
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditBottomSheet(open: Boolean, onDismiss: () -> Unit) {
+fun EditBottomSheet(viewModel: GroupDetailViewModel) {
     var nameValue by remember { mutableStateOf(TextFieldValue("")) }
     var descriptionValue by remember { mutableStateOf(TextFieldValue("")) }
 
-    if (open == false) return;
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        // this fixes the preview
-        sheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Expanded
-        )
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 32.dp)
+            .fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 32.dp)
-                .padding(bottom = 64.dp)
-                .fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = nameValue,
-                onValueChange = { nameValue = it },
-                label = { Text("Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = descriptionValue,
-                onValueChange = { descriptionValue = it },
-                label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
-            Text("Group Members", style = TextStyle(fontWeight = FontWeight.Bold))
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                for (i in 1..3) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("${i}")
-                        Button(onClick = {}) { Text("Remove") }
-                    }
-                }
-            }
-            Button(onClick = {}) {
-                Text("Add Member")
-            }
-        }
-    }
-}
-
-@Composable
-fun GroupDetailScreen(
-    navController: NavController,
-    viewModel: GroupDetailViewModel = GroupDetailViewModel()
-) {
-    var isEditOpen by remember { mutableStateOf(false) }
-
-    val expenses: Map<String, List<Expense>> = mapOf(
-        "January 2025" to listOf(
-            Expense(45.90, "Groceries – Lidl"),
-            Expense(120.00, "Electricity Bill"),
-            Expense(15.49, "Coffee – Studenterhuset")
-        ),
-        "February" to listOf(
-            Expense(32.10, "Groceries – Rema1000"),
-            Expense(60.00, "Phone Bill"),
-            Expense(9.99, "Spotify")
-        ),
-        "March" to listOf(
-            Expense(55.70, "Groceries – Føtex"),
-            Expense(18.00, "Laundry"),
-            Expense(45.00, "Night out – Lambda")
+        OutlinedTextField(
+            value = nameValue,
+            onValueChange = { nameValue = it },
+            label = { Text("Name") },
+            modifier = Modifier.fillMaxWidth()
         )
-    )
-
-    val totalOwe = expenses.values.sumOf { list -> list.sumOf { it.amount } }
-
-    Scaffold(
-        topBar = {
-            NavigationTopBar(
-                title = "Group Name", // TODO: add real title
-                onNavigateBack = { /* viewModel.navigateBack() */ },
-                actions = {
-                    IconButton(onClick = { isEditOpen = true }) {
+        OutlinedTextField(
+            value = descriptionValue,
+            onValueChange = { descriptionValue = it },
+            label = { Text("Description") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
+        Text("Group Members", style = TextStyle(fontWeight = FontWeight.Bold))
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            viewModel.members().forEach { member ->
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(member)
+                    IconButton(onClick = { viewModel.removeMember(member) }) {
                         Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Edit",
+                            imageVector = Icons.Filled.Remove,
+                            contentDescription = "Removes",
                         )
                     }
                 }
-            )
-        }
-    ) { innerPadding ->
-        Column(modifier = Modifier
-            .padding(innerPadding)
-            .padding(PaddingValues(16.dp))
-            .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            StatsBox(totalOwe, { /* show Modal*/ }, modifier = Modifier)
-
-            expenses.forEach { (month, entries) ->
-                Text(month, modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold)
-                entries.forEach { entry ->
-                    HorizontalDivider()
-                    ExpenseRecord(
-                        expense = entry,
-                        onClickDelete = { },
-                        onClickEdit = { },
-                        modifier = Modifier
-                    )
-                }
             }
         }
-
-        EditBottomSheet(open = isEditOpen, onDismiss = { isEditOpen = false })
+        Button(onClick = {}) {
+            Text("Add Member")
+        }
     }
 }
 
@@ -183,6 +109,17 @@ fun StatsBox(
     }
 }
 
+fun Int.toOrdinal(): String {
+    val suffix = when {
+        this % 100 in 11..13 -> "th" // Handles 11th, 12th, 13th
+        this % 10 == 1 -> "st"
+        this % 10 == 2 -> "nd"
+        this % 10 == 3 -> "rd"
+        else -> "th"
+    }
+    return "$this$suffix"
+}
+
 @Composable
 fun ExpenseRecord(
     expense: Expense,
@@ -191,11 +128,13 @@ fun ExpenseRecord(
     modifier: Modifier = Modifier
 ) {
     Row (
-        modifier = modifier.fillMaxWidth().padding(all = 2.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(all = 2.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("19th", modifier = modifier.weight(1.5F), textAlign = TextAlign.Center)
+        Text(text = expense.date.dayOfMonth.toOrdinal(), modifier = modifier.weight(1.5F), textAlign = TextAlign.Center)
         Row (
             modifier = modifier.weight(4.0F)
         ) {
@@ -216,18 +155,90 @@ fun ExpenseRecord(
     }
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupDetailScreenPreview() {
-    SharedExpensesTheme {
-        GroupDetailScreen(navController = NavController(context = LocalContext.current))
+fun GroupDetailScreen(
+    navController: NavController,
+    viewModel: GroupDetailViewModel = GroupDetailViewModel()
+) {
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
+
+    val expenses = viewModel.expenses()
+    val totalOwe = expenses.values.sumOf { list -> list.sumOf { it.amount } }
+
+    Scaffold(
+        topBar = {
+            NavigationTopBar(
+                title = viewModel.groupName(),
+                onNavigateBack = { navController.popBackStack() },
+                actions = {
+                    IconButton(onClick = { showBottomSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = "Edit",
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(PaddingValues(16.dp))
+        ) {
+            StatsBox(totalOwe, { /* show Modal*/ }, modifier = Modifier)
+
+            expenses.forEach { (month, entries) ->
+                Text(month, modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold)
+                entries.forEach { entry ->
+                    HorizontalDivider()
+                    ExpenseRecord(
+                        expense = entry,
+                        onClickDelete = { },
+                        onClickEdit = { },
+                        modifier = Modifier
+                    )
+                }
+            }
+        }
+
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState,
+            ) { EditBottomSheet(viewModel) }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun BottomSheetPreview() {
+fun GroupDetailPreview() {
     SharedExpensesTheme {
-        EditBottomSheet(open = true, onDismiss = {})
+        GroupDetailScreen(
+            navController = NavController(context = LocalContext.current)
+        )
+    }
+}
+
+@SuppressLint("ViewModelConstructorInComposable")
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+fun BottomSheetPreview() {
+    val sheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Expanded)
+
+    SharedExpensesTheme {
+        ModalBottomSheet(
+            onDismissRequest = {},
+            sheetState = sheetState,
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            EditBottomSheet(viewModel = GroupDetailViewModel())
+        }
     }
 }
