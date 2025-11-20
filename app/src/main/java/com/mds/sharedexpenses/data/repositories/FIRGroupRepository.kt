@@ -24,7 +24,16 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     }
 
     fun toJsonGroup(group: Group): Map<String, *> {
-        return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
+        val userMap : MutableMap<String,Any> = mutableMapOf<String,Any>()
+        for (user in group.users) {
+            userMap[user.id] = mutableMapOf<String,Any>(
+                "owner" to true
+            )
+        }
+        val groupExpenses = mutableMapOf<String,Any>()
+        val groupTransaction = mutableMapOf<String,Any>()
+        val groupDebts = mutableMapOf<String,Any>()
+        return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to userMap, "expenses" to groupExpenses, "transactions" to groupTransaction, "debts" to groupDebts)
     }
 
     fun fromJsonGroup(id: String,data: Map<String, *>): Group {
@@ -108,7 +117,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         )
         return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.notifyUserFunction, data)
     }
-    
+
     //Here begins the getters
     //Get a group base on his id and fetch this data from the firebase
     suspend fun getGroupById(groupId: String): DataResult<Group> {
@@ -270,12 +279,8 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         }
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory!!, toJsonGroup(group))
         if(dataRes is DataResult.Success) {
-            if(group.users.isNotEmpty()) {
-                return addGroupUser(group, group.users.get(0))
-            }
-            else {
-                return DataResult.Error("FUNCTION_PARAMETER_ERROR", "Owner was not added to the users mutable list")
-            }
+
+            return DataResult.Success(true)
         }
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new group database reference.")
     }
