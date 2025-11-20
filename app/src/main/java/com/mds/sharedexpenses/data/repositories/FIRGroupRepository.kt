@@ -10,6 +10,8 @@ import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Transaction
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.collections.component1
 import kotlin.collections.component2
 
@@ -269,6 +271,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     suspend fun createGroup(group: Group): DataResult<Boolean> {
         val groupsDirectory: DatabaseReference = firebaseRepository.getGroupsDirectory()
         val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(groupsDirectory)
+
         var newGroupDirectory : DatabaseReference? = null
         if (result is DataResult.Success){
             newGroupDirectory = result.data
@@ -278,8 +281,16 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
             return DataResult.Error("FIREBASE_ERROR", "Failed to create group child reference.")
         }
         val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newGroupDirectory!!, toJsonGroup(group))
-        if(dataRes is DataResult.Success) {
 
+        if(dataRes is DataResult.Success) {
+            val userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
+            val userGroupDirectory = userDirectory.child("private/groups/${group.id}")
+            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm")
+            val formatted = LocalDateTime.now().format(formatter)
+            val userData = mapOf(
+                "added_at" to formatted,
+                "joined" to true
+            )
             return DataResult.Success(true)
         }
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new group database reference.")
