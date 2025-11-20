@@ -8,4 +8,5 @@ sealed class Screen(val route: String) {
         fun createRoute(groupId: String) = "group_detail/$groupId"
     }
     object Profile : Screen("profile")
+    object AddGroup : Screen("create_group")
 }

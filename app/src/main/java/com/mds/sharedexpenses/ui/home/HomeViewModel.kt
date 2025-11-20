@@ -27,7 +27,6 @@ sealed class HomeNavigationEvent {
 class HomeViewModel : BaseViewModel() {
     // TODO: add Group Repository
     // private val groupRepository = GroupRepository()
-    private val appRepository = AppContainer.appRepository
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()

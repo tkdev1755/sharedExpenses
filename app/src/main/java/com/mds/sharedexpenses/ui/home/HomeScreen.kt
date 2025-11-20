@@ -40,7 +40,7 @@ fun HomeScreen(
                     navController.navigate(Screen.GroupDetail.createRoute((event.groupId)))
 
                 HomeNavigationEvent.ToCreateGroup -> {
-                    navController.navigate("create_group")
+                    navController.navigate(Screen.AddGroup.route)
                 }
             }
         }
