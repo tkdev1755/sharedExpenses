@@ -25,8 +25,11 @@ open class BaseViewModel : ViewModel() {
     }
 
     private fun getUserData() {
-        viewModelScope.launch {
 
+        viewModelScope.launch {
+            if (!appRepository.checkLoginStatus()){
+                appRepository.login("","")
+            }
             val userData = appRepository.users.getCurrentUserData()
             println("gettingUserData")
             if (userData is DataResult.Success) {

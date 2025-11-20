@@ -25,6 +25,7 @@ import com.mds.sharedexpenses.utils.SnackbarManager
 
 @Composable
 fun AppNavigation(){
+
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = snackbarHostState) {
