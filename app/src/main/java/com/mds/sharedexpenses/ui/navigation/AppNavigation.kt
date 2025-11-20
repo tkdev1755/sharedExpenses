@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -26,6 +27,7 @@ import com.mds.sharedexpenses.utils.SnackbarManager
 
 
 @Composable
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 fun AppNavigation(){
 
     val navController = rememberNavController()
@@ -37,7 +39,7 @@ fun AppNavigation(){
     }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { innerPadding ->
+    ) {  innerPadding ->
 
         NavHost(navController = navController, startDestination = Screen.Home.route) {
             composable(route = Screen.Home.route) {
