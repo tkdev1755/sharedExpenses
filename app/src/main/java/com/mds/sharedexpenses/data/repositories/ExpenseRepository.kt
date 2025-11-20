@@ -1,6 +1,12 @@
 package com.mds.sharedexpenses.data.repositories
 
-data class Expense(val amount: Double, val description: String) // TODO: please adopt
+import java.time.LocalDate
+
+data class Expense(
+    val amount: Double,
+    val description: String,
+    val date: LocalDate
+)
 
 interface ExpenseRepositoryInterface {
     fun createExpense(expense: Expense)
