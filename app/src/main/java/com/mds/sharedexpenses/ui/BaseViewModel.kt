@@ -24,7 +24,7 @@ open class BaseViewModel : ViewModel() {
         getUserData()
     }
 
-    private fun getUserData() {
+    protected fun getUserData() {
 
         viewModelScope.launch {
             if (!appRepository.checkLoginStatus()){

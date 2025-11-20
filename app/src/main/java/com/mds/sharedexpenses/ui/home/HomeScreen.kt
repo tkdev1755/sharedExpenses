@@ -7,11 +7,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.navigation.Screen
@@ -25,6 +30,21 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel
 ) {
+    //collects state from viewmodel
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvents.collect { event ->
+            when (event){
+                is HomeNavigationEvent.ToGroupDetails ->
+                    navController.navigate(Screen.GroupDetail.createRoute((event.groupId)))
+
+                HomeNavigationEvent.ToCreateGroup -> {
+                    navController.navigate(Screen.AddGroup.route)
+                }
+            }
+        }
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -44,8 +64,10 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(24.dp),
-            onAddGroupClick = {},
-            onGroupClick = { }
+            groupWithRecentActivity = uiState.groupWithRecentActivity,
+            groups = uiState.groups,
+            onAddGroupClick = { viewModel.onAddNewGroupClicked() },
+            onGroupClick = { group -> viewModel.onGroupClicked(group) }
         )
 
     }
@@ -54,25 +76,25 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(
     modifier: Modifier = Modifier,
+    groupWithRecentActivity: Group?,
+    groups: List<Group>,
     onAddGroupClick: () -> Unit,
-    onGroupClick: (String) -> Unit
+    onGroupClick: (Group) -> Unit
 ) {
-    val groups = listOf("Grocery Shopping", "Rome", "Spain 2026")
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(24.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        Text(
-            text = "Recent Activity",
-            style = MaterialTheme.typography.titleLarge
-        )
+        // Only show recent activity block if ViewModel provided a group
+        groupWithRecentActivity?.let { recentGroup ->
+            Text(
+                text = "Recent Activity",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-        RecentActivityCard(
-            title = "Trip to Barcelona",
-            subtitle = "Max, Søren, Mette, Emma"
-        )
+            RecentActivityCard(group = recentGroup)
+        }
 
         Text(
             text = "Groups",
@@ -81,17 +103,20 @@ private fun HomeContent(
 
         GroupsSection(
             groups = groups,
-            onGroupClick = onGroupClick,
-            onAddGroupClick = onAddGroupClick
+            onAddGroupClick = onAddGroupClick,
+            onGroupClick = onGroupClick
         )
     }
 }
 
 @Composable
 private fun RecentActivityCard(
-    title: String,
-    subtitle: String
+    group: Group
 ) {
+    val memberNames = group.users.joinToString(", ") { user ->
+        user.name.ifEmpty { "Unnamed" }
+    }
+
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -104,11 +129,11 @@ private fun RecentActivityCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = title,
+                text = group.name,
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = subtitle,
+                text = memberNames,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -117,17 +142,17 @@ private fun RecentActivityCard(
 
 @Composable
 private fun GroupsSection(
-    groups: List<String>,
-    onGroupClick: (String) -> Unit,
-    onAddGroupClick: () -> Unit
+    groups: List<Group>,
+    onAddGroupClick: () -> Unit,
+    onGroupClick: (Group) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(groups) { groupName ->
+        items(groups) { group ->
             OutlinedCard(
-                onClick = { onGroupClick(groupName) },
+                onClick = { onGroupClick(group) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Box(
@@ -137,7 +162,7 @@ private fun GroupsSection(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
-                        text = groupName,
+                        text = group.name,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -145,4 +170,3 @@ private fun GroupsSection(
         }
     }
 }
-

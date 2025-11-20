@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -14,6 +15,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mds.sharedexpenses.ui.addgroup.AddGroupScreen
+import com.mds.sharedexpenses.ui.addgroup.AddGroupViewModel
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailScreen
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailViewModel
 import com.mds.sharedexpenses.ui.home.HomeScreen
@@ -24,6 +27,7 @@ import com.mds.sharedexpenses.utils.SnackbarManager
 
 
 @Composable
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 fun AppNavigation(){
 
     val navController = rememberNavController()
@@ -35,37 +39,44 @@ fun AppNavigation(){
     }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { innerPadding ->
-    NavHost(
-        modifier = Modifier.padding(innerPadding),
-        navController = navController,
-        startDestination = Screen.Home.route
-    ) {
-        composable(route = Screen.Home.route) {
-            val homeViewModel : HomeViewModel = viewModel()
-            HomeScreen(
-                navController = navController,
-                viewModel = homeViewModel
-            )
+    ) {  innerPadding ->
+
+        NavHost(navController = navController, startDestination = Screen.Home.route) {
+            composable(route = Screen.Home.route) {
+                val homeViewModel : HomeViewModel = viewModel()
+                HomeScreen(
+                    navController = navController,
+                    viewModel = homeViewModel
+                )
+            }
+
+            composable(route = Screen.AddGroup.route) {
+                val addGroupViewModel: AddGroupViewModel = viewModel()
+                AddGroupScreen(
+                    navController = navController,
+                    viewModel = addGroupViewModel
+                )
+            }
+            composable(
+                route = Screen.GroupDetail.route,
+                arguments = listOf(navArgument("groupId") { type = NavType.StringType })
+            ) {
+                val groupDetailViewModel: GroupDetailViewModel =
+                    viewModel()
+                GroupDetailScreen(
+                    navController = navController,
+                    viewModel = groupDetailViewModel
+                )
+            }
+            composable(route = Screen.Profile.route) {
+                val profileViewModel : ProfileViewModel = viewModel()
+                ProfileScreen(
+                    navController = navController,
+                    viewModel = profileViewModel,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
         }
-        composable(
-            route = Screen.GroupDetail.route,
-            arguments = listOf(navArgument("groupId") { type = NavType.StringType })
-        ) {
-            val groupDetailViewModel: GroupDetailViewModel =
-                viewModel()
-            GroupDetailScreen(
-                navController = navController,
-                viewModel = groupDetailViewModel
-            )
-        }
-        composable(route = Screen.Profile.route) {
-            val profileViewModel : ProfileViewModel = viewModel()
-            ProfileScreen(
-                navController = navController,
-                viewModel = profileViewModel,
-                onBackClick = { navController.popBackStack() }
-            )
-        }
-}}}
+    }
+}
 
