@@ -26,9 +26,7 @@ class ProfileViewModel : BaseViewModel() {
     val uiState = _uiState.asStateFlow()
 
     private val _currentUser = MutableLiveData<User>()
-    val currentUser: LiveData<User> = _currentUser
-    val _errorData = MutableLiveData<String>()
-    val errorData : LiveData<String> = _errorData
+
 
     init {
         getUserData()
