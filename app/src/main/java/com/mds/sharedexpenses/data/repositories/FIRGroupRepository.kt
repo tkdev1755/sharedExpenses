@@ -291,6 +291,10 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
                 "added_at" to formatted,
                 "joined" to true
             )
+            val userDataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(userGroupDirectory, userData)
+            if (userDataRes is DataResult.Error){
+                return DataResult.Error("FIREBASE_ERROR", "Failed to write to a user database reference.")
+            }
             return DataResult.Success(true)
         }
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new group database reference.")
