@@ -14,7 +14,8 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
             "name" to user.name,
             "email" to user.email,
             "phone" to user.phone,
-            "groups" to user.groups
+            "groups" to user.groups,
+            "notifications" to user.notifications
         )
     }
 
@@ -45,6 +46,7 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
         val name = data["name"] as? String ?: ""
         val email = data["email"] as? String ?: ""
         val phone = data["phone"] as? String ?: ""
+        val notifications = data["notifications"] as? Boolean ?: false
         val joinedGroupIds = getJoinedGroupsForUser()
         val firGroupRepository = FIRGroupRepository(firebaseRepository)
         val groupsList = mutableListOf<Group>()
@@ -58,7 +60,8 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
             name = name,
             email = email,
             phone = phone,
-            groups = groupsList
+            groups = groupsList,
+            notifications = notifications
         )
     }
 
