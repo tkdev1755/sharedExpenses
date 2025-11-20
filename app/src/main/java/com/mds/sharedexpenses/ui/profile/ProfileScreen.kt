@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.ui.profile
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,7 +62,7 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            NavigationTopBar(title = "Profile", canNavigateBack = true)
+            NavigationTopBar(title = "Profile")
         },
         
         
@@ -137,15 +138,3 @@ fun ProfileScreen(
     }
 }
 
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ProfileScreenPreview() {
-    SharedExpensesTheme {
-        val dummyViewModel = ProfileViewModel()
-        ProfileScreen(
-            navController = NavController(context = androidx.compose.ui.platform.LocalContext.current),
-            viewModel = dummyViewModel
-        )
-    }
-}

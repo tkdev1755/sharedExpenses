@@ -25,7 +25,7 @@ fun HomeScreen(
 ) {
     Scaffold(
         topBar = {
-            HeaderTopBar(title = "Home", onProfileClick)
+            HeaderTopBar(title = "Home", )
         },
 
         floatingActionButton = {
@@ -41,8 +41,8 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(24.dp),
-            onAddGroupClick = onAddGroupClick,
-            onGroupClick = onGroupClick
+            onAddGroupClick = {},
+            onGroupClick = {}
         )
 
     }
@@ -143,10 +143,10 @@ private fun GroupsSection(
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
+/*@Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     SharedExpensesTheme {
         HomeScreen(navController = NavController(context = androidx.compose.ui.platform.LocalContext.current))
     }
-}
+}*/

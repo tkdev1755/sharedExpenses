@@ -34,6 +34,8 @@ class HomeViewModel : BaseViewModel() {
         // (but maybe its simpler to handle that in the composable. Not the cleanest approach, but probably the quickest one to get working)
     }
 
+
+
     fun onAddNewGroupClicked(){
 
     }
