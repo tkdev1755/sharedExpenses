@@ -1,36 +1,40 @@
 package com.mds.sharedexpenses.ui.home
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.mds.sharedexpenses.data.datasource.FirebaseService
-import com.mds.sharedexpenses.data.repositories.FirebaseRepositoryImpl
-import com.mds.sharedexpenses.domain.usecase.GetUserUseCase
-import com.mds.sharedexpenses.domain.usecase.LoginUseCase
-import com.mds.sharedexpenses.domain.usecase.SaveNotificationTokenUseCase
-import kotlinx.coroutines.launch
+import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.ui.BaseViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-object HomeModelFactory {
-    private val firebaseService = FirebaseService.getInstance()
-    private val repository = FirebaseRepositoryImpl(firebaseService)
+data class HomeUiState(
+    val groupWithRecentActivity: Group? = null, // TODO: if there are no groups with recent activity, dont show the corresponding block
+    val groups: List<Group> = emptyList()
+)
 
-    val loginUseCase = LoginUseCase(repository)
-    val getUserUseCase = GetUserUseCase(repository)
-    val saveTokenUseCase = SaveNotificationTokenUseCase(repository)
+class HomeViewModel : BaseViewModel() {
+    // TODO: add Group Repository
+    // private val groupRepository = GroupRepository()
 
-    fun createHomeViewModel() = HomeViewModel(loginUseCase, getUserUseCase, saveTokenUseCase)
-}
-class HomeViewModel(  private val loginUseCase: LoginUseCase,
-                      private val getUserUseCase: GetUserUseCase,
-                      private val saveTokenUseCase: SaveNotificationTokenUseCase
-) : ViewModel() {
-    fun onButtonClicked(){
-        
-        fun callback (success: Boolean) = {println("This message is called when the function ends ? ${success}")}
-        viewModelScope.launch {
-            val success = loginUseCase("khetibh@gmail.com", "ahah204")
-            callback(success)
-        }
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState = _uiState.asStateFlow()
 
-        println("Button clicked!")
+
+    init {
+        fetchGroups()
+    }
+
+    private fun fetchGroups() {
+        // TODO: fetch groups from repository
+        //on error:
+        showErrorMessage("oh no error!")
+    }
+
+    fun onGroupClicked(group: Group) {
+        // TODO: navigate to group details page
+        // (but maybe its simpler to handle that in the composable. Not the cleanest approach, but probably the quickest one to get working)
+    }
+
+    fun onAddNewGroupClicked(){
+
     }
 }

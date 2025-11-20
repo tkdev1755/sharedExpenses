@@ -18,6 +18,8 @@ class FirebaseRepositoryImpl(
         public val notifyUserFunction = "notifyUser"
         // This is the name of the function to call when wanting to invite a user to a group
         public val inviteUserFunction = "inviteUser"
+
+        public val removeUserFunction  = "removeUser"
     }
     /**
      * Logs the selected user in
@@ -54,8 +56,8 @@ class FirebaseRepositoryImpl(
      * TODO : Finish to implement this function
      * @return
      */
-    override suspend fun saveNotificationToken(token: String) {
-        firebaseService.saveNotificationToken(token)
+    override suspend fun saveNotificationToken() {
+        firebaseService.saveNotificationToken()
     }
 
     /**

@@ -4,7 +4,7 @@ import kotlin.collections.mapOf
 import kotlin.to
 
 data class Group(
-    val id: String = "",
+    var id: String = "",
     var name: String = "",
     var description: String = "",
     val users: MutableList<User> = mutableListOf<User>(),

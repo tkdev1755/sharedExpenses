@@ -2,7 +2,6 @@ package com.mds.sharedexpenses.data.repositories
 
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.models.Group
-import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
@@ -17,6 +16,14 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
             "phone" to user.phone,
             "groups" to user.groups
         )
+    }
+
+    suspend fun getCurrentUserData(): DataResult<User> {
+        val userRef = firebaseRepository.getUserDirectory()
+        val data = firebaseRepository.fetchDBRef<Map<String, *>>(userRef)
+        if (data !is DataResult.Success) return DataResult.Error("FIREBASE_ERROR", "Failed to fetch user data>()")
+        var user : User = fromJsonUser(data.data)?: return DataResult.Error("FIREBASE_ERROR", "Failed to parse user data>()")
+        return DataResult.Success(user)
     }
 
     //Get a list of the group that the current user joined
@@ -42,8 +49,9 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
         val firGroupRepository = FIRGroupRepository(firebaseRepository)
         val groupsList = mutableListOf<Group>()
         for (groupId in joinedGroupIds) {
-            val group = firGroupRepository.getGroupById(groupId)
-            if (group != null) groupsList.add(group)
+            val group : DataResult<Group> = firGroupRepository.getGroupById(groupId)
+            if (group is DataResult.Error) return null
+            if (group is DataResult.Success) groupsList.add(group.data)
         }
         return User(
             id = currentUserId,
@@ -73,7 +81,7 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to a new user database reference.")
     }
 
-    suspend fun removeUSer(group: Group) {
+    suspend fun removeUser(group: Group) {
         val userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
         firebaseRepository.deleteDBRef(userDirectory)
     }

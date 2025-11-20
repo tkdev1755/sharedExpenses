@@ -6,23 +6,22 @@ import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 
 
 /**
- * Façade qui sert de point d'entrée unique pour toutes les opérations de données de l'application.
- * Les ViewModels ne devraient dépendre que de cette classe.
+ * Entrypoint for all data-related functions in the app
+ * Viewmodels should be only depending on this Repository
  */
 class AppRepository(private val firebaseService: FirebaseService) {
 
-    // Initialisation de l'implémentation de base de Firebase
+
     private val firebaseRepository: FirebaseRepository = FirebaseRepositoryImpl(firebaseService)
 
-    // Initialisation des repositories spécifiques en leur passant la dépendance nécessaire
+
     val groups: FIRGroupRepository = FIRGroupRepository(firebaseRepository)
     val expenses: FIRExpenseRepository = FIRExpenseRepository(firebaseRepository)
     val transactions: FIRTransactionRepository = FIRTransactionRepository(firebaseRepository)
     val users: FIRUserRepository = FIRUserRepository(firebaseRepository)
-    // val debts: FIRDebtRepository = FIRDebtRepository(firebaseRepository) // Si vous en avez un
 
-    // --- Fonctions de base (authentification, etc.) ---
-    // Vous pouvez exposer directement les fonctions du firebaseRepository de base si nécessaire
+
+    // --- Base functions (authentification, etc.) ---
 
     suspend fun login(email: String, password: String) = firebaseRepository.login(email, password)
 
