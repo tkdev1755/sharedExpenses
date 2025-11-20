@@ -19,12 +19,8 @@ data class ProfileUiState(
 )
 
 class ProfileViewModel : BaseViewModel() {
-    // TODO: uncomment when a user Repositry exists
-    // private val userRepository = UserRepository()
-
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
-
 
     fun onNotificationsChange(isEnabled: Boolean) {
         _uiState.update { currentState ->
@@ -32,19 +28,17 @@ class ProfileViewModel : BaseViewModel() {
         }
     }
 
-    fun updateDetailsButtonClicked() {
+    suspend fun updateDetailsButtonClicked() {
         val currentState = _uiState.value
         println("Updating details: Name=${currentState.name}, Email=${currentState.email}, Notifications=${currentState.notificationsEnabled}")
 
-        // TODO: save data in firebase!
-        // val currentState = _uiState.value
-        // userRepository.updateUserProfile(currentState)
+        appRepository.users.addUser(
+            User(name = currentState.name, email = currentState.email)
+        )
     }
 
     fun onNameChange(newName: String) {
-        currentUser.value?.name = newName
-        //_uiState.update { it.copy(name = newName) }
-
+        _uiState.update { it.copy(name = newName) }
     }
 
     fun onEmailChange(newEmail: String) {
