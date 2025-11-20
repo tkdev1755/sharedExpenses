@@ -25,27 +25,7 @@ class ProfileViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val _currentUser = MutableLiveData<User>()
 
-
-    init {
-        getUserData()
-    }
-
-    fun getUserData() {
-        viewModelScope.launch {
-
-            val userData = appRepository.users.getCurrentUserData()
-            if (userData is DataResult.Success) {
-                _currentUser.postValue(userData.data)
-            }
-            else{
-                _errorData.postValue("Error getting user data")
-                showErrorMessage("Error getting user data")
-            }
-
-        }
-    }
     fun onNotificationsChange(isEnabled: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(notificationsEnabled = isEnabled)
@@ -55,13 +35,16 @@ class ProfileViewModel : BaseViewModel() {
     fun updateDetailsButtonClicked() {
         val currentState = _uiState.value
         println("Updating details: Name=${currentState.name}, Email=${currentState.email}, Notifications=${currentState.notificationsEnabled}")
+
         // TODO: save data in firebase!
         // val currentState = _uiState.value
         // userRepository.updateUserProfile(currentState)
     }
 
     fun onNameChange(newName: String) {
-        _uiState.update { it.copy(name = newName) }
+        currentUser.value?.name = newName
+        //_uiState.update { it.copy(name = newName) }
+
     }
 
     fun onEmailChange(newEmail: String) {
