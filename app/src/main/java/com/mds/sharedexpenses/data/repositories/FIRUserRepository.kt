@@ -20,6 +20,7 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
 
     suspend fun getCurrentUserData(): DataResult<User> {
         val userRef = firebaseRepository.getUserDirectory()
+        println("userRef: $userRef")
         val data = firebaseRepository.fetchDBRef<Map<String, *>>(userRef)
         if (data !is DataResult.Success) return DataResult.Error("FIREBASE_ERROR", "Failed to fetch user data>()")
         var user : User = fromJsonUser(data.data)?: return DataResult.Error("FIREBASE_ERROR", "Failed to parse user data>()")

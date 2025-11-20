@@ -27,8 +27,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
     }
 
-    fun fromJsonGroup(data: Map<String, *>?): Group? {
-        if (data == null) return null
+    fun fromJsonGroup(data: Map<String, *>): Group? {
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val usersList = usersMap.map { (userId, userData) ->
