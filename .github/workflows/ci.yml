@@ -1,0 +1,66 @@
+name: Android CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test (Android)
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_APP_MODULE: app
+      JAVA_VERSION: '18'
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs='-Xmx3g -Xms128m'"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Create google-services.json
+        run: |
+          mkdir -p ${{ env.ANDROID_APP_MODULE }}
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > ${{ env.ANDROID_APP_MODULE }}/google-services.json
+
+      - name: Run Android Lint
+        run: |
+          ./gradlew :${{ env.ANDROID_APP_MODULE }}:lintDebug --no-daemon --stacktrace
+
+      - name: Run Unit Tests
+        run: |
+          ./gradlew :${{ env.ANDROID_APP_MODULE }}:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Assemble Debug APK
+        run: |
+          ./gradlew :${{ env.ANDROID_APP_MODULE }}:assembleDebug --no-daemon --stacktrace
+
+#      - name: Upload Debug APK
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: debug-apk
+#          path: ${{ env.ANDROID_APP_MODULE }}/build/outputs/apk/debug/*.apk
+#          if-no-files-found: warn
