@@ -11,35 +11,32 @@ class AddGroupViewModel : BaseViewModel() {
     fun createGroup(name: String, description: String) {
         viewModelScope.launch {
             // get current user
-            val userResult = appRepository.users.getCurrentUserData()
+            if (!currentUser.isInitialized){
+                println("User data isn't initialized, getting it now")
+                getUserData()
+            }
+            if (currentUser.value == null){
+                showErrorMessage("Error getting user data")
+                return@launch
+            }
 
-            if (userResult is DataResult.Success) {
+            val owner = currentUser.value!!
 
-                val owner = userResult.data
+            val group = Group(
+                name = name,
+                description = description,
+                users = mutableListOf(owner)
+            )
 
+            val result = appRepository.groups.createGroup(group)
 
-                val group = Group(
-                    name = name,
-                    description = description,
-                    users = mutableListOf(owner)
-                )
-
-                val result = appRepository.groups.createGroup(group)
-
-                if (result is DataResult.Error) {
-                    val message = result.errorMessage
-                        .orEmpty()
-                        .ifEmpty { "Error creating group." }
-                    showErrorMessage(message)
-                }
-
-                } else if (userResult is DataResult.Error) {
-
-                val message = userResult.errorMessage
+            if (result is DataResult.Error) {
+                val message = result.errorMessage
                     .orEmpty()
-                    .ifEmpty { "Error getting user data" }
+                    .ifEmpty { "Error while creating a group." }
                 showErrorMessage(message)
             }
+
         }
     }
 }

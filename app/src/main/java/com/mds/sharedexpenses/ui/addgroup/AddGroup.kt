@@ -44,7 +44,8 @@ fun AddGroupScreen(
     ModalBottomSheet(
         onDismissRequest = { open = false },
         sheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Expanded
+            initialValue = SheetValue.Expanded,
+            skipHiddenState = false
         )
     ) {
         Column(
