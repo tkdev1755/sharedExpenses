@@ -27,7 +27,7 @@ open class BaseViewModel : ViewModel() {
     private fun getUserData() {
         viewModelScope.launch {
 
-            /*val userData = appRepository.users.getCurrentUserData()
+            val userData = appRepository.users.getCurrentUserData()
             println("gettingUserData")
             if (userData is DataResult.Success) {
                 _currentUser.postValue(userData.data)
@@ -35,7 +35,7 @@ open class BaseViewModel : ViewModel() {
             else if (userData is DataResult.Error){
                 _errorData.postValue("Error getting user data")
                 showErrorMessage("${userData.errorMessage}")
-            }*/
+            }
 
         }
     }

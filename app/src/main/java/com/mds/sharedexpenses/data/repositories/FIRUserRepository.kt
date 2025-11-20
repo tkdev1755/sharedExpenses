@@ -10,11 +10,9 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
 
     fun toJsonUser(user : User): Map<String,*> {
         return mapOf(
-            "id" to user.id,
             "name" to user.name,
             "email" to user.email,
             "phone" to user.phone,
-            "groups" to user.groups,
             "notifications" to user.notifications
         )
     }
@@ -69,15 +67,8 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
 
     suspend fun addUser(user: User): DataResult<Boolean> {
         val  userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
-        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(userDirectory)
-        var newUserDirectory : DatabaseReference? = null
-        if (result is DataResult.Success){
-            newUserDirectory = result.data
-        }
-        else{
-            return DataResult.Error("FIREBASE_ERROR", "Failed to create user child reference.")
-        }
-        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newUserDirectory!!, toJsonUser(user))
+
+        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(userDirectory, toJsonUser(user))
 
         if(dataRes is DataResult.Success) {
             return dataRes

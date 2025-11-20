@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
+import com.mds.sharedexpenses.ui.navigation.Screen
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
 
@@ -25,7 +26,7 @@ fun HomeScreen(
 ) {
     Scaffold(
         topBar = {
-            HeaderTopBar(title = "Home", {})
+            HeaderTopBar(title = "Home", { navController.navigate(Screen.Profile.route) })
         },
 
         floatingActionButton = {
