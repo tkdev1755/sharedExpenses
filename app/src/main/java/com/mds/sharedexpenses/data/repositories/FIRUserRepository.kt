@@ -61,7 +61,7 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
             email = email,
             phone = phone,
             groups = groupsList,
-            notifications = notifications
+            notifications = notifications //Added notifications
         )
     }
 
