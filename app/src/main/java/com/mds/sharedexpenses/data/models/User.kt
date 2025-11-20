@@ -5,5 +5,6 @@ data class User(
     var name: String = "",
     var email: String = "",
     var phone: String = "",
-    val groups: MutableList<Group>
+    val groups: MutableList<Group> = mutableListOf(),
+    val notifications: Boolean? = false
 )

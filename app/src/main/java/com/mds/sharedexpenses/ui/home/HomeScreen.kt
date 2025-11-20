@@ -1,6 +1,5 @@
 package com.mds.sharedexpenses.ui.home
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +26,7 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: HomeViewModel
 ) {
@@ -46,19 +46,17 @@ fun HomeScreen(
         }
     }
     Scaffold(
+        modifier = modifier,
         topBar = {
-            HeaderTopBar(
-                title = "Home",
-                onProfileClick = { navController.navigate(Screen.Profile.route) }
-            )
+            HeaderTopBar(title = "Home", { navController.navigate(Screen.Profile.route) })
         },
+
         floatingActionButton = {
             CustomActionButton(
                 imageVector = Icons.Filled.GroupAdd,
                 iconContentDescription = "Click to create a new Group",
                 text = "Create Group",
-                onClick = { viewModel.onAddNewGroupClicked() }
-            )
+                onClick = { viewModel.onAddNewGroupClicked() })
         }
     ) { innerPadding ->
         HomeContent(
@@ -71,6 +69,7 @@ fun HomeScreen(
             onAddGroupClick = { viewModel.onAddNewGroupClicked() },
             onGroupClick = { group -> viewModel.onGroupClicked(group) }
         )
+
     }
 }
 

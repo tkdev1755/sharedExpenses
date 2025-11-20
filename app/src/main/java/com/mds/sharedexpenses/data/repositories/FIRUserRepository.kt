@@ -10,16 +10,16 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
 
     fun toJsonUser(user : User): Map<String,*> {
         return mapOf(
-            "id" to user.id,
             "name" to user.name,
             "email" to user.email,
             "phone" to user.phone,
-            "groups" to user.groups
+            "notifications" to user.notifications
         )
     }
 
     suspend fun getCurrentUserData(): DataResult<User> {
         val userRef = firebaseRepository.getUserDirectory()
+        println("userRef: $userRef")
         val data = firebaseRepository.fetchDBRef<Map<String, *>>(userRef)
         if (data !is DataResult.Success) return DataResult.Error("FIREBASE_ERROR", "Failed to fetch user data>()")
         var user : User = fromJsonUser(data.data)?: return DataResult.Error("FIREBASE_ERROR", "Failed to parse user data>()")
@@ -45,6 +45,7 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
         val name = data["name"] as? String ?: ""
         val email = data["email"] as? String ?: ""
         val phone = data["phone"] as? String ?: ""
+        val notifications = data["notifications"] as? Boolean ?: false
         val joinedGroupIds = getJoinedGroupsForUser()
         val firGroupRepository = FIRGroupRepository(firebaseRepository)
         val groupsList = mutableListOf<Group>()
@@ -58,22 +59,16 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
             name = name,
             email = email,
             phone = phone,
-            groups = groupsList
+            groups = groupsList,
+            notifications = notifications //Added notifications
         )
     }
 
 
     suspend fun addUser(user: User): DataResult<Boolean> {
         val  userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
-        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(userDirectory)
-        var newUserDirectory : DatabaseReference? = null
-        if (result is DataResult.Success){
-            newUserDirectory = result.data
-        }
-        else{
-            return DataResult.Error("FIREBASE_ERROR", "Failed to create user child reference.")
-        }
-        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(newUserDirectory!!, toJsonUser(user))
+
+        val dataRes : DataResult<Boolean> = firebaseRepository.writeToDBRef<Map<String,*>>(userDirectory, toJsonUser(user))
 
         if(dataRes is DataResult.Success) {
             return dataRes

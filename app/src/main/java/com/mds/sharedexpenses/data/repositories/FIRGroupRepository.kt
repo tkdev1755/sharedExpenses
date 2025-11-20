@@ -27,8 +27,8 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to group.users, "expenses" to group.expenses, "transactions" to group.transactions, "debts" to group.debts)
     }
 
-    fun fromJsonGroup(data: Map<String, *>?): Group? {
-        if (data == null) return null
+    fun fromJsonGroup(id: String,data: Map<String, *>): Group {
+        println("Received data :${data}")
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val usersList = usersMap.map { (userId, userData) ->
@@ -75,7 +75,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         }
 
         return Group(
-            id = data["id"] as? String ?: return null,
+            id = id,
             name = data["name"] as? String ?: "",
             description = data["description"] as? String ?: "",
             users = usersList,
@@ -115,7 +115,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         val groupRef = firebaseRepository.getGroupDirectory(groupId)
         val dataRes: DataResult<Map<String, Any>> = firebaseRepository.fetchDBRef(groupRef)
         if (dataRes is DataResult.Success) {
-            return DataResult.Success(fromJsonGroup(dataRes.data)!!)
+            return DataResult.Success(fromJsonGroup(groupId,dataRes.data))
         }
         else if (dataRes is DataResult.Error){
             return DataResult.Error(dataRes.errorCode, dataRes.errorMessage)

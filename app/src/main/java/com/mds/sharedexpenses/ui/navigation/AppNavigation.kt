@@ -25,6 +25,7 @@ import com.mds.sharedexpenses.utils.SnackbarManager
 
 @Composable
 fun AppNavigation(){
+
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = snackbarHostState) {
@@ -36,7 +37,6 @@ fun AppNavigation(){
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
     NavHost(
-        modifier = Modifier.padding(innerPadding),
         navController = navController,
         startDestination = Screen.Home.route
     ) {
@@ -44,7 +44,7 @@ fun AppNavigation(){
             val homeViewModel : HomeViewModel = viewModel()
             HomeScreen(
                 navController = navController,
-            viewModel = homeViewModel
+                viewModel = homeViewModel
             )
         }
         composable(
@@ -62,7 +62,8 @@ fun AppNavigation(){
             val profileViewModel : ProfileViewModel = viewModel()
             ProfileScreen(
                 navController = navController,
-                viewModel = profileViewModel
+                viewModel = profileViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
 }}}

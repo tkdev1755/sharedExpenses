@@ -1,9 +1,16 @@
 package com.mds.sharedexpenses.ui.profile
 
+import androidx.activity.result.launch
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import com.mds.sharedexpenses.data.models.User
+import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.ui.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class ProfileUiState(
     val name: String = "",
@@ -12,40 +19,22 @@ data class ProfileUiState(
 )
 
 class ProfileViewModel : BaseViewModel() {
-    // TODO: uncomment when a user Repositry exists
-    // private val userRepository = UserRepository()
-
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
 
-    init {
-        fetchUserProfile()
-    }
-
-    private fun fetchUserProfile(){
-        // TODO: see userRepository, uncomment later
-//        viewModelScope.launch {
-//            userRepository.getUserProfile().collect { profile ->
-//                if (profile !== null) {
-//                    _uiState.update {userProfile}
-//                }
-//            }
-//        }
-        // in case of an error:
-        showErrorMessage("oh no! error! \uD83C\uDF89")
-    }
     fun onNotificationsChange(isEnabled: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(notificationsEnabled = isEnabled)
         }
     }
 
-    fun updateDetailsButtonClicked() {
+    suspend fun updateDetailsButtonClicked() {
         val currentState = _uiState.value
         println("Updating details: Name=${currentState.name}, Email=${currentState.email}, Notifications=${currentState.notificationsEnabled}")
-        // TODO: save data in firebase!
-        // val currentState = _uiState.value
-        // userRepository.updateUserProfile(currentState)
+
+        appRepository.users.addUser(
+            User(name = currentState.name, email = currentState.email)
+        )
     }
 
     fun onNameChange(newName: String) {
