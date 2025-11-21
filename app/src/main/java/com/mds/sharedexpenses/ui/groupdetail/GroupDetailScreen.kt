@@ -162,6 +162,7 @@ fun ExpenseRecord(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDetailScreen(
+    modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: GroupDetailViewModel,
 ) {
@@ -175,6 +176,7 @@ fun GroupDetailScreen(
     val nothingOwed = totalOwe == 0.0
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             NavigationTopBar(
                 title = viewModel.groupName(),

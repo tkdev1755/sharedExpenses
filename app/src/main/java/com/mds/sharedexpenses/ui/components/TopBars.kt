@@ -2,6 +2,7 @@ package com.mds.sharedexpenses.ui.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.PersonPin
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,7 +63,7 @@ fun HeaderTopBar(
         actions = {
             IconButton(onClick = { onProfileClick() }) {
                 Icon(
-                    imageVector = Icons.Rounded.PersonPin,
+                    imageVector = Icons.Rounded.AccountCircle,
                     contentDescription = "show profile"
                 )
             }

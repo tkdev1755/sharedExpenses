@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: ProfileViewModel,
     onBackClick: () -> Unit = {}
@@ -44,6 +45,7 @@ fun ProfileScreen(
     val scope = rememberCoroutineScope()
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             NavigationTopBar(title = "Profile", onNavigateBack = onBackClick)
         },
