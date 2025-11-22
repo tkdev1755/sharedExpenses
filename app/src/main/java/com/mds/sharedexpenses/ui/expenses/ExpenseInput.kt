@@ -5,23 +5,70 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
+import androidx.navigation.NavController
 
+@Composable
+fun ExpenseInputScreen(
+    navController: NavController,
+    groupId: String,
+    viewModel: ExpenseInputViewModel,
+    modifier: Modifier = Modifier
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    var payerSheetOpen by remember { mutableStateOf(false) }
+
+    LaunchedEffect(groupId) {
+        viewModel.init(groupId)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvents.collect { event ->
+            when (event) {
+                ExpenseInputNavigationEvent.Done -> navController.popBackStack()
+            }
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        ExpenseInputBottomSheet(
+            open = true,
+            onDismiss = { navController.popBackStack() },
+            onSave = { viewModel.onSaveClicked() },
+            onOpenPayerSelection = { payerSheetOpen = true },
+            description = uiState.description,
+            onDescriptionChange = viewModel::onDescriptionChange,
+            amount = uiState.amount,
+            onAmountChange = viewModel::onAmountChange,
+            date = uiState.date,
+            onDateChange = viewModel::onDateChange
+        )
+
+        PayerSelectionBottomSheet(
+            open = payerSheetOpen,
+            onDismiss = { payerSheetOpen = false },
+            onSave = { selected ->
+                viewModel.onPayersSelected(selected)
+                payerSheetOpen = false
+            },
+            allPayers = uiState.allPayers,
+            selectedPayers = uiState.selectedPayers,
+            onTogglePayer = viewModel::onTogglePayer
+        )
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseInputBottomSheet(
     open: Boolean,
     onDismiss: () -> Unit,
-    onSave: (description: String, amount: String, date: String, selectedPayers: List<String>) -> Unit,
+    onSave: () -> Unit,
     onOpenPayerSelection: () -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
@@ -31,6 +78,9 @@ fun ExpenseInputBottomSheet(
     onDateChange: (String) -> Unit
 ) {
     if (!open) return
+
+    var datePickerOpen by remember { mutableStateOf(false) }
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
@@ -40,9 +90,6 @@ fun ExpenseInputBottomSheet(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
-
-        var datePickerOpen by remember { mutableStateOf(false) }
-
             Text("Add expense", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
 
@@ -50,11 +97,6 @@ fun ExpenseInputBottomSheet(
                 value = description,
                 onValueChange = onDescriptionChange,
                 label = { Text("Description") },
-                trailingIcon = {
-                    IconButton(onClick = { /* action later */ }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add attachment")
-                    }
-                },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(12.dp))
@@ -94,12 +136,10 @@ fun ExpenseInputBottomSheet(
                 )
             }
 
-
             Spacer(Modifier.height(16.dp))
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 TextButton(onClick = onOpenPayerSelection) {
@@ -109,61 +149,53 @@ fun ExpenseInputBottomSheet(
 
             Spacer(Modifier.height(20.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Button(
+                onClick = onSave,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
-                    Text("dismiss")
-                }
-                Spacer(Modifier.width(12.dp))
-                Button(
-                    onClick = { onSave(description, amount, date, emptyList()) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("save")
-                }
+                Text("Save expense")
             }
-            Spacer(Modifier.height(12.dp))
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PayerSelectionBottomSheet(
     open: Boolean,
     onDismiss: () -> Unit,
-    onSave: (selected: List<String>) -> Unit,
+    onSave: (List<String>) -> Unit,
     allPayers: List<String>,
     selectedPayers: Set<String>,
     onTogglePayer: (String) -> Unit
 ) {
     if (!open) return
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .imePadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.Start
+                .verticalScroll(rememberScrollState())
         ) {
-            Text("Select payers", style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(12.dp))
+            Text("Select participants", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(16.dp))
 
             allPayers.forEach { name ->
                 val checked = name in selectedPayers
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(40.dp)
                         .toggleable(
                             value = checked,
                             role = Role.Checkbox,
                             onValueChange = { onTogglePayer(name) }
                         )
-                        .padding(vertical = 8.dp),
+                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(checked = checked, onCheckedChange = null)
@@ -172,36 +204,20 @@ fun PayerSelectionBottomSheet(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
 
-            Row(
+            Button(
+                onClick = { onSave(selectedPayers.toList()) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .height(48.dp)
             ) {
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(35.dp)
-                ) {
-                    Text("dismiss")
-                }
-                Spacer(Modifier.width(12.dp))
-                Button(
-                    onClick = { onSave(selectedPayers.toList()) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("save")
-                }
+                Text("Save selection")
             }
-            Spacer(Modifier.height(12.dp))
         }
     }
 }
 
-//DATE PICKER -----------------------------------------------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerModal(
@@ -229,60 +245,3 @@ fun DatePickerModal(
         DatePicker(state = datePickerState)
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun DatePickerModalPreview() {
-    SharedExpensesTheme {
-        DatePickerModal(
-            onDateSelected = {},
-            onDismiss = {}
-        )
-    }
-}
-
-// -------------------------------------------------------------------
-// PREVIEW BOTTOM SHEETS
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-private fun ExpenseFlowPreview() {
-    SharedExpensesTheme {
-        var openExpense by remember { mutableStateOf(true) }
-        var openPayers by remember { mutableStateOf(false) }
-
-        var description by remember { mutableStateOf("") }
-        var amount by remember { mutableStateOf("") }
-        var date by remember { mutableStateOf("") }
-
-        val all = listOf("Max", "Emma", "Lars", "Joe")
-        var selected by remember { mutableStateOf(setOf("Max", "Emma", "Joe")) }
-
-        Box(Modifier.fillMaxSize()) {
-            ExpenseInputBottomSheet(
-                open = openExpense,
-                onDismiss = { openExpense = false },
-                onSave = { _, _, _, _ -> openExpense = false },
-                onOpenPayerSelection = { openPayers = true },
-                description = description,
-                onDescriptionChange = { description = it },
-                amount = amount,
-                onAmountChange = { amount = it },
-                date = date,
-                onDateChange = { date = it }
-            )
-
-            PayerSelectionBottomSheet(
-                open = openPayers,
-                onDismiss = { openPayers = false },
-                onSave = { sel -> selected = sel.toSet().also { openPayers = false } },
-                allPayers = all,
-                selectedPayers = selected,
-                onTogglePayer = { name ->
-                    selected = if (name in selected) selected - name else selected + name
-                }
-            )
-        }
-    }
-}
-
