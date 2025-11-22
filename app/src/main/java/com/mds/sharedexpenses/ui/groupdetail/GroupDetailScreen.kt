@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,10 +40,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
+import java.time.LocalDate
 
 @Composable
 fun EditBottomSheet(viewModel: GroupDetailViewModel) {
@@ -51,30 +57,30 @@ fun EditBottomSheet(viewModel: GroupDetailViewModel) {
     Column(
         modifier = Modifier
             .padding(horizontal = 32.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         OutlinedTextField(
             value = nameValue,
             onValueChange = { nameValue = it },
             label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = descriptionValue,
             onValueChange = { descriptionValue = it },
             label = { Text("Description") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
         Text("Group Members", style = TextStyle(fontWeight = FontWeight.Bold))
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             viewModel.members().forEach { member ->
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(member.name)
                     IconButton(onClick = { viewModel.removeMember(member) }) {
@@ -100,7 +106,7 @@ fun StatsBox(
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("You owe €$amount")
         Button(onClick = { onButtonClick }) {
@@ -125,25 +131,25 @@ fun ExpenseRecord(
     expense: Expense,
     onClickDelete: () -> Unit,
     onClickEdit: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(all = 2.dp),
         horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = expense.date.dayOfMonth.toOrdinal(),
             modifier = modifier.weight(1.5F),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Row(
-            modifier = modifier.weight(4.0F)
+            modifier = modifier.weight(4.0F),
         ) {
             Column(
-                modifier = modifier.fillMaxWidth()
+                modifier = modifier.fillMaxWidth(),
             ) {
                 Text(expense.description)
                 Text("Max paid €11,21", color = Color.Gray)
@@ -151,7 +157,7 @@ fun ExpenseRecord(
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier.weight(2.0F)
+            modifier = modifier.weight(2.0F),
         ) {
             Text("You owe", color = Color.Gray)
             Text("€${expense.amount}")
@@ -168,18 +174,21 @@ fun GroupDetailScreen(
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
+        skipPartiallyExpanded = false,
     )
 
-    val expenses = viewModel.expenses()
-    val totalOwe = expenses.values.sumOf { list -> list.sumOf { it.amount } }
+    val uiState by viewModel.uiState.collectAsState()
+    val groupName = uiState.group?.name.orEmpty()
+    val expenses = uiState.expensesByMonth
+    val totalOwe = uiState.totalOwed
     val nothingOwed = totalOwe == 0.0
+    val isLoading = uiState.isLoading
 
     Scaffold(
         modifier = modifier,
         topBar = {
             NavigationTopBar(
-                title = viewModel.groupName(),
+                title = groupName.ifEmpty { "Group" },
                 onNavigateBack = { navController.popBackStack() },
                 actions = {
                     IconButton(onClick = { showBottomSheet = true }) {
@@ -188,19 +197,27 @@ fun GroupDetailScreen(
                             contentDescription = "Edit",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(PaddingValues(16.dp))
+                .padding(PaddingValues(16.dp)),
         ) {
-            if (nothingOwed) {
+            if (isLoading) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CircularProgressIndicator()
+                    Text("Loading group details...")
+                }
+            } else if (nothingOwed) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text("Amazing, you don't owe anything!")
                 }
@@ -215,7 +232,7 @@ fun GroupDetailScreen(
                             expense = entry,
                             onClickDelete = { },
                             onClickEdit = { },
-                            modifier = Modifier
+                            modifier = Modifier,
                         )
                     }
                 }
@@ -235,7 +252,36 @@ fun GroupDetailScreen(
 @Preview(showBackground = true)
 @Composable
 fun GroupDetailPreview() {
-    val viewModel = GroupDetailViewModel()
+    val viewModel = remember {
+        GroupDetailViewModel(SavedStateHandle()).apply {
+            val sampleUser = User(id = "user-1", name = "Alex")
+            val sampleExpense = Expense(
+                id = "expense-1",
+                payer = sampleUser,
+                debtors = mutableListOf(sampleUser),
+                amount = 42.5,
+                name = "Groceries",
+                description = "Weekly groceries",
+                date = LocalDate.of(2025, 4, 5),
+            )
+            val sampleGroup = Group(
+                id = "group-1",
+                name = "Roommates",
+                description = "Shared apartment expenses",
+                users = mutableListOf(sampleUser),
+                expenses = mutableListOf(sampleExpense),
+            )
+            setPreviewState(
+                GroupDetailUiState(
+                    group = sampleGroup,
+                    expensesByMonth = mapOf("April 2025" to listOf(sampleExpense)),
+                    totalOwed = sampleExpense.amount,
+                    debtStatus = 1,
+                    isLoading = false,
+                ),
+            )
+        }
+    }
 
     SharedExpensesTheme {
         GroupDetailScreen(
@@ -251,13 +297,42 @@ fun GroupDetailPreview() {
 @Composable
 fun BottomSheetPreview() {
     val sheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Expanded)
-    val viewModel = GroupDetailViewModel()
+    val viewModel = remember {
+        GroupDetailViewModel(SavedStateHandle()).apply {
+            val sampleUser = User(id = "user-1", name = "Alex")
+            val sampleExpense = Expense(
+                id = "expense-1",
+                payer = sampleUser,
+                debtors = mutableListOf(sampleUser),
+                amount = 42.5,
+                name = "Groceries",
+                description = "Weekly groceries",
+                date = LocalDate.of(2025, 4, 5),
+            )
+            val sampleGroup = Group(
+                id = "group-1",
+                name = "Roommates",
+                description = "Shared apartment expenses",
+                users = mutableListOf(sampleUser),
+                expenses = mutableListOf(sampleExpense),
+            )
+            setPreviewState(
+                GroupDetailUiState(
+                    group = sampleGroup,
+                    expensesByMonth = mapOf("April 2025" to listOf(sampleExpense)),
+                    totalOwed = sampleExpense.amount,
+                    debtStatus = 1,
+                    isLoading = false,
+                ),
+            )
+        }
+    }
 
     SharedExpensesTheme {
         ModalBottomSheet(
             onDismissRequest = {},
             sheetState = sheetState,
-            modifier = Modifier.fillMaxHeight()
+            modifier = Modifier.fillMaxHeight(),
         ) {
             EditBottomSheet(viewModel = viewModel)
         }
