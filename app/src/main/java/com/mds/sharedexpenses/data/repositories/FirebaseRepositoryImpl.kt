@@ -19,7 +19,7 @@ class FirebaseRepositoryImpl(
         // This is the name of the function to call when wanting to invite a user to a group
         public val inviteUserFunction = "inviteUser"
 
-        public val removeUserFunction  = "removeUser"
+        public val removeUserFunction  = "removeUserFromGroup"
     }
     /**
      * Logs the selected user in
@@ -89,6 +89,14 @@ class FirebaseRepositoryImpl(
      */
     override fun getUserDirectory(): DatabaseReference {
         return firebaseService.getUserDirectory()
+    }
+
+    override fun getUsersDirectory(): DatabaseReference {
+        return firebaseService.getUsersDirectory()
+    }
+
+    override fun getPublicUserDirectory(uid:String): DatabaseReference{
+        return getUsersDirectory().child(uid)
     }
 
 

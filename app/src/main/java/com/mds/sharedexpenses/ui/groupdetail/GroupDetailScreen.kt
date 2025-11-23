@@ -52,9 +52,10 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import java.time.LocalDate
 
 @Composable
-fun EditBottomSheet(viewModel: GroupDetailViewModel) {
+fun EditBottomSheet(viewModel: GroupDetailViewModel, uiState: GroupDetailUiState) {
     var nameValue by remember { mutableStateOf(TextFieldValue("")) }
     var descriptionValue by remember { mutableStateOf(TextFieldValue("")) }
+    var newMemberEmail by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -94,7 +95,26 @@ fun EditBottomSheet(viewModel: GroupDetailViewModel) {
                 }
             }
         }
-        Button(onClick = {}) {
+        if (uiState.isAddMemberFieldVisible) {
+            var newMember by remember { mutableStateOf("") }
+
+            OutlinedTextField(
+                value = newMember,
+                onValueChange = { newMember = it },
+                label = { Text("E-mail") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Button(
+                onClick = { viewModel.addMember(newMember) },
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text("Add")
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        }
+        Button(onClick = {viewModel.onAddMemberClicked()}) {
             Text("Add Member")
         }
     }
@@ -249,7 +269,7 @@ fun GroupDetailScreen(
             ModalBottomSheet(
                 onDismissRequest = { viewModel.onDismissEditSheet() },
                 sheetState = rememberModalBottomSheetState(),
-            ) { EditBottomSheet(viewModel) }
+            ) { EditBottomSheet(viewModel, uiState) }
         }
         if (uiState.isExpenseSheetVisible) {
             ModalBottomSheet(
@@ -339,6 +359,7 @@ fun BottomSheetPreview() {
             )
         }
     }
+    val uiState = viewModel.uiState.collectAsState().value
 
     SharedExpensesTheme {
         ModalBottomSheet(
@@ -346,7 +367,7 @@ fun BottomSheetPreview() {
             sheetState = sheetState,
             modifier = Modifier.fillMaxHeight(),
         ) {
-            EditBottomSheet(viewModel = viewModel)
+            EditBottomSheet(viewModel = viewModel, uiState)
         }
     }
 }

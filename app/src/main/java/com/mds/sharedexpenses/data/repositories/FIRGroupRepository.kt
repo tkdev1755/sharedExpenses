@@ -37,19 +37,39 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         val groupDebts = mutableMapOf<String,Any>()
         return mapOf("id" to group.id, "name" to group.name, "description" to group.description, "users" to userMap, "expenses" to groupExpenses, "transactions" to groupTransaction, "debts" to groupDebts)
     }
-
-    fun fromJsonGroup(id: String,data: Map<String, *>): Group {
+    suspend fun getPublicUserInfo(uid:String) : DataResult<User>{
+        val nameDirectory = firebaseRepository.getPublicUserDirectory(uid).child("name")
+        val emailDirectory = firebaseRepository.getPublicUserDirectory(uid).child("email")
+        val phoneDirectory = firebaseRepository.getPublicUserDirectory(uid).child("phone")
+        val name = firebaseRepository.fetchDBRef<String>(nameDirectory)
+        val email = firebaseRepository.fetchDBRef<String>(emailDirectory)
+        val phone = firebaseRepository.fetchDBRef<String>(phoneDirectory)
+        if (name  is DataResult.Success && email  is DataResult.Success && phone is DataResult.Success){
+            return DataResult.Success(User(uid,name.data,email.data,phone.data))
+        }
+        else{
+            return DataResult.Error("FIREBASE_ERROR", "User not found.")
+        }
+    }
+    suspend fun fromJsonGroup(id: String, data: Map<String, *>): Group {
         println("Received data :${data}")
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
-        val usersList = usersMap.map { (userId, userData) ->
+        val usersList : MutableList<User> = mutableListOf()
+        for (user in usersMap.entries){
+            val user = getPublicUserInfo(user.key)
+            if (user is DataResult.Success){
+                usersList.add(user.data)
+            }
+        }
+        /*val usersList = usersMap.map { (userId, userData) ->
             User(
                 id = userId,
                 name = userData["name"] as? String ?: "",
                 email = userData["email"] as? String ?: "",
                 groups = mutableListOf()
             )
-        }?.toMutableList() ?: mutableListOf()
+        }?.toMutableList() ?: mutableListOf()*/
 
         val expensesMap = data["expenses"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val expensesList = mutableListOf<Expense>()
@@ -97,7 +117,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         )
     }
 
-    private suspend fun inviteUser(group : Group ,email: String): DataResult<Boolean> {
+    public suspend fun inviteUser(group : Group ,email: String): DataResult<Boolean> {
         // Create the arguments to the callable function.
         val data = hashMapOf(
             "email" to email,
@@ -324,6 +344,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
             "group" to group.id,
             "user" to user.id
         )
+        print("Removing current user ${user.id} from group ${group.id}")
         return firebaseRepository.callCloudFunction(FirebaseRepositoryImpl.removeUserFunction, data)
     }
 }
