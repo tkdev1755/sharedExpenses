@@ -55,41 +55,7 @@ fun HomeScreen(
 
     }
     if (uiState.showLoginSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { viewModel.onSheetDismiss() },
-            sheetState = rememberModalBottomSheetState(
-                skipPartiallyExpanded = true
-            )
-        ) {
-            when (uiState.currentStep) {
-                AuthStep.LOGIN -> LoginScreen(
-                    onLogin = { email,password ->
-                        viewModel.onLogin(email,password)
-                    },
-                )
-
-                AuthStep.SIGNUP -> SignUpScreen(
-                    onFinished = { email, password,name,phone ->
-                        viewModel.onSignUp(email,password,name,phone)
-                    }
-                )
-
-                AuthStep.ONBOARDING -> OnboardingScreen(
-                    onFinish = {
-                        viewModel.finishOnboarding()
-                    }
-                )
-
-                AuthStep.WELCOME -> WelcomeScreen(
-                    onLogin = {
-                        viewModel.goToLogin()
-                    },
-                    onSignUp = {
-                        viewModel.goToSignUp()
-                    }
-                )
-            }
-        }
+        onboardingSheet(viewModel, uiState)
     }
     Scaffold(
         modifier = modifier,
@@ -215,6 +181,48 @@ private fun GroupsSection(
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable fun onboardingSheet(
+    viewModel : HomeViewModel,
+    uiState : HomeUiState
+){
+    ModalBottomSheet(
+        onDismissRequest = { viewModel.onSheetDismiss() },
+        sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+    ) {
+        when (uiState.currentStep) {
+            AuthStep.LOGIN -> LoginScreen(
+                onLogin = { email,password ->
+                    viewModel.onLogin(email,password)
+                },
+            )
+
+            AuthStep.SIGNUP -> SignUpScreen(
+                onFinished = { email, password,name,phone ->
+                    viewModel.onSignUp(email,password,name,phone)
+                }
+            )
+
+            AuthStep.ONBOARDING -> OnboardingScreen(
+                onFinish = {
+                    viewModel.finishOnboarding()
+                }
+            )
+
+            AuthStep.WELCOME -> WelcomeScreen(
+                onLogin = {
+                    viewModel.goToLogin()
+                },
+                onSignUp = {
+                    viewModel.goToSignUp()
+                }
+            )
         }
     }
 }
