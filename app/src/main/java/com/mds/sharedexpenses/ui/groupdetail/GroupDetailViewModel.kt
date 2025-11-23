@@ -78,7 +78,7 @@ class GroupDetailViewModel(
                         currentUser = currentUser,
                         expensesByMonth = expensesByMonth,
                         totalOwed = totalOwed,
-                        isLoading = false
+                        isLoading = false,
                     )
                 }
 
@@ -208,8 +208,8 @@ class GroupDetailViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 expenseForm = currentState.expenseForm.copy(
-                    description = newDescription
-                )
+                    description = newDescription,
+                ),
             )
         }
     }
@@ -217,8 +217,8 @@ class GroupDetailViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 expenseForm = currentState.expenseForm.copy(
-                    amount = newAmount
-                )
+                    amount = newAmount,
+                ),
             )
         }
     }
@@ -226,16 +226,33 @@ class GroupDetailViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 expenseForm = currentState.expenseForm.copy(
-                    date = newDate
-                )
+                    date = newDate,
+                ),
             )
         }
     }
-    fun onGroupTitleChange(newTitle: String) {
-        TODO()
+
+    fun onGroupNameChange(newName: String) {
+        val groupToUpdate = _uiState.value.group ?: return
+        updateGroup(groupToUpdate.copy(name = newName))
     }
     fun onGroupDescriptionChange(newDescription: String) {
-        TODO()
+        val groupToUpdate = _uiState.value.group ?: return
+        updateGroup(groupToUpdate.copy(description = newDescription))
+    }
+    private fun updateGroup(newGroupObject: Group) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                group = newGroupObject,
+            )
+        }
+        viewModelScope.launch {
+            try {
+                appRepository.groups.createGroup(newGroupObject)
+            } catch (e: Exception) {
+                showErrorMessage("Group update error")
+            }
+        }
     }
     fun onExpensePayerToggle(userId: String) {
         _uiState.update { currentState ->
@@ -249,8 +266,8 @@ class GroupDetailViewModel(
 
             currentState.copy(
                 expenseForm = currentState.expenseForm.copy(
-                    selectedPayerIds = newSelection
-                )
+                    selectedPayerIds = newSelection,
+                ),
             )
         }
     }
