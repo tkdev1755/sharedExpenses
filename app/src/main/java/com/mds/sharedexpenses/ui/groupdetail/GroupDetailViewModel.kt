@@ -3,6 +3,7 @@ package com.mds.sharedexpenses.ui.groupdetail
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
@@ -24,6 +25,7 @@ data class GroupDetailUiState(
     val errorMessage: String? = null,
     val isEditSheetVisible: Boolean = false,
     val isExpenseSheetVisible: Boolean = false,
+    val isAddMemberFieldVisible: Boolean = false,
 )
 
 class GroupDetailViewModel(
@@ -34,7 +36,6 @@ class GroupDetailViewModel(
 
     private val _uiState = MutableStateFlow(GroupDetailUiState())
     val uiState = _uiState.asStateFlow()
-
     init {
         if (groupId.isBlank()) {
             if ("groupId" in savedStateHandle.keys()) {
@@ -52,8 +53,10 @@ class GroupDetailViewModel(
     private fun loadGroupDetails() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
-            val currentUserId = when (val userResult = appRepository.users.getCurrentUserData()) {
+            if (!currentUser.isInitialized){
+                appRepository.users.getCurrentUserData()
+            }
+            val currentUserId = currentUser.value?.id/*when (val userResult = appRepository.users.getCurrentUserData()) {
                 is DataResult.Success -> userResult.data.id
                 is DataResult.Error -> {
                     val message =
@@ -66,8 +69,7 @@ class GroupDetailViewModel(
                     showErrorMessage("User not found")
                     null
                 }
-            }
-
+            }*/
             when (val groupResult = appRepository.groups.getGroupById(groupId)) {
                 is DataResult.Success -> {
                     val group = groupResult.data
@@ -108,6 +110,11 @@ class GroupDetailViewModel(
         }
     }
 
+    fun onAddMemberClicked(){
+        _uiState.value = _uiState.value.copy(isAddMemberFieldVisible = true)
+    }
+    fun onAddMember(currentGroup : Group ,email:String){
+    }
     fun onButtonClicked() {
         println("Button clicked!")
     }
@@ -120,12 +127,43 @@ class GroupDetailViewModel(
         return _uiState.value.group?.users.orEmpty()
     }
 
-    fun addMember(member: User) {
-        // TODO: Implement member invite flow
+    fun addMember(email:String) {
+        if (_uiState.value.group == null){
+            showErrorMessage("Group was not loaded correctly")
+            return
+        }
+        viewModelScope.launch {
+            val res : DataResult<Boolean>  = appRepository.groups.inviteUser(_uiState.value.group!!,email)
+            when (res) {
+                is DataResult.Success -> {
+                    _uiState.value = _uiState.value.copy(isAddMemberFieldVisible = false)
+                }
+                is DataResult.Error -> {
+                    val message =
+                        res.errorMessage.orEmpty().ifEmpty { "Error inviting user" }
+                    println("Error while calling cloud function -> inviteUser ${res.errorMessage}")
+                    showErrorMessage(message)
+
+                }
+                is DataResult.NotFound -> {
+
+                }
+            }
+        }
     }
 
     fun removeMember(member: User) {
-        // TODO: Implement member removal flow
+        if (_uiState.value.group == null){
+            showErrorMessage("Group was not loaded correctly")
+            return
+        }
+        viewModelScope.launch {
+            val res:DataResult<Boolean> = appRepository.groups.removeGroupUser(_uiState.value.group!!, member)
+            if (res is DataResult.Error){
+                println("Unable to remove user from group -> ${res.errorMessage}")
+                showErrorMessage("Unable to remove user from group")
+            }
+        }
     }
 
     fun navigateBack() {

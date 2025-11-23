@@ -11,10 +11,11 @@ import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
 
     fun toJsonExpense(expense: Expense): Map<String, Any?> {
+        val debtorIds = expense.debtors.map { it.id }
         return mapOf(
             "id" to expense.id,
             "payer" to expense.payer.id,
-            "debtors" to expense.debtors,
+            "debtors" to debtorIds,
             "amount" to expense.amount,
             "name" to expense.name,
             "description" to expense.description,

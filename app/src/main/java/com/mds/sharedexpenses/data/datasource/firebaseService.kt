@@ -85,6 +85,9 @@ class FirebaseService private constructor(){
         return getGroupsDirectory().child(id)
     }
 
+    fun getUsersDirectory() : DatabaseReference {
+        return db.getReference("users")
+    }
 
     fun checkLoginStatus() : Boolean {
         val currentUser = auth.currentUser

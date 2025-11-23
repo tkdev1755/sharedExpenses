@@ -13,6 +13,9 @@ interface FirebaseRepository {
     fun logout()
     fun getCurrentUserUID(): String
     fun getUserDirectory(): DatabaseReference
+    fun getUsersDirectory(): DatabaseReference
+    fun getPublicUserDirectory(uid:String): DatabaseReference
+
     fun getGroupsDirectory(): DatabaseReference
     suspend fun <T> fetchDBRef(dbRef: DatabaseReference,): DataResult<T>
     suspend fun <T> writeToDBRef(dbRef : DatabaseReference,value: T) : DataResult<Boolean>
