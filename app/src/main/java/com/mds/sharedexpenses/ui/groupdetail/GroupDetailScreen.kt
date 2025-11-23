@@ -48,6 +48,7 @@ import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
+import com.mds.sharedexpenses.ui.navigation.Screen
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import java.time.LocalDate
 
@@ -203,9 +204,15 @@ fun GroupDetailScreen(
                 imageVector = Icons.Filled.AttachMoney,
                 iconContentDescription = "Click to add an expense",
                 text = "Add Expense",
-                onClick = { viewModel.onAddExpenseClicked() },
+                onClick = {
+                    val groupId = uiState.group?.id
+                    if (!groupId.isNullOrEmpty()) {
+                        navController.navigate(Screen.ExpenseInput.createRoute(groupId))
+                    }
+                }
             )
-        },
+        }
+        ,
     ) { innerPadding ->
         Column(
             modifier = Modifier

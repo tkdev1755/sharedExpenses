@@ -14,6 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mds.sharedexpenses.ui.expenses.ExpenseInputScreen
+import com.mds.sharedexpenses.ui.expenses.ExpenseInputViewModel
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailScreen
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailViewModel
 import com.mds.sharedexpenses.ui.home.HomeScreen
@@ -60,6 +62,21 @@ fun AppNavigation(){
                 viewModel = groupDetailViewModel
             )
         }
+
+        composable(
+            route = Screen.ExpenseInput.route,
+            arguments = listOf(navArgument("groupId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
+            val expenseViewModel: ExpenseInputViewModel = viewModel()
+
+            ExpenseInputScreen(
+                navController = navController,
+                groupId = groupId,
+                viewModel = expenseViewModel
+            )
+        }
+
         composable(route = Screen.Profile.route) {
             val profileViewModel : ProfileViewModel = viewModel()
             ProfileScreen(
