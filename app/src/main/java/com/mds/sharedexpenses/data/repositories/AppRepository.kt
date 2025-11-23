@@ -28,9 +28,11 @@ class AppRepository(private val firebaseService: FirebaseService) {
 
     fun logout() = firebaseRepository.logout()
 
+    fun getUserID() = firebaseRepository.getCurrentUserUID()
+
     suspend fun registerUser(email: String, password: String, name: String) =
         firebaseRepository.registerUser(email, password, name)
 
-    suspend fun checkLoginStatus() = firebaseRepository.checkLoginStatus()
+    fun checkLoginStatus() = firebaseRepository.checkLoginStatus()
 
 }

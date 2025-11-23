@@ -9,7 +9,7 @@ interface FirebaseRepository {
     suspend fun login(email: String, password: String): Boolean
     suspend fun registerUser(email: String, password: String, name :String ) : Boolean
     fun getCurrentUser(): User?
-    suspend fun checkLoginStatus(): Boolean
+    fun checkLoginStatus(): Boolean
     fun logout()
     fun getCurrentUserUID(): String
     fun getUserDirectory(): DatabaseReference
