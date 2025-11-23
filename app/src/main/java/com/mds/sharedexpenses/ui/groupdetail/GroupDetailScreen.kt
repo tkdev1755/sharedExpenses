@@ -53,9 +53,15 @@ import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import java.time.LocalDate
 
 @Composable
-fun EditBottomSheet(viewModel: GroupDetailViewModel, uiState: GroupDetailUiState) {
-    var nameValue by remember { mutableStateOf(TextFieldValue("")) }
-    var descriptionValue by remember { mutableStateOf(TextFieldValue("")) }
+fun EditBottomSheet(
+    viewModel: GroupDetailViewModel,
+    name: String,
+    description: String,
+    onNameChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+) {
+    var nameValue by remember { mutableStateOf(TextFieldValue("")) } //TODO: bind to viewModel
+    var descriptionValue by remember { mutableStateOf(TextFieldValue("")) } //TODO: bind to viewModel
     var newMemberEmail by remember { mutableStateOf("") }
 
     Column(
@@ -197,6 +203,9 @@ fun GroupDetailScreen(
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
+    if (uiState.group == null) {
+        return
+    }
     val groupName = uiState.group?.name.orEmpty()
     val expenses = uiState.expensesByMonth
     val totalOwe = uiState.totalOwed
@@ -270,7 +279,14 @@ fun GroupDetailScreen(
             ModalBottomSheet(
                 onDismissRequest = { viewModel.onDismissSheet() },
                 sheetState = rememberModalBottomSheetState(),
-            ) { EditBottomSheet(viewModel, uiState) }
+            ) { EditBottomSheet(
+                viewModel,
+                    name = uiState.group!!.name,
+                    onNameChange = { viewModel.onGroupNameChange(it) },
+                    description = uiState.group!!.description,
+                    onDescriptionChange = { viewModel.onGroupDescriptionChange(it) }
+                    //TODO: investigate: do we need UI state here?
+                ) }
         }
         if (uiState.activeSheet == SheetType.ADD_EXPENSE) {
             ModalBottomSheet(
@@ -362,7 +378,7 @@ fun BottomSheetPreview() {
             sheetState = sheetState,
             modifier = Modifier.fillMaxHeight(),
         ) {
-            EditBottomSheet(viewModel = viewModel, uiState)
+            EditBottomSheet(viewModel = viewModel, name = "", description = "", onNameChange = {}, onDescriptionChange = {})
         }
     }
 }
