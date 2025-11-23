@@ -16,11 +16,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.auth.LoginScreen
+import com.example.auth.OnboardingScreen
+import com.example.auth.SignUpScreen
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.navigation.Screen
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
+import com.mds.sharedexpenses.ui.welcome.WelcomeScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,6 +38,10 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
+        if (!viewModel.checkLoginStatus()){
+            println("[AUTH] - USER IS NOT LOGGED IN SHOWING MODAL")
+            viewModel.onDisconnect()
+        }
         viewModel.navigationEvents.collect { event ->
             when (event){
                 is HomeNavigationEvent.ToGroupDetails ->
@@ -44,6 +52,10 @@ fun HomeScreen(
                 }
             }
         }
+
+    }
+    if (uiState.showLoginSheet) {
+        onboardingSheet(viewModel, uiState)
     }
     Scaffold(
         modifier = modifier,
@@ -71,6 +83,8 @@ fun HomeScreen(
         )
 
     }
+
+
 }
 
 @Composable
@@ -167,6 +181,48 @@ private fun GroupsSection(
                     )
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable fun onboardingSheet(
+    viewModel : HomeViewModel,
+    uiState : HomeUiState
+){
+    ModalBottomSheet(
+        onDismissRequest = { viewModel.onSheetDismiss() },
+        sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+    ) {
+        when (uiState.currentStep) {
+            AuthStep.LOGIN -> LoginScreen(
+                onLogin = { email,password ->
+                    viewModel.onLogin(email,password)
+                },
+            )
+
+            AuthStep.SIGNUP -> SignUpScreen(
+                onFinished = { email, password,name,phone ->
+                    viewModel.onSignUp(email,password,name,phone)
+                }
+            )
+
+            AuthStep.ONBOARDING -> OnboardingScreen(
+                onFinish = {
+                    viewModel.finishOnboarding()
+                }
+            )
+
+            AuthStep.WELCOME -> WelcomeScreen(
+                onLogin = {
+                    viewModel.goToLogin()
+                },
+                onSignUp = {
+                    viewModel.goToSignUp()
+                }
+            )
         }
     }
 }

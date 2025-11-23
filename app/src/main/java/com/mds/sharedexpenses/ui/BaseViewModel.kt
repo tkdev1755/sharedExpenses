@@ -27,18 +27,19 @@ open class BaseViewModel : ViewModel() {
     protected fun getUserData() {
 
         viewModelScope.launch {
-            if (!appRepository.checkLoginStatus()){
-                appRepository.login("","")
+            if (appRepository.checkLoginStatus()){
+                val userData = appRepository.users.getCurrentUserData()
+                println("gettingUserData")
+                if (userData is DataResult.Success) {
+                    _currentUser.postValue(userData.data)
+                }
+                else if (userData is DataResult.Error){
+                    _errorData.postValue("Error getting user data")
+                    showErrorMessage("${userData.errorMessage}")
+                }
             }
-            val userData = appRepository.users.getCurrentUserData()
-            println("gettingUserData")
-            if (userData is DataResult.Success) {
-                _currentUser.postValue(userData.data)
-            }
-            else if (userData is DataResult.Error){
-                _errorData.postValue("Error getting user data")
-                showErrorMessage("${userData.errorMessage}")
-            }
+
+
 
         }
     }

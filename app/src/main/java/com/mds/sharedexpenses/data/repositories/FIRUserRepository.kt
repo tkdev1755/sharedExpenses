@@ -18,6 +18,9 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
     }
 
     suspend fun getCurrentUserData(): DataResult<User> {
+        if (!firebaseRepository.checkLoginStatus()){
+            return DataResult.Error("LOGIN_ERROR", "User is not logged in.")
+        }
         val userRef = firebaseRepository.getUserDirectory()
         println("userRef: $userRef")
         val data = firebaseRepository.fetchDBRef<Map<String, *>>(userRef)

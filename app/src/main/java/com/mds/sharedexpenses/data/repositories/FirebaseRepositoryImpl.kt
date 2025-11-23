@@ -64,7 +64,7 @@ class FirebaseRepositoryImpl(
      * Checks whether a user has logged in into our app or not
      * @return True if the user is logged in, false otherwise
      */
-    override suspend fun checkLoginStatus(): Boolean {
+    override fun checkLoginStatus(): Boolean {
         return firebaseService.checkLoginStatus()
     }
     /**
