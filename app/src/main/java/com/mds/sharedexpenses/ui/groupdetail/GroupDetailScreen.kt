@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
@@ -45,6 +46,7 @@ import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
+import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import java.time.LocalDate
@@ -172,10 +174,6 @@ fun GroupDetailScreen(
     navController: NavController,
     viewModel: GroupDetailViewModel,
 ) {
-    var showBottomSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false,
-    )
 
     val uiState by viewModel.uiState.collectAsState()
     val groupName = uiState.group?.name.orEmpty()
@@ -191,13 +189,21 @@ fun GroupDetailScreen(
                 title = groupName.ifEmpty { "Group" },
                 onNavigateBack = { navController.popBackStack() },
                 actions = {
-                    IconButton(onClick = { showBottomSheet = true }) {
+                    IconButton(onClick = { viewModel.onEditGroupClicked() }) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
                             contentDescription = "Edit",
                         )
                     }
                 },
+            )
+        },
+        floatingActionButton = {
+            CustomActionButton(
+                imageVector = Icons.Filled.AttachMoney,
+                iconContentDescription = "Click to add an expense",
+                text = "Add Expense",
+                onClick = { viewModel.onAddExpenseClicked() },
             )
         },
     ) { innerPadding ->
@@ -239,11 +245,17 @@ fun GroupDetailScreen(
             }
         }
 
-        if (showBottomSheet) {
+        if (uiState.isEditSheetVisible) {
             ModalBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState,
+                onDismissRequest = { viewModel.onDismissEditSheet() },
+                sheetState = rememberModalBottomSheetState(),
             ) { EditBottomSheet(viewModel) }
+        }
+        if (uiState.isExpenseSheetVisible) {
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.onDismissExpenseSheet() },
+                sheetState = rememberModalBottomSheetState(),
+            ) { /* TODO: add expense input*/ }
         }
     }
 }

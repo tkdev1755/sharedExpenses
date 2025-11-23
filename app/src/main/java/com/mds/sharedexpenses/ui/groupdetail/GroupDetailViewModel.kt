@@ -22,6 +22,8 @@ data class GroupDetailUiState(
     val debtStatus: Int = 0,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+    val isEditSheetVisible: Boolean = false,
+    val isExpenseSheetVisible: Boolean = false,
 )
 
 class GroupDetailViewModel(
@@ -130,6 +132,22 @@ class GroupDetailViewModel(
 
     fun navigateBack() {
         showErrorMessage("navigateBack not implemented yet")
+    }
+
+    fun onEditGroupClicked() {
+        _uiState.update { it.copy(isEditSheetVisible = true) }
+    }
+
+    fun onDismissEditSheet() {
+        _uiState.update { it.copy(isEditSheetVisible = false) }
+    }
+
+    fun onAddExpenseClicked() {
+        _uiState.update { it.copy(isExpenseSheetVisible = true) }
+    }
+
+    fun onDismissExpenseSheet() {
+        _uiState.update { it.copy(isExpenseSheetVisible = false) }
     }
 
     @VisibleForTesting
