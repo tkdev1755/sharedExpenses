@@ -9,6 +9,7 @@ import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.ui.BaseViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -18,114 +19,106 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 data class GroupDetailUiState(
+    // Data
     val group: Group? = null,
+    val currentUser: User? = null,
     val expensesByMonth: Map<String, List<Expense>> = emptyMap(),
     val totalOwed: Double = 0.0,
-    val debtStatus: Int = 0,
+    // UI
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
-    val isEditSheetVisible: Boolean = false,
-    val isExpenseSheetVisible: Boolean = false,
-    val expenseDescription: String = "",
-    val expenseAmount: String = "",
-    val expenseDate: String = LocalDate.now().toString(),
+    //Sheet
+    val activeSheet: SheetType? = null,
+    //Form state
+    val expenseForm: ExpenseFormState = ExpenseFormState(),
     val isAddMemberFieldVisible: Boolean = false,
 )
+
+data class ExpenseFormState(
+    val description: String = "",
+    val amount: String = "",
+    val date: String = "",
+    val selectedPayerIds: Set<String> = emptySet(),
+    val editingExpenseId: String? = null,
+)
+
+enum class SheetType { EDIT_GROUP, ADD_EXPENSE, EDIT_EXPENSE }
+
 
 class GroupDetailViewModel(
     private val savedStateHandle: SavedStateHandle,
 ) : BaseViewModel() {
-
-    private val groupId: String = savedStateHandle.get<String>("groupId").orEmpty()
-
+    private val groupId: String = checkNotNull(savedStateHandle["groupId"]) {
+        "Group Id is required"
+    }
     private val _uiState = MutableStateFlow(GroupDetailUiState())
     val uiState = _uiState.asStateFlow()
-
     init {
-        if (groupId.isBlank()) {
-            if ("groupId" in savedStateHandle.keys()) {
-                val message = "Missing group identifier"
-                showErrorMessage(message)
-                _uiState.update { it.copy(isLoading = false, errorMessage = message) }
-            } else {
-                _uiState.update { it.copy(isLoading = false) }
-            }
-        } else {
             loadGroupDetails()
-        }
     }
-
     private fun loadGroupDetails() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            if (!currentUser.isInitialized){
-                appRepository.users.getCurrentUserData()
-            }
-            val currentUserId = currentUser.value?.id/*when (val userResult = appRepository.users.getCurrentUserData()) {
-                is DataResult.Success -> userResult.data.id
-                is DataResult.Error -> {
-                    val message =
-                        userResult.errorMessage.orEmpty().ifEmpty { "Error getting user data" }
-                    showErrorMessage(message)
-                    null
-                }
 
-                is DataResult.NotFound -> {
-                    showErrorMessage("User not found")
-                    null
-                }
-            }*/
-            when (val groupResult = appRepository.groups.getGroupById(groupId)) {
-                is DataResult.Success -> {
-                    val group = groupResult.data
-                    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
-                    val expensesByMonth = group.expenses.sortedByDescending { it.date }
-                        .groupBy { expense -> expense.date.format(formatter) }
+            val userDeferred = async { appRepository.users.getCurrentUserData() }
+            val groupDeferred = async { appRepository.groups.getGroupById(groupId) }
 
-                    val totalOwed = currentUserId?.let { userId ->
-                        group.expenses.filter { expense -> expense.debtors.any { debtor -> debtor.id == userId } }
-                            .sumOf { expense ->
-                                val shareCount = expense.debtors.size.takeIf { it > 0 } ?: 1
-                                expense.amount / shareCount
-                            }
-                    } ?: 0.0
+            val userResult = userDeferred.await()
+            val groupResult = groupDeferred.await()
 
-                    _uiState.value = GroupDetailUiState(
+            if (groupResult is DataResult.Success && userResult is DataResult.Success) {
+                val group = groupResult.data
+                val currentUser = userResult.data
+
+                val (expensesByMonth, totalOwed) = calculateGroupStats(group, currentUser.id)
+
+                _uiState.update {
+                    it.copy(
                         group = group,
+                        currentUser = currentUser,
                         expensesByMonth = expensesByMonth,
                         totalOwed = totalOwed,
-                        debtStatus = if (totalOwed == 0.0) 0 else 1,
-                        isLoading = false,
-                        errorMessage = null,
+                        isLoading = false
                     )
                 }
 
-                is DataResult.Error -> {
-                    val message =
-                        groupResult.errorMessage.orEmpty().ifEmpty { "Error loading group data" }
-                    showErrorMessage(message)
-                    _uiState.update { it.copy(isLoading = false, errorMessage = message) }
-                }
+            } else {
+                val errorMsg = (groupResult as? DataResult.Error)?.errorMessage
+                    ?: (userResult as? DataResult.Error)?.errorMessage
+                    ?: "Failed to load data"
+                showErrorMessage(errorMsg)
+                _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg) }
+            }
 
-                is DataResult.NotFound -> {
-                    showErrorMessage("Group not found")
-                    _uiState.update { it.copy(isLoading = false) }
-                }
             }
         }
+    private fun calculateGroupStats(
+        group: Group,
+        currentUserId: String,
+    ): Pair<Map<String, List<Expense>>, Double> {
+        val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+
+        val expensesByMonth = group.expenses
+            .sortedByDescending { it.date }
+            .groupBy { expense -> expense.date.format(formatter) }
+
+        // calculating Owed Amount
+        val totalOwed = group.expenses
+            .filter { expense ->
+                expense.debtors.any { it.id == currentUserId } && expense.payer.id != currentUserId
+            }
+            .sumOf { expense ->
+                val splitCount = expense.debtors.size
+                if (splitCount > 0) expense.amount / splitCount else 0.0
+            }
+
+        return Pair(expensesByMonth, totalOwed)
     }
 
     fun onAddMemberClicked(){
         _uiState.value = _uiState.value.copy(isAddMemberFieldVisible = true)
     }
     fun onAddMember(currentGroup : Group ,email:String){
-    }
-    fun onButtonClicked() {
-        println("Button clicked!")
-    }
-
-    fun onExpenseClick() {
-        println("Expense clicked!")
     }
 
     fun members(): List<User> {
@@ -170,108 +163,140 @@ class GroupDetailViewModel(
             }
         }
     }
-
-    fun navigateBack() {
-        showErrorMessage("navigateBack not implemented yet")
-    }
-
     fun onEditGroupClicked() {
-        _uiState.update { it.copy(isEditSheetVisible = true) }
+        _uiState.update { it.copy(activeSheet = SheetType.EDIT_GROUP) }
     }
-
-    fun onDismissEditSheet() {
-        _uiState.update { it.copy(isEditSheetVisible = false) }
-    }
-
     fun onAddExpenseClicked() {
-        _uiState.update { it.copy(isExpenseSheetVisible = true) }
+        resetExpenseForm()
+        _uiState.update { it.copy(activeSheet = SheetType.ADD_EXPENSE) }
     }
+    fun onEditExpenseClicked(expenseId: String) {
+        val expenseToEdit = _uiState.value.group?.expenses?.find { it.id == expenseId }
 
-    fun onDismissExpenseSheet() {
-        _uiState.update { it.copy(isExpenseSheetVisible = false) }
-        resetExpenseFields()
-    }
-
-    // new changes
-
-
-    fun onExpenseDescriptionChange(newDescription: String) {
-        _uiState.update { it.copy(expenseDescription = newDescription) }
-    }
-
-    fun onExpenseAmountChange(newAmount: String) {
-        _uiState.update { it.copy(expenseAmount = newAmount) }
-    }
-
-    fun onExpenseDateChange(newDate: String) {
-        _uiState.update { it.copy(expenseDate = newDate) }
-    }
+        if (expenseToEdit != null) {
+            val prefilledForm = ExpenseFormState(
+                description = expenseToEdit.description,
+                amount = expenseToEdit.amount.toString(), // for input field
+                date = expenseToEdit.date.toString(),
+                selectedPayerIds = expenseToEdit.debtors.map { it.id }.toSet(),
+                editingExpenseId = expenseToEdit.id,
+            )
 
 
-    fun saveExpense() {
-        val currentState = _uiState.value
-        val amount = currentState.expenseAmount.toDoubleOrNull()
-        val description = currentState.expenseDescription
-
-        if (description.isBlank() || amount == null || amount <= 0) {
-            showErrorMessage("Please enter a valid description and amount.")
-            return
-        }
-
-        if (!currentUser.isInitialized && (appRepository.checkLoginStatus())) {
-            viewModelScope.launch {
-
-                val userResult = appRepository.users.getCurrentUserData()
-                appRepository.groups.getGroupById()
-
-                if (userResult is DataResult.Success) {
-
-                    val user = userResult.data
-                    try {
-                        val newExpense = Expense(
-                            id = "",
-                            description = description,
-                            amount = amount,
-                            payer = user,
-                            debtors = mutableListOf(), // TODO: add logic
-                            date = LocalDate.parse(currentState.expenseDate),
-                        )
-                        appRepository.expenses.addGroupExpense(
-                            group = "id", //TODO: add correct group object
-                            expense = newExpense,
-                        )
-                        showErrorMessage("Expense added successfully!")
-                        onDismissExpenseSheet() // Schließt das Sheet nach Erfolg
-                        resetExpenseFields()
-
-
-                    } catch (e: Exception) {
-                        handleException(e, "Failed to add expense.")
-                    }
-
-                }
-
+            _uiState.update {
+                it.copy(
+                    activeSheet = SheetType.EDIT_EXPENSE,
+                    expenseForm = prefilledForm,
+                )
             }
+        } else {
+            showErrorMessage("Expense not found")
         }
     }
-
-
-    private fun resetExpenseFields() {
+    private fun resetExpenseForm() {
         _uiState.update {
             it.copy(
-                expenseDescription = "",
-                expenseAmount = "",
-                expenseDate = LocalDate.now().toString(),
+                expenseForm = ExpenseFormState(),
             )
         }
     }
-
-}
-
-// end new changes
-
-
-@VisibleForTesting
-    internal fun setPreviewState(uiState: GroupDetailUiState) {
-        _uiState.value = uiState
+    fun onDismissSheet() {
+        _uiState.update { it.copy(activeSheet = null) }
+        resetExpenseForm()
     }
+    fun onExpenseDescriptionChange(newDescription: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                expenseForm = currentState.expenseForm.copy(
+                    description = newDescription
+                )
+            )
+        }
+    }
+    fun onExpenseAmountChange(newAmount: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                expenseForm = currentState.expenseForm.copy(
+                    amount = newAmount
+                )
+            )
+        }
+    }
+    fun onExpenseDateChange(newDate: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                expenseForm = currentState.expenseForm.copy(
+                    date = newDate
+                )
+            )
+        }
+    }
+    fun onGroupTitleChange(newTitle: String) {
+        TODO()
+    }
+    fun onGroupDescriptionChange(newDescription: String) {
+        TODO()
+    }
+    fun onExpensePayerToggle(userId: String) {
+        _uiState.update { currentState ->
+            val currentSelection = currentState.expenseForm.selectedPayerIds
+
+            val newSelection = if (userId in currentSelection) {
+                currentSelection - userId
+            } else {
+                currentSelection + userId
+            }
+
+            currentState.copy(
+                expenseForm = currentState.expenseForm.copy(
+                    selectedPayerIds = newSelection
+                )
+            )
+        }
+    }
+    fun saveExpense() {
+        val currentState = _uiState.value
+        val currentUser = currentState.currentUser
+        val currentGroup = currentState.group
+
+        val amount = currentState.expenseForm.amount.toDoubleOrNull()
+        if (currentState.expenseForm.description.isBlank() || amount == null || amount <= 0) {
+            showErrorMessage("invalid input")
+            return
+        }
+
+        if (currentUser == null || currentGroup == null) {
+            showErrorMessage("data not loaded")
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            try {
+                val newExpense = Expense(
+                    id = "", // TODO: check: is this automatically generated?
+                    description = currentState.expenseForm.description,
+                    amount = amount,
+                    payer = currentUser,
+                    debtors = currentGroup.users.filter { it.id in currentState.expenseForm.selectedPayerIds }.toMutableList(),
+                    date = LocalDate.parse(currentState.expenseForm.date),
+                )
+
+                val result = appRepository.expenses.addGroupExpense(currentGroup, newExpense)
+
+                if (result is DataResult.Success) {
+                    showErrorMessage("ExpenseAdded (fixme: not an error)")
+                    onDismissSheet()
+                    loadGroupDetails()
+                } else {
+                    showErrorMessage("an error occurred")
+                }
+            } catch (e: Exception) {
+                showErrorMessage("an error occurred")
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+}

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
+@Deprecated("dont use as screen")
 fun ExpenseInputScreen(
     navController: NavController,
     groupId: String,
@@ -38,7 +39,6 @@ fun ExpenseInputScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         ExpenseInputBottomSheet(
-            open = true,
             onDismiss = { navController.popBackStack() },
             onSave = { viewModel.onSaveClicked() },
             onOpenPayerSelection = { payerSheetOpen = true },
@@ -66,7 +66,6 @@ fun ExpenseInputScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseInputBottomSheet(
-    open: Boolean,
     onDismiss: () -> Unit,
     onSave: () -> Unit,
     onOpenPayerSelection: () -> Unit,
@@ -77,7 +76,6 @@ fun ExpenseInputBottomSheet(
     date: String,
     onDateChange: (String) -> Unit
 ) {
-    if (!open) return
 
     var datePickerOpen by remember { mutableStateOf(false) }
 

@@ -48,6 +48,7 @@ import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
+import com.mds.sharedexpenses.ui.expenses.ExpenseInputBottomSheet
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import java.time.LocalDate
 
@@ -265,17 +266,29 @@ fun GroupDetailScreen(
             }
         }
 
-        if (uiState.isEditSheetVisible) {
+        if (uiState.activeSheet == SheetType.EDIT_GROUP) {
             ModalBottomSheet(
-                onDismissRequest = { viewModel.onDismissEditSheet() },
+                onDismissRequest = { viewModel.onDismissSheet() },
                 sheetState = rememberModalBottomSheetState(),
             ) { EditBottomSheet(viewModel, uiState) }
         }
-        if (uiState.isExpenseSheetVisible) {
+        if (uiState.activeSheet == SheetType.ADD_EXPENSE) {
             ModalBottomSheet(
-                onDismissRequest = { viewModel.onDismissExpenseSheet() },
+                onDismissRequest = { viewModel.onDismissSheet() },
                 sheetState = rememberModalBottomSheetState(),
-            ) { /* TODO: add expense input*/ }
+            ) {
+                ExpenseInputBottomSheet(
+                    onDismiss = { viewModel.onDismissSheet() },
+                    onSave = { viewModel.saveExpense() },
+                    onOpenPayerSelection = { viewModel.onAddExpenseClicked() },
+                    description = viewModel.uiState.collectAsState().value.expenseForm.description,
+                    onDescriptionChange = viewModel::onExpenseDescriptionChange,
+                    amount = viewModel.uiState.collectAsState().value.expenseForm.amount,
+                    onAmountChange = viewModel::onExpenseAmountChange,
+                    date = viewModel.uiState.collectAsState().value.expenseForm.date,
+                    onDateChange = viewModel::onExpenseDateChange
+                )
+            }
         }
     }
 }
@@ -302,15 +315,6 @@ fun GroupDetailPreview() {
                 description = "Shared apartment expenses",
                 users = mutableListOf(sampleUser),
                 expenses = mutableListOf(sampleExpense),
-            )
-            setPreviewState(
-                GroupDetailUiState(
-                    group = sampleGroup,
-                    expensesByMonth = mapOf("April 2025" to listOf(sampleExpense)),
-                    totalOwed = sampleExpense.amount,
-                    debtStatus = 1,
-                    isLoading = false,
-                ),
             )
         }
     }
@@ -347,15 +351,6 @@ fun BottomSheetPreview() {
                 description = "Shared apartment expenses",
                 users = mutableListOf(sampleUser),
                 expenses = mutableListOf(sampleExpense),
-            )
-            setPreviewState(
-                GroupDetailUiState(
-                    group = sampleGroup,
-                    expensesByMonth = mapOf("April 2025" to listOf(sampleExpense)),
-                    totalOwed = sampleExpense.amount,
-                    debtStatus = 1,
-                    isLoading = false,
-                ),
             )
         }
     }
