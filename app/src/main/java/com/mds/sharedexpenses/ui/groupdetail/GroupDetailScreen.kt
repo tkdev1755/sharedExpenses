@@ -102,7 +102,8 @@ fun EditBottomSheet(
                 }
             }
         }
-        if (uiState.isAddMemberFieldVisible) {
+        //TODO: refactor this (this should become a parameter) - but works for now
+        if (viewModel.uiState.collectAsState().value.isAddMemberFieldVisible) {
             var newMember by remember { mutableStateOf("") }
 
             OutlinedTextField(
