@@ -32,6 +32,7 @@ data class GroupDetailUiState(
     //Form state
     val expenseForm: ExpenseFormState = ExpenseFormState(),
     val isAddMemberFieldVisible: Boolean = false,
+    val isPayerSelectionVisible: Boolean = false,
 )
 
 data class ExpenseFormState(
@@ -316,4 +317,11 @@ class GroupDetailViewModel(
             }
         }
     }
+
+    // Methods for the user Selection
+    fun onDismissPayerSelection() {
+        _uiState.update { it.copy(isPayerSelectionVisible = false) }
+        resetExpenseForm()
+    }
+    // end: Methods for the user Selection
 }

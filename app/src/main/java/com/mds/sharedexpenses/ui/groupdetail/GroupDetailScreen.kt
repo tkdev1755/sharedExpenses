@@ -49,6 +49,7 @@ import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.expenses.ExpenseInputBottomSheet
+import com.mds.sharedexpenses.ui.expenses.PayerSelectionBottomSheet
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import java.time.LocalDate
 
@@ -280,14 +281,16 @@ fun GroupDetailScreen(
             ModalBottomSheet(
                 onDismissRequest = { viewModel.onDismissSheet() },
                 sheetState = rememberModalBottomSheetState(),
-            ) { EditBottomSheet(
-                viewModel,
+            ) {
+                EditBottomSheet(
+                    viewModel,
                     name = uiState.group!!.name,
                     onNameChange = { viewModel.onGroupNameChange(it) },
                     description = uiState.group!!.description,
                     onDescriptionChange = { viewModel.onGroupDescriptionChange(it) }
                     //TODO: investigate: do we need UI state here?
-                ) }
+                )
+            }
         }
         if (uiState.activeSheet == SheetType.ADD_EXPENSE) {
             ModalBottomSheet(
@@ -306,80 +309,26 @@ fun GroupDetailScreen(
                     onDateChange = viewModel::onExpenseDateChange
                 )
             }
-        }
-    }
-}
+            if (uiState.isAddMemberFieldVisible) {
+                ModalBottomSheet(
+                    onDismissRequest = { viewModel.onDismissPayerSelection() },
+                    sheetState = rememberModalBottomSheetState(),
+                ) {
+                    PayerSelectionBottomSheet(
+                        open = uiState.isPayerSelectionVisible,
+                        onDismiss = viewModel::onDismissPayerSelection,
+                        onSave = viewModel::onDismissPayerSelection,
+                        /*TODO: this is somewhat redundant, the users are updated and saved when they are selected.
+                           The save button does basically nothing except for closing the dialog.
+                           This is not a bug however, as we want to save the state also if the Bottom Sheet is closed manually.
+                           Users assume, that their selection is the latest thing thats saved, also if they dismiss the Modal Sheet by dragging it.*/
+                        allPayers = uiState.group!!.users, // TODO: remove "!!"
+                        selectedPayers = uiState.expenseForm.selectedPayerIds,
+                        onTogglePayer = viewModel::onExpensePayerToggle
+                    )
+                }
 
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true)
-@Composable
-fun GroupDetailPreview() {
-    val viewModel = remember {
-        GroupDetailViewModel(SavedStateHandle()).apply {
-            val sampleUser = User(id = "user-1", name = "Alex")
-            val sampleExpense = Expense(
-                id = "expense-1",
-                payer = sampleUser,
-                debtors = mutableListOf(sampleUser),
-                amount = 42.5,
-                name = "Groceries",
-                description = "Weekly groceries",
-                date = LocalDate.of(2025, 4, 5),
-            )
-            val sampleGroup = Group(
-                id = "group-1",
-                name = "Roommates",
-                description = "Shared apartment expenses",
-                users = mutableListOf(sampleUser),
-                expenses = mutableListOf(sampleExpense),
-            )
-        }
-    }
-
-    SharedExpensesTheme {
-        GroupDetailScreen(
-            navController = NavController(context = LocalContext.current),
-            viewModel = viewModel,
-        )
-    }
-}
-
-@SuppressLint("ViewModelConstructorInComposable")
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-fun BottomSheetPreview() {
-    val sheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Expanded)
-    val viewModel = remember {
-        GroupDetailViewModel(SavedStateHandle()).apply {
-            val sampleUser = User(id = "user-1", name = "Alex")
-            val sampleExpense = Expense(
-                id = "expense-1",
-                payer = sampleUser,
-                debtors = mutableListOf(sampleUser),
-                amount = 42.5,
-                name = "Groceries",
-                description = "Weekly groceries",
-                date = LocalDate.of(2025, 4, 5),
-            )
-            val sampleGroup = Group(
-                id = "group-1",
-                name = "Roommates",
-                description = "Shared apartment expenses",
-                users = mutableListOf(sampleUser),
-                expenses = mutableListOf(sampleExpense),
-            )
-        }
-    }
-    val uiState = viewModel.uiState.collectAsState().value
-
-    SharedExpensesTheme {
-        ModalBottomSheet(
-            onDismissRequest = {},
-            sheetState = sheetState,
-            modifier = Modifier.fillMaxHeight(),
-        ) {
-            EditBottomSheet(viewModel = viewModel, name = "", description = "", onNameChange = {}, onDescriptionChange = {})
+            }
         }
     }
 }
