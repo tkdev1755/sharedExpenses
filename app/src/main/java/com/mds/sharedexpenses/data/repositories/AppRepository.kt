@@ -19,7 +19,7 @@ class AppRepository(private val firebaseService: FirebaseService) {
     val expenses: FIRExpenseRepository = FIRExpenseRepository(firebaseRepository)
     val transactions: FIRTransactionRepository = FIRTransactionRepository(firebaseRepository)
     val users: FIRUserRepository = FIRUserRepository(firebaseRepository)
-
+    public var hasUpdatedFirebaseFCM : Boolean = false
 
     // --- Base functions (authentification, etc.) ---
 
@@ -32,7 +32,9 @@ class AppRepository(private val firebaseService: FirebaseService) {
 
     suspend fun registerUser(email: String, password: String, name: String) =
         firebaseRepository.registerUser(email, password, name)
-
+    suspend fun saveFCMToken() : Boolean {
+        return firebaseRepository.saveNotificationToken()
+    }
     fun checkLoginStatus() = firebaseRepository.checkLoginStatus()
 
 }

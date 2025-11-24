@@ -7,12 +7,13 @@ import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import kotlinx.coroutines.tasks.await
 import com.mds.sharedexpenses.data.models.User
+import java.time.format.DateTimeFormatter
 
 class FirebaseRepositoryImpl(
     private val firebaseService: FirebaseService
 ) : FirebaseRepository {
 
-
+    override val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm")
     companion object{
         // This is the name of the function to call when wanting to notify a user about a unpaid expense
         public val notifyUserFunction = "notifyUser"
@@ -56,8 +57,8 @@ class FirebaseRepositoryImpl(
      * TODO : Finish to implement this function
      * @return
      */
-    override suspend fun saveNotificationToken() {
-        firebaseService.saveNotificationToken()
+    override suspend fun saveNotificationToken() : Boolean {
+        return firebaseService.saveNotificationToken()
     }
 
     /**
@@ -134,6 +135,7 @@ class FirebaseRepositoryImpl(
                    "invite_successful;;" -> return DataResult.Success(true)
                    "invite_failed;${errorCodes["USER_NOT_FOUND"]};" -> return DataResult.Error("${errorCodes["USER_NOT_FOUND"]}", "Invite failed because the user does not exist")
                     "invite_failed;${errorCodes["PERMISSION_ERROR"]};" -> return DataResult.Error("${errorCodes["PERMISSION_ERROR"]}", "Invite failed because the user does not have permission to invite other users")
+                    "no_message" -> return DataResult.Success(true)
                 }
             }
             else{
@@ -142,6 +144,7 @@ class FirebaseRepositoryImpl(
             }
         }
         catch (e: Exception){
+            print("ERROR WHEN CALLING CLOUD FUNCTION EXCEPTION -> ${e.printStackTrace()}")
          return DataResult.Error("404", e.message)
         }
 

@@ -1,6 +1,6 @@
 package com.mds.sharedexpenses.data.models
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Expense(
     val id: String,
@@ -10,5 +10,5 @@ data class Expense(
     var name: String = "",
     var description: String = "",
     var icon: String = "",
-    var date: LocalDate = LocalDate.now()
+    var date: LocalDateTime = LocalDateTime.now()
 )

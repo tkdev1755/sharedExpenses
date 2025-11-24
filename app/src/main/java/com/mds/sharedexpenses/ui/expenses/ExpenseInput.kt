@@ -1,36 +1,65 @@
 package com.mds.sharedexpenses.ui.expenses
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
+import com.mds.sharedexpenses.data.models.User
+import com.mds.sharedexpenses.ui.groupdetail.ChipItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseInputBottomSheet(
-    open: Boolean,
     onDismiss: () -> Unit,
-    onSave: (description: String, amount: String, date: String, selectedPayers: List<String>) -> Unit,
+    onSave: () -> Unit,
     onOpenPayerSelection: () -> Unit,
+    name: String,
+    onNameChange: (String) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
     amount: String,
     onAmountChange: (String) -> Unit,
     date: String,
+    payersChips : MutableList<ChipItem>,
+    onPayerSelect : (Int) -> Unit,
     onDateChange: (String) -> Unit
 ) {
-    if (!open) return
+
+    var datePickerOpen by remember { mutableStateOf(false) }
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
@@ -40,21 +69,19 @@ fun ExpenseInputBottomSheet(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
-
-        var datePickerOpen by remember { mutableStateOf(false) }
-
             Text("Add expense", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
-
+            OutlinedTextField(
+                value = name,
+                onValueChange = onNameChange,
+                label = { Text("Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
                 label = { Text("Description") },
-                trailingIcon = {
-                    IconButton(onClick = { /* action later */ }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add attachment")
-                    }
-                },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(12.dp))
@@ -86,7 +113,7 @@ fun ExpenseInputBottomSheet(
                         millis?.let {
                             val localDate = java.time.Instant.ofEpochMilli(it)
                                 .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate()
+                                .toLocalDateTime()
                             onDateChange(localDate.toString())
                         }
                     },
@@ -94,114 +121,86 @@ fun ExpenseInputBottomSheet(
                 )
             }
 
-
             Spacer(Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                TextButton(onClick = onOpenPayerSelection) {
-                    Text("Split equally")
-                }
-            }
+            Text("Who is this expense for?")
+            Spacer(Modifier.height(16.dp))
+            val chips = payersChips
+            ChipsRow(
+                chips = chips,
+                onChipClicked = { id -> onPayerSelect(id) }
+            )
 
             Spacer(Modifier.height(20.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Button(
+                onClick = onSave,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
-                    Text("dismiss")
-                }
-                Spacer(Modifier.width(12.dp))
-                Button(
-                    onClick = { onSave(description, amount, date, emptyList()) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("save")
-                }
+                Text("Save expense")
             }
-            Spacer(Modifier.height(12.dp))
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PayerSelectionBottomSheet(
     open: Boolean,
     onDismiss: () -> Unit,
-    onSave: (selected: List<String>) -> Unit,
-    allPayers: List<String>,
+    onSave: () -> Unit,
+    allPayers: List<User>,
     selectedPayers: Set<String>,
-    onTogglePayer: (String) -> Unit
+    onTogglePayer: (String) -> Unit,
 ) {
     if (!open) return
+
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .imePadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.Start
+                .verticalScroll(rememberScrollState())
         ) {
-            Text("Select payers", style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(12.dp))
+            Text("Select participants", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(16.dp))
 
-            allPayers.forEach { name ->
-                val checked = name in selectedPayers
+            allPayers.forEach { user ->
+                val checked = user.id in selectedPayers
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(40.dp)
                         .toggleable(
                             value = checked,
                             role = Role.Checkbox,
-                            onValueChange = { onTogglePayer(name) }
+                            onValueChange = { onTogglePayer(user.id) },
                         )
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Checkbox(checked = checked, onCheckedChange = null)
                     Spacer(Modifier.width(12.dp))
-                    Text(name, style = MaterialTheme.typography.bodyLarge)
+                    Text(user.name, style = MaterialTheme.typography.bodyLarge)
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
 
-            Row(
+            Button(
+                onClick = onSave,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .height(48.dp),
             ) {
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(35.dp)
-                ) {
-                    Text("dismiss")
-                }
-                Spacer(Modifier.width(12.dp))
-                Button(
-                    onClick = { onSave(selectedPayers.toList()) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("save")
-                }
+                Text("Save selection")
             }
-            Spacer(Modifier.height(12.dp))
         }
     }
 }
 
-//DATE PICKER -----------------------------------------------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerModal(
@@ -230,59 +229,45 @@ fun DatePickerModal(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-private fun DatePickerModalPreview() {
-    SharedExpensesTheme {
-        DatePickerModal(
-            onDateSelected = {},
-            onDismiss = {}
+fun SelectableChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    androidx.compose.material3.Surface(
+        onClick = onClick,
+        shape = androidx.compose.material3.MaterialTheme.shapes.medium,
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        tonalElevation = if (selected) 4.dp else 0.dp
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         )
     }
 }
 
-// -------------------------------------------------------------------
-// PREVIEW BOTTOM SHEETS
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showSystemUi = true, showBackground = true)
+
 @Composable
-private fun ExpenseFlowPreview() {
-    SharedExpensesTheme {
-        var openExpense by remember { mutableStateOf(true) }
-        var openPayers by remember { mutableStateOf(false) }
-
-        var description by remember { mutableStateOf("") }
-        var amount by remember { mutableStateOf("") }
-        var date by remember { mutableStateOf("") }
-
-        val all = listOf("Max", "Emma", "Lars", "Joe")
-        var selected by remember { mutableStateOf(setOf("Max", "Emma", "Joe")) }
-
-        Box(Modifier.fillMaxSize()) {
-            ExpenseInputBottomSheet(
-                open = openExpense,
-                onDismiss = { openExpense = false },
-                onSave = { _, _, _, _ -> openExpense = false },
-                onOpenPayerSelection = { openPayers = true },
-                description = description,
-                onDescriptionChange = { description = it },
-                amount = amount,
-                onAmountChange = { amount = it },
-                date = date,
-                onDateChange = { date = it }
-            )
-
-            PayerSelectionBottomSheet(
-                open = openPayers,
-                onDismiss = { openPayers = false },
-                onSave = { sel -> selected = sel.toSet().also { openPayers = false } },
-                allPayers = all,
-                selectedPayers = selected,
-                onTogglePayer = { name ->
-                    selected = if (name in selected) selected - name else selected + name
+fun ChipsRow(
+    chips: List<ChipItem>,
+    onChipClicked: (Int) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(chips.size) { index ->
+            SelectableChip(
+                label = chips[index].label,
+                selected = chips[index].isSelected,
+                onClick = {
+                    onChipClicked(index)
+                    println("Hello clicking chip n°$index")
                 }
             )
         }
     }
 }
-

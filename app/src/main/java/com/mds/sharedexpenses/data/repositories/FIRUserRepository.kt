@@ -22,7 +22,6 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
             return DataResult.Error("LOGIN_ERROR", "User is not logged in.")
         }
         val userRef = firebaseRepository.getUserDirectory()
-        println("userRef: $userRef")
         val data = firebaseRepository.fetchDBRef<Map<String, *>>(userRef)
         if (data !is DataResult.Success) return DataResult.Error("FIREBASE_ERROR", "Failed to fetch user data>()")
         var user : User = fromJsonUser(data.data)?: return DataResult.Error("FIREBASE_ERROR", "Failed to parse user data>()")
@@ -38,7 +37,7 @@ class FIRUserRepository(private val firebaseRepository : FirebaseRepository){
         val groupsMap = privateData["groups"] as? Map<String, Map<String, Any>> ?: return emptyList()
         return groupsMap.mapNotNull { (groupId, groupData) ->
             val joined = groupData["joined"] as? Boolean ?: false
-            if (joined) groupId else null
+            groupId
         }
     }
 

@@ -24,14 +24,19 @@ open class BaseViewModel : ViewModel() {
         getUserData()
     }
 
-    protected fun getUserData() {
+    fun getUserData() {
 
         viewModelScope.launch {
             if (appRepository.checkLoginStatus()){
                 val userData = appRepository.users.getCurrentUserData()
+                if (!appRepository.hasUpdatedFirebaseFCM){
+
+                    appRepository.hasUpdatedFirebaseFCM = appRepository.saveFCMToken()
+                }
                 println("gettingUserData")
                 if (userData is DataResult.Success) {
                     _currentUser.postValue(userData.data)
+
                 }
                 else if (userData is DataResult.Error){
                     _errorData.postValue("Error getting user data")

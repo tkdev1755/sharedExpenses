@@ -6,7 +6,6 @@ import com.mds.sharedexpenses.data.repositories.AppRepository
 object AppContainer {
     private val firebaseService = FirebaseService.getInstance()
 
-
     val appRepository = AppRepository(firebaseService)
 }
 

@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,6 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.auth.LoginScreen
@@ -32,10 +36,25 @@ import com.mds.sharedexpenses.ui.welcome.WelcomeScreen
 fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
+    notificationAsk : () -> Unit,
     viewModel: HomeViewModel
 ) {
     //collects state from viewmodel
     val uiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            println("EVENT !!!!")
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.updateGroup()
+
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (!viewModel.checkLoginStatus()){
@@ -55,7 +74,10 @@ fun HomeScreen(
 
     }
     if (uiState.showLoginSheet) {
-        onboardingSheet(viewModel, uiState)
+        onboardingSheet(viewModel, notificationAsk,uiState)
+    }
+    if (uiState.showGroupAddSheet){
+
     }
     Scaffold(
         modifier = modifier,
@@ -188,6 +210,7 @@ private fun GroupsSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun onboardingSheet(
     viewModel : HomeViewModel,
+    notificationAsk: () -> Unit,
     uiState : HomeUiState
 ){
     ModalBottomSheet(
@@ -210,9 +233,14 @@ private fun GroupsSection(
             )
 
             AuthStep.ONBOARDING -> OnboardingScreen(
+                onNotificationActivation = { value ->
+                    viewModel.onNotificationActivation(value)
+                    notificationAsk
+                                           },
+                notifictionState = uiState.notificationStatus,
                 onFinish = {
                     viewModel.finishOnboarding()
-                }
+                },
             )
 
             AuthStep.WELCOME -> WelcomeScreen(

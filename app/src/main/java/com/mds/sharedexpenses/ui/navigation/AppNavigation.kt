@@ -14,6 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mds.sharedexpenses.ui.addgroup.AddGroupScreen
+import com.mds.sharedexpenses.ui.addgroup.AddGroupViewModel
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailScreen
 import com.mds.sharedexpenses.ui.groupdetail.GroupDetailViewModel
 import com.mds.sharedexpenses.ui.home.HomeScreen
@@ -24,7 +26,9 @@ import com.mds.sharedexpenses.utils.SnackbarManager
 
 
 @Composable
-fun AppNavigation(){
+fun AppNavigation(
+    notificationAsk : () -> Unit
+){
 
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -45,6 +49,7 @@ fun AppNavigation(){
             HomeScreen(
                 modifier = Modifier.padding(innerPadding),
                 navController = navController,
+                notificationAsk = notificationAsk,
                 viewModel = homeViewModel
             )
         }
@@ -69,5 +74,11 @@ fun AppNavigation(){
                 onBackClick = { navController.popBackStack() }
             )
         }
+        composable(route = Screen.AddGroup.route) {
+            val addGroupViewModel: AddGroupViewModel = viewModel()
+            AddGroupScreen(
+                navController = navController,
+                viewModel = addGroupViewModel
+            )
+        }
 }}}
-

@@ -52,7 +52,6 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         }
     }
     suspend fun fromJsonGroup(id: String, data: Map<String, *>): Group {
-        println("Received data :${data}")
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val usersList : MutableList<User> = mutableListOf()
@@ -95,6 +94,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
             val userDebtsMap = userData["debts"] as? Map<String, Map<String, Any>> ?: continue
             for ((debtId, debtData) in userDebtsMap) {
                 val debt = debtRepo.fromJsonDebt(debtData, usersList, expensesList, debtId,
+                    userId,
                     Group(
                         id = data["id"] as? String ?: "",
                         name = data["name"] as? String ?: "",
@@ -128,8 +128,8 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     }
 
     public suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
-        val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id }
-        if (associatedDebt == null) {return DataResult.Error("","") }
+        val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id && it.debtor == user.id}
+        if (associatedDebt == null) {return DataResult.Error("404","No debt associated to this user and this expense found") }
         val data = hashMapOf(
             "group" to group.id,
             "user" to user.id,
@@ -305,8 +305,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         if(dataRes is DataResult.Success) {
             val userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
             val userGroupDirectory = userDirectory.child("private/groups/${group.id}")
-            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm")
-            val formatted = LocalDateTime.now().format(formatter)
+            val formatted = LocalDateTime.now().format(firebaseRepository.formatter)
             val userData = mapOf(
                 "added_at" to formatted,
                 "joined" to true

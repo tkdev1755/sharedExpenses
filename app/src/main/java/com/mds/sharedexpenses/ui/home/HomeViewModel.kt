@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import com.mds.sharedexpenses.domain.di.AppContainer
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 
 enum class AuthStep {
     LOGIN,
@@ -25,8 +26,10 @@ data class HomeUiState(
     val groupWithRecentActivity: Group? = null, // TODO: if there are no groups with recent activity, dont show the corresponding block
     val groups: List<Group> = emptyList(),
     val showLoginSheet: Boolean = false,
+    val showGroupAddSheet: Boolean = false,
     val currentStep : AuthStep = AuthStep.WELCOME,
-    val isLoggedIn : Boolean = false
+    val isLoggedIn : Boolean = false,
+    val notificationStatus : Boolean = false
 )
 
 sealed class HomeNavigationEvent {
@@ -46,6 +49,7 @@ class HomeViewModel : BaseViewModel() {
 
     init {
         fetchGroups()
+
     }
     private fun fetchGroups() {
         // TODO: fetch groups from repository
@@ -84,7 +88,34 @@ class HomeViewModel : BaseViewModel() {
         }
         /**/
     }
+    public fun updateGroup(){
+        viewModelScope.launch {
+            val userResult = appRepository.users.getCurrentUserData()
 
+            if(userResult is DataResult.Success){
+
+                val user = userResult.data
+                val groups = user.groups.toList()
+
+                //Placeholder for recent activity
+                val recentGroup = groups.firstOrNull()
+                _uiState.update { state ->
+                    state.copy(
+                        groupWithRecentActivity = recentGroup,
+                        groups = groups
+                    )
+                }
+            }else if(userResult is DataResult.Error){
+
+                val message = userResult.errorMessage
+                    .orEmpty()
+                    .ifEmpty { "Error getting user data" }
+                showErrorMessage(message)
+            }
+        }
+
+
+    }
     fun onGroupClicked(group: Group) {
         // TODO: navigate to group details page
         viewModelScope.launch {
@@ -93,6 +124,13 @@ class HomeViewModel : BaseViewModel() {
     }
     suspend fun checkLoginStatus() : Boolean {
         return appRepository.checkLoginStatus()
+    }
+
+    fun onNotificationActivation(value:Boolean){
+        _uiState.update { state -> state.copy(
+            notificationStatus = value
+        ) }
+        return
     }
 
     fun onDisconnect(){
@@ -144,7 +182,7 @@ class HomeViewModel : BaseViewModel() {
                 val userRes: DataResult<Boolean> = appRepository.users.addUser(newUser)
                 when (userRes) {
                     is DataResult.Success -> {
-                        _uiState.value = _uiState.value.copy(showLoginSheet = false)
+                        _uiState.value = _uiState.value.copy(currentStep = AuthStep.ONBOARDING)
                     }
                     is DataResult.Error -> {
                         showErrorMessage(userRes.errorMessage.orEmpty())
