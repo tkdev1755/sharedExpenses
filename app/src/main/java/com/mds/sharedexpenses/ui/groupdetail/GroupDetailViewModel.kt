@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.data.models.Transaction
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.ui.BaseViewModel
@@ -40,6 +41,9 @@ data class GroupDetailUiState(
     val expenseForm: ExpenseFormState = ExpenseFormState(),
     val isAddMemberFieldVisible: Boolean = false,
     val isPayerSelectionVisible: Boolean = false,
+    // Dialog
+    val detailVisible : Boolean = false,
+    val selectedExpense : Expense? = null,
 )
 
 data class ExpenseFormState(
@@ -381,6 +385,86 @@ class GroupDetailViewModel(
         }
     }
 
+    fun onShowExpenseInfo(expense: Expense) {
+        _uiState.update { it.copy(
+            detailVisible = true,
+            selectedExpense = expense
+        )}
+    }
+
+    fun onDismissDialog() {
+        _uiState.update { it.copy(
+            detailVisible = true,
+            selectedExpense = null
+        )}
+    }
+
+    fun onPayButtonClicked(expense:Expense, user:User){
+        val group = uiState.value.group
+        if (group == null){
+            showErrorMessage("Group data wasn't fetched correctly")
+            return
+        }
+        val associatedDebt = group.debts.filter { it.expenses.id == expense.id && it.debtor == user.id }
+        if (associatedDebt.isEmpty()){
+            showErrorMessage("Expense was not found")
+            return
+        }
+        val amount = associatedDebt.sumOf {
+            it.amount
+        }
+        val newTransaction = Transaction(
+            "",
+            expense,
+            amount,
+            issuer = user,
+            receiver =expense.payer
+        )
+        println("Created transaction")
+        viewModelScope.launch {
+            println("Adding transaction right now")
+            val result : DataResult<Boolean>  = appRepository.transactions.addGroupTransaction(group!!,newTransaction)
+            if (result is DataResult.Success){
+                println("Transaction added successfully")
+            }
+            else if (result is DataResult.Error){
+                showErrorMessage("${result.errorMessage}")
+                println("Transaction was not added : ${result.errorMessage}")
+            }
+        }
+    }
+
+    fun onNotifyButtonClicked(expense:Expense, user:User){
+        viewModelScope.launch {
+            if (uiState.value.group != null){
+                appRepository.groups.notifyUserFromExpense(
+                    uiState.value.group!!,
+                    user,
+                    expense
+                )
+            }
+
+        }
+        return
+    }
+
+    fun getOwedAmountFromUser(expense:Expense, user:User) : Double{
+        if (uiState.value.group != null){
+            val group = uiState.value.group!!
+            val debts = group.debts.filter { it.expenses.id == expense.id  && it.debtor == user.id}
+            val transactions = group.transactions.filter {
+                it.expense.id == expense.id && it.issuer.id == user.id
+            }
+            if (debts.size > 1){
+                println("Debts are superior to 1 -> Weird....")
+            }
+            val amount : Double = debts.sumOf { it.amount }
+            return amount
+        }
+        else{
+            return -1.0;
+        }
+    }
     // Methods for the user Selection
     fun onDismissPayerSelection() {
         _uiState.update { it.copy(isPayerSelectionVisible = false) }

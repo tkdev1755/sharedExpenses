@@ -4,11 +4,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Doorbell
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.models.Expense
+import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.expenses.ExpenseInputBottomSheet
@@ -152,10 +159,13 @@ fun Int.toOrdinal(): String {
 @Composable
 fun ExpenseRecord(
     expense: Expense,
+    currentUser: String,
     debt : Debt?,
     onClickDelete: () -> Unit,
     onClickEdit: () -> Unit,
     modifier: Modifier = Modifier,
+    getAmountOwed: (Expense) -> Double,
+    onClickDetail : () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -175,19 +185,134 @@ fun ExpenseRecord(
             Column(
                 modifier = modifier.fillMaxWidth(),
             ) {
+                val isExpensePayer = expense.payer.id == currentUser
+                val name  = if (isExpensePayer) "you" else expense.payer.name
                 Text(expense.name)
-                Text("${expense.payer.name} paid ${expense.amount}€", color = Color.Gray)
+                Text("$name paid ${expense.amount}€", color = Color.Gray)
             }
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.weight(2.0F),
         ) {
-            if (debt != null){
+            if (debt != null && debt.user.id != currentUser){
                 Text("You owe", color = Color.Gray)
-                Text("${debt.amount}€")
+                Text("${getAmountOwed(expense)}€")
             }
         }
+        IconButton(
+            onClick = onClickDetail
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Info,
+                contentDescription = "See details",
+            )
+        }
+    }
+}
+
+@Composable
+fun ExpenseInfoDialog(
+    expense: Expense,
+    currentUser : String,
+    onDismiss: () -> Unit,
+    onNotifyClick : (user:User) -> Unit,
+    onPayClicked: (expense:Expense) -> Unit,
+    getAmountOwed : (expense:Expense,user:User) -> Double,
+    modifier: Modifier = Modifier,
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text("Expense Details : ${expense.name}")
+        },
+        text = {
+            Column {
+                Text("Amount : ${expense.amount}€")
+                Spacer(Modifier.height(16.dp))
+                Text("Paid by : ${expense.payer.name}")
+                Spacer(Modifier.height(16.dp))
+                Text("Date : ${expense.date}")
+                Spacer(Modifier.height(16.dp))
+                if (expense.payer.id == currentUser){
+                    ExpenseInfo(
+                        expense = expense,
+                        onNotifyClick = onNotifyClick,
+                        getAmountOwed = getAmountOwed,
+                        modifier = modifier
+                    )
+                }
+                else if (expense.debtors.any { it.id == currentUser }){
+                    ExpenseActions(
+                        expense = expense,
+                        modifier = modifier,
+                        onPayClicked = onPayClicked
+                    )
+                }
+            }
+
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+fun ExpenseActions(
+    expense: Expense,
+    onPayClicked : (expense:Expense) -> Unit,
+    modifier: Modifier
+){
+    Button(
+        onClick = {onPayClicked(expense)}
+    ) {
+        Text("Pay back")
+    }
+}
+
+@Composable
+fun ExpenseInfo(
+    expense: Expense,
+    modifier: Modifier,
+    getAmountOwed: (expense:Expense,user:User) -> Double,
+    onNotifyClick : (user:User) -> Unit
+){
+    val users = expense.debtors.filter { it.id != expense.payer.id }
+    println("ERROR WAS ${users.size}")
+    LazyColumn {
+        items(users.size) { element ->
+            userActions(users[element], owedAmount = getAmountOwed(expense,users[element]), onNotifyClick = onNotifyClick )
+        }
+    }
+}
+
+@Composable
+fun userActions(
+    user: User,
+    owedAmount : Double,
+    onNotifyClick : (user:User) -> Unit
+){
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("${user.name}")
+        Column {
+            Text("Owes you")
+            Text("${owedAmount}€")
+        }
+        IconButton(
+            onClick = {onNotifyClick(user)}
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Notifications,
+                contentDescription = "Notify user"
+            )
+        }
+
     }
 }
 
@@ -247,13 +372,6 @@ fun GroupDetailScreen(
                     CircularProgressIndicator()
                     Text("Loading group details...")
                 }
-            } else if (nothingOwed) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text("Amazing, you don't owe anything!")
-                }
             } else {
                 StatsBox(totalOwe, { /* show Modal*/ })
 
@@ -267,6 +385,9 @@ fun GroupDetailScreen(
                             onClickEdit = { },
                             debt = entry.component2(),
                             modifier = Modifier,
+                            currentUser = uiState.currentUser?.id ?: "",
+                            getAmountOwed = {expense -> viewModel.getOwedAmountFromUser(expense,uiState.currentUser!!)},
+                            onClickDetail = { viewModel.onShowExpenseInfo(entry.component1()) },
                         )
                     }
                 }
@@ -329,6 +450,24 @@ fun GroupDetailScreen(
                 }
 
             }
+        }
+        if (uiState.detailVisible && uiState.selectedExpense != null) {
+            ExpenseInfoDialog(
+                expense = uiState.selectedExpense!!,
+                onDismiss = { viewModel.onDismissDialog() },
+                currentUser = uiState.currentUser?.id ?: "",
+                onNotifyClick = { user->
+                  viewModel.onNotifyButtonClicked(uiState.selectedExpense!!,user)
+                },
+                getAmountOwed = viewModel::getOwedAmountFromUser,
+                onPayClicked = { expense ->
+                    if (uiState.currentUser != null){
+                        viewModel.onPayButtonClicked(expense,uiState.currentUser!!)
+
+                    }
+                               },
+                modifier = modifier
+            )
         }
     }
 }

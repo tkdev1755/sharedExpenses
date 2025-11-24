@@ -128,8 +128,8 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
     }
 
     public suspend fun notifyUserFromExpense(group:Group ,user:User, expense:Expense)  : DataResult<Boolean>{
-        val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id }
-        if (associatedDebt == null) {return DataResult.Error("","") }
+        val associatedDebt = group.debts.firstOrNull { it.expenses.id == expense.id && it.debtor == user.id}
+        if (associatedDebt == null) {return DataResult.Error("404","No debt associated to this user and this expense found") }
         val data = hashMapOf(
             "group" to group.id,
             "user" to user.id,
