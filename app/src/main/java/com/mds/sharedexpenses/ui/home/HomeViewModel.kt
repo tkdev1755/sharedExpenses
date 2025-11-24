@@ -28,7 +28,8 @@ data class HomeUiState(
     val showLoginSheet: Boolean = false,
     val showGroupAddSheet: Boolean = false,
     val currentStep : AuthStep = AuthStep.WELCOME,
-    val isLoggedIn : Boolean = false
+    val isLoggedIn : Boolean = false,
+    val notificationStatus : Boolean = false
 )
 
 sealed class HomeNavigationEvent {
@@ -125,6 +126,13 @@ class HomeViewModel : BaseViewModel() {
         return appRepository.checkLoginStatus()
     }
 
+    fun onNotificationActivation(value:Boolean){
+        _uiState.update { state -> state.copy(
+            notificationStatus = value
+        ) }
+        return
+    }
+
     fun onDisconnect(){
         _uiState.value = _uiState.value.copy(showLoginSheet = true)
     }
@@ -174,7 +182,7 @@ class HomeViewModel : BaseViewModel() {
                 val userRes: DataResult<Boolean> = appRepository.users.addUser(newUser)
                 when (userRes) {
                     is DataResult.Success -> {
-                        _uiState.value = _uiState.value.copy(showLoginSheet = false)
+                        _uiState.value = _uiState.value.copy(currentStep = AuthStep.ONBOARDING)
                     }
                     is DataResult.Error -> {
                         showErrorMessage(userRes.errorMessage.orEmpty())

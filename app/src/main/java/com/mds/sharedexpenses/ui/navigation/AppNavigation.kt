@@ -26,7 +26,9 @@ import com.mds.sharedexpenses.utils.SnackbarManager
 
 
 @Composable
-fun AppNavigation(){
+fun AppNavigation(
+    notificationAsk : () -> Unit
+){
 
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -47,6 +49,7 @@ fun AppNavigation(){
             HomeScreen(
                 modifier = Modifier.padding(innerPadding),
                 navController = navController,
+                notificationAsk = notificationAsk,
                 viewModel = homeViewModel
             )
         }

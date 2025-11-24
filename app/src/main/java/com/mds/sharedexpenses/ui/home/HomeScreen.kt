@@ -36,6 +36,7 @@ import com.mds.sharedexpenses.ui.welcome.WelcomeScreen
 fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
+    notificationAsk : () -> Unit,
     viewModel: HomeViewModel
 ) {
     //collects state from viewmodel
@@ -73,7 +74,7 @@ fun HomeScreen(
 
     }
     if (uiState.showLoginSheet) {
-        onboardingSheet(viewModel, uiState)
+        onboardingSheet(viewModel, notificationAsk,uiState)
     }
     if (uiState.showGroupAddSheet){
 
@@ -209,6 +210,7 @@ private fun GroupsSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun onboardingSheet(
     viewModel : HomeViewModel,
+    notificationAsk: () -> Unit,
     uiState : HomeUiState
 ){
     ModalBottomSheet(
@@ -231,9 +233,14 @@ private fun GroupsSection(
             )
 
             AuthStep.ONBOARDING -> OnboardingScreen(
+                onNotificationActivation = { value ->
+                    viewModel.onNotificationActivation(value)
+                    notificationAsk
+                                           },
+                notifictionState = uiState.notificationStatus,
                 onFinish = {
                     viewModel.finishOnboarding()
-                }
+                },
             )
 
             AuthStep.WELCOME -> WelcomeScreen(
