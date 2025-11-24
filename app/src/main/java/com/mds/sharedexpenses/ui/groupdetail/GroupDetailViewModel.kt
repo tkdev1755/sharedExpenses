@@ -129,7 +129,10 @@ class GroupDetailViewModel(
         }
 
 
-        val totalOwed = group.debts.sumOf {
+        val totalOwed = group.debts.filter{
+            it.debtor == currentUserId
+        }
+        .sumOf {
             it.amount
         }
 

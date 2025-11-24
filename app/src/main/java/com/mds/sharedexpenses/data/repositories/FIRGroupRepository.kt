@@ -94,6 +94,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
             val userDebtsMap = userData["debts"] as? Map<String, Map<String, Any>> ?: continue
             for ((debtId, debtData) in userDebtsMap) {
                 val debt = debtRepo.fromJsonDebt(debtData, usersList, expensesList, debtId,
+                    userId,
                     Group(
                         id = data["id"] as? String ?: "",
                         name = data["name"] as? String ?: "",
