@@ -2,6 +2,7 @@ package com.mds.sharedexpenses.ui.groupdetail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.data.models.User
@@ -16,6 +17,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.exp
+
 data class ChipItem(
     val id: User,
     val label: String,
@@ -26,7 +29,7 @@ data class GroupDetailUiState(
     // Data
     val group: Group? = null,
     val currentUser: User? = null,
-    val expensesByMonth: Map<String, List<Expense>> = emptyMap(),
+    val expensesByMonth: Map<String, List<Pair<Expense, Debt?>>> = emptyMap(),
     val totalOwed: Double = 0.0,
     // UI
     val isLoading: Boolean = true,
@@ -102,24 +105,36 @@ class GroupDetailViewModel(
     private fun calculateGroupStats(
         group: Group,
         currentUserId: String,
-    ): Pair<Map<String, List<Expense>>, Double> {
+    ): Pair<Map<String, List<Pair<Expense,Debt?>>>, Double> {
         val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
 
         val expensesByMonth = group.expenses
             .sortedByDescending { it.date }
             .groupBy { expense -> expense.date.format(formatter) }
+        val expensesWithDebts: Map<String, List<Pair<Expense, Debt?>>> =
+            expensesByMonth.mapValues { (month, expenses) ->
+                expenses.map { expense ->
 
-        // calculating Owed Amount
-        val totalOwed = group.expenses
-            .filter { expense ->
-                expense.debtors.any { it.id == currentUserId } && expense.payer.id != currentUserId
-            }
-            .sumOf { expense ->
-                val splitCount = expense.debtors.size
-                if (splitCount > 0) expense.amount / splitCount else 0.0
+                    val associatedDebt = group.debts.firstOrNull { debt ->
+                        debt.expenses.id == expense.id
+                    }
+
+                    expense to associatedDebt
+                }
             }
 
-        return Pair(expensesByMonth, totalOwed)
+
+        val filterExpenses = group.expenses.filter {
+            expense -> expense.debtors.any { it.id == currentUserId } && expense.payer.id != currentUserId
+        }
+
+
+        val totalOwed = group.debts.sumOf {
+            it.amount
+        }
+
+
+        return Pair(expensesWithDebts, totalOwed)
     }
 
     fun onAddMemberClicked(){
@@ -146,7 +161,7 @@ class GroupDetailViewModel(
                 is DataResult.Error -> {
                     val message =
                         res.errorMessage.orEmpty().ifEmpty { "Error inviting user" }
-                    println("Error while calling cloud function -> inviteUser ${res.errorMessage}")
+                    println("Error while calling cloud function -> inviteUser ${res.errorMessage} ${res.errorCode}")
                     showErrorMessage(message)
 
                 }

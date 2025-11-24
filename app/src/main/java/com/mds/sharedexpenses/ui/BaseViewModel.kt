@@ -30,7 +30,7 @@ open class BaseViewModel : ViewModel() {
             if (appRepository.checkLoginStatus()){
                 val userData = appRepository.users.getCurrentUserData()
                 if (!appRepository.hasUpdatedFirebaseFCM){
-                    println("NOW SAVING USER TOKEN")
+
                     appRepository.hasUpdatedFirebaseFCM = appRepository.saveFCMToken()
                 }
                 println("gettingUserData")

@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.mds.sharedexpenses.data.models.Debt
 import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
@@ -151,6 +152,7 @@ fun Int.toOrdinal(): String {
 @Composable
 fun ExpenseRecord(
     expense: Expense,
+    debt : Debt?,
     onClickDelete: () -> Unit,
     onClickEdit: () -> Unit,
     modifier: Modifier = Modifier,
@@ -173,16 +175,18 @@ fun ExpenseRecord(
             Column(
                 modifier = modifier.fillMaxWidth(),
             ) {
-                Text(expense.description)
-                Text("Max paid €11,21", color = Color.Gray)
+                Text(expense.name)
+                Text("${expense.payer.name} paid ${expense.amount}€", color = Color.Gray)
             }
         }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.weight(2.0F),
         ) {
-            Text("You owe", color = Color.Gray)
-            Text("€${expense.amount}")
+            if (debt != null){
+                Text("You owe", color = Color.Gray)
+                Text("${debt.amount}€")
+            }
         }
     }
 }
@@ -258,9 +262,10 @@ fun GroupDetailScreen(
                     entries.forEach { entry ->
                         HorizontalDivider()
                         ExpenseRecord(
-                            expense = entry,
+                            expense = entry.component1(),
                             onClickDelete = { },
                             onClickEdit = { },
+                            debt = entry.component2(),
                             modifier = Modifier,
                         )
                     }

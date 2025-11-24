@@ -113,7 +113,7 @@ class FirebaseService private constructor(){
                 // This continuation runs on either success or failure, but if the task
                 // has failed then result will throw an Exception which will be
                 // propagated down.
-                val result = task.result?.data as String
+                val result = task.result?.data as? String? ?: "no_message"
                 result
             }
     }

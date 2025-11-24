@@ -21,7 +21,7 @@ class FIRDebtRepository(private val firebaseRepository : FirebaseRepository) {
 
     fun fromJsonDebt(data : Map<String, Any>?, usersList : List<User>, expensesList: List<Expense>, debtId : String, group : Group): Debt? {
         if(data == null) return null
-        val debtsMap = data[debtId] as? Map<String, Map<String, Any>> ?: emptyMap()
+        val debtsMap = data as? Map<String, Map<String, Any>> ?: emptyMap()
         val expId = debtsMap["expense_id"] as? String ?: ""
         val linkExpense = expensesList.firstOrNull { expense -> expense.id == expId } ?: Expense(id = expId, payer = usersList.first(), amount = 0.0, debtors = mutableListOf())
         val userId = debtsMap["user"] as? String ?: ""

@@ -28,13 +28,15 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
         if(data == null) return null
         val expensesMap = data[expenseId] as? Map<String, Map<String, Any>> ?: emptyMap()
         val payerId = expensesMap["payer"] as? String ?: ""
+
+        val amount = expensesMap["amount"].toString().toDoubleOrNull() ?: -1.0
         val payerUser = usersList.firstOrNull { user -> user.id == payerId } ?: User(id = payerId, name = "", email = "", groups = mutableListOf())
         val debtorIds = expensesMap["debtors"] as? List<String> ?: emptyList()
         val debtorUsers = debtorIds.map { debtorId -> usersList.firstOrNull { user -> user.id == debtorId } ?: User(id = debtorId, name = "", email = "", groups = mutableListOf()) }.toMutableList()
         return Expense(
                 id = expenseId,
                 payer = payerUser,
-                amount = 0.0,
+                amount = amount,
                 debtors = debtorUsers,
                 name = expensesMap["name"] as? String ?: "",
                 description = expensesMap["description"] as? String ?: "",

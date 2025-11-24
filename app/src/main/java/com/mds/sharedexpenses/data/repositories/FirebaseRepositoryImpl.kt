@@ -135,6 +135,7 @@ class FirebaseRepositoryImpl(
                    "invite_successful;;" -> return DataResult.Success(true)
                    "invite_failed;${errorCodes["USER_NOT_FOUND"]};" -> return DataResult.Error("${errorCodes["USER_NOT_FOUND"]}", "Invite failed because the user does not exist")
                     "invite_failed;${errorCodes["PERMISSION_ERROR"]};" -> return DataResult.Error("${errorCodes["PERMISSION_ERROR"]}", "Invite failed because the user does not have permission to invite other users")
+                    "no_message" -> return DataResult.Success(true)
                 }
             }
             else{
@@ -143,6 +144,7 @@ class FirebaseRepositoryImpl(
             }
         }
         catch (e: Exception){
+            print("ERROR WHEN CALLING CLOUD FUNCTION EXCEPTION -> ${e.printStackTrace()}")
          return DataResult.Error("404", e.message)
         }
 

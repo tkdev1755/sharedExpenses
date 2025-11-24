@@ -52,7 +52,6 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         }
     }
     suspend fun fromJsonGroup(id: String, data: Map<String, *>): Group {
-        println("Received data :${data}")
         val is_Owner = checkOwners(data) ?: false
         val usersMap = data["users"] as? Map<String, Map<String, Any>> ?: emptyMap()
         val usersList : MutableList<User> = mutableListOf()
