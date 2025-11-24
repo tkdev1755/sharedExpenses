@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 data class ExpenseInputUiState(
+    val name: String = "",
     val description: String = "",
     val amount: String = "",
     val date: String = "",
@@ -65,6 +66,9 @@ class ExpenseInputViewModel : BaseViewModel() {
         _uiState.value = _uiState.value.copy(description = newValue)
     }
 
+    fun onNameChange(newValue:String){
+        _uiState.value = _uiState.value.copy(name = newValue)
+    }
     fun onAmountChange(newValue: String) {
         _uiState.value = _uiState.value.copy(amount = newValue)
     }
@@ -94,6 +98,10 @@ class ExpenseInputViewModel : BaseViewModel() {
                 return@launch
             }
 
+            if (state.name.isBlank()){
+                showErrorMessage("Please enter a name.")
+                return@launch
+            }
 
             if (state.description.isBlank()) {
                 showErrorMessage("Please enter a description.")
@@ -141,6 +149,7 @@ class ExpenseInputViewModel : BaseViewModel() {
 
             val expense = Expense(
                 id = "",
+                name = state.name,
                 payer = payer,
                 debtors = debtorUsers,
                 amount = amountDouble,

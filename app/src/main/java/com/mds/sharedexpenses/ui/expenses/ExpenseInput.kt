@@ -42,6 +42,8 @@ fun ExpenseInputScreen(
             onDismiss = { navController.popBackStack() },
             onSave = { viewModel.onSaveClicked() },
             onOpenPayerSelection = { payerSheetOpen = true },
+            name = uiState.name,
+            onNameChange = viewModel::onNameChange,
             description = uiState.description,
             onDescriptionChange = viewModel::onDescriptionChange,
             amount = uiState.amount,
@@ -69,6 +71,8 @@ fun ExpenseInputBottomSheet(
     onDismiss: () -> Unit,
     onSave: () -> Unit,
     onOpenPayerSelection: () -> Unit,
+    name : String,
+    onNameChange : (String) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
     amount: String,
@@ -90,7 +94,13 @@ fun ExpenseInputBottomSheet(
         ) {
             Text("Add expense", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
-
+            OutlinedTextField(
+                value = name,
+                onValueChange = onNameChange,
+                label = { Text("Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(16.dp))
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
