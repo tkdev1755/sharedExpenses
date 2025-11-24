@@ -1,6 +1,6 @@
 package com.mds.sharedexpenses.ui.expenses
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.mds.sharedexpenses.data.models.User
+import com.mds.sharedexpenses.ui.groupdetail.ChipItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,11 +46,15 @@ fun ExpenseInputBottomSheet(
     onDismiss: () -> Unit,
     onSave: () -> Unit,
     onOpenPayerSelection: () -> Unit,
+    name: String,
+    onNameChange: (String) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
     amount: String,
     onAmountChange: (String) -> Unit,
     date: String,
+    payersChips : MutableList<ChipItem>,
+    onPayerSelect : (Int) -> Unit,
     onDateChange: (String) -> Unit
 ) {
 
@@ -65,7 +71,13 @@ fun ExpenseInputBottomSheet(
         ) {
             Text("Add expense", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
-
+            OutlinedTextField(
+                value = name,
+                onValueChange = onNameChange,
+                label = { Text("Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
@@ -101,7 +113,7 @@ fun ExpenseInputBottomSheet(
                         millis?.let {
                             val localDate = java.time.Instant.ofEpochMilli(it)
                                 .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate()
+                                .toLocalDateTime()
                             onDateChange(localDate.toString())
                         }
                     },
@@ -110,15 +122,13 @@ fun ExpenseInputBottomSheet(
             }
 
             Spacer(Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                TextButton(onClick = onOpenPayerSelection) {
-                    Text("select payers")
-                }
-            }
+            Text("Who is this expense for?")
+            Spacer(Modifier.height(16.dp))
+            val chips = payersChips
+            ChipsRow(
+                chips = chips,
+                onChipClicked = { id -> onPayerSelect(id) }
+            )
 
             Spacer(Modifier.height(20.dp))
 
@@ -216,5 +226,48 @@ fun DatePickerModal(
         }
     ) {
         DatePicker(state = datePickerState)
+    }
+}
+
+@Composable
+fun SelectableChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    androidx.compose.material3.Surface(
+        onClick = onClick,
+        shape = androidx.compose.material3.MaterialTheme.shapes.medium,
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        tonalElevation = if (selected) 4.dp else 0.dp
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    }
+}
+
+
+@Composable
+fun ChipsRow(
+    chips: List<ChipItem>,
+    onChipClicked: (Int) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(chips.size) { index ->
+            SelectableChip(
+                label = chips[index].label,
+                selected = chips[index].isSelected,
+                onClick = {
+                    onChipClicked(index)
+                    println("Hello clicking chip n°$index")
+                }
+            )
+        }
     }
 }

@@ -12,14 +12,18 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class ExpenseInputUiState(
+    val name: String = "",
     val description: String = "",
     val amount: String = "",
     val date: String = "",
     val allPayers: List<String> = emptyList(),
-    val selectedPayers: Set<String> = emptySet()
+    val selectedPayers: Set<User> = emptySet()
 )
+
+
 
 sealed class ExpenseInputNavigationEvent {
     object Done : ExpenseInputNavigationEvent()
@@ -40,7 +44,6 @@ class ExpenseInputViewModel : BaseViewModel() {
     fun init(groupId: String) {
         if (currentGroup != null) return
         currentGroupId = groupId
-
         viewModelScope.launch {
             val groupResult = appRepository.groups.getGroupById(groupId)
             if (groupResult is DataResult.Success) {
@@ -50,8 +53,10 @@ class ExpenseInputViewModel : BaseViewModel() {
                 val payerNames = group.users.map { it.name }
                 _uiState.value = _uiState.value.copy(
                     allPayers = payerNames,
-                    selectedPayers = payerNames.toSet()
+
                 )
+
+
             } else if (groupResult is DataResult.Error) {
                 val message = groupResult.errorMessage
                     .orEmpty()
@@ -65,6 +70,10 @@ class ExpenseInputViewModel : BaseViewModel() {
         _uiState.value = _uiState.value.copy(description = newValue)
     }
 
+    fun onNameChange(newValue: String) {
+        _uiState.value = _uiState.value.copy(name = newValue)
+    }
+
     fun onAmountChange(newValue: String) {
         _uiState.value = _uiState.value.copy(amount = newValue)
     }
@@ -73,15 +82,16 @@ class ExpenseInputViewModel : BaseViewModel() {
         _uiState.value = _uiState.value.copy(date = newValue)
     }
 
-    fun onTogglePayer(name: String) {
+
+    /*fun onTogglePayer(name: String) {
         val current = _uiState.value.selectedPayers
         val updated = if (name in current) current - name else current + name
         _uiState.value = _uiState.value.copy(selectedPayers = updated)
-    }
+    }*
 
     fun onPayersSelected(selected: List<String>) {
         _uiState.value = _uiState.value.copy(selectedPayers = selected.toSet())
-    }
+    }*/
 
     fun onSaveClicked() {
         viewModelScope.launch {
@@ -94,6 +104,10 @@ class ExpenseInputViewModel : BaseViewModel() {
                 return@launch
             }
 
+            if (state.description.isBlank()) {
+                showErrorMessage("Please enter a name")
+                return@launch
+            }
 
             if (state.description.isBlank()) {
                 showErrorMessage("Please enter a description.")
@@ -128,11 +142,12 @@ class ExpenseInputViewModel : BaseViewModel() {
             }
             val payer: User = userResult.data
 
-            val debtorUsers = mutableListOf<User>()
-            for (name in state.selectedPayers) {
+            val debtorUsers = state.selectedPayers.toMutableList()
+
+            /*for (name in state.selectedPayers) {
                 val found = group.users.find { it.name == name }
                 if (found != null) debtorUsers.add(found)
-            }
+            }*/
 
             if (debtorUsers.isEmpty()) {
                 showErrorMessage("Please select at least one valid participant.")
@@ -141,11 +156,12 @@ class ExpenseInputViewModel : BaseViewModel() {
 
             val expense = Expense(
                 id = "",
+                name = state.name,
                 payer = payer,
                 debtors = debtorUsers,
                 amount = amountDouble,
                 description = state.description,
-                date = parsedDate
+                date = LocalDateTime.parse(state.date)
             )
 
             val saveResult = appRepository.expenses.addGroupExpense(group, expense)

@@ -305,8 +305,7 @@ class FIRGroupRepository(private val firebaseRepository: FirebaseRepository) {
         if(dataRes is DataResult.Success) {
             val userDirectory : DatabaseReference = firebaseRepository.getUserDirectory()
             val userGroupDirectory = userDirectory.child("private/groups/${group.id}")
-            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm")
-            val formatted = LocalDateTime.now().format(formatter)
+            val formatted = LocalDateTime.now().format(firebaseRepository.formatter)
             val userData = mapOf(
                 "added_at" to formatted,
                 "joined" to true

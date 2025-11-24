@@ -25,6 +25,7 @@ data class HomeUiState(
     val groupWithRecentActivity: Group? = null, // TODO: if there are no groups with recent activity, dont show the corresponding block
     val groups: List<Group> = emptyList(),
     val showLoginSheet: Boolean = false,
+    val showGroupAddSheet: Boolean = false,
     val currentStep : AuthStep = AuthStep.WELCOME,
     val isLoggedIn : Boolean = false
 )

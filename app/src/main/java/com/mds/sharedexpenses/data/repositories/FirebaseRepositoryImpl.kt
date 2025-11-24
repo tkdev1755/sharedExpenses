@@ -7,12 +7,13 @@ import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 import kotlinx.coroutines.tasks.await
 import com.mds.sharedexpenses.data.models.User
+import java.time.format.DateTimeFormatter
 
 class FirebaseRepositoryImpl(
     private val firebaseService: FirebaseService
 ) : FirebaseRepository {
 
-
+    override val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm")
     companion object{
         // This is the name of the function to call when wanting to notify a user about a unpaid expense
         public val notifyUserFunction = "notifyUser"

@@ -13,8 +13,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+data class ChipItem(
+    val id: User,
+    val label: String,
+    var isSelected: Boolean = false
+)
 
 data class GroupDetailUiState(
     // Data
@@ -34,10 +40,12 @@ data class GroupDetailUiState(
 )
 
 data class ExpenseFormState(
+    val name: String = "",
     val description: String = "",
     val amount: String = "",
-    val date: String = "",
-    val selectedPayerIds: Set<String> = emptySet(),
+    val date: LocalDateTime = LocalDateTime.now(),
+    val selectedUsers: MutableSet<User> = mutableSetOf(),
+    var chips : MutableList<ChipItem> = mutableListOf<ChipItem>(),
     val editingExpenseId: String? = null,
 )
 
@@ -162,6 +170,7 @@ class GroupDetailViewModel(
             }
         }
     }
+
     fun onEditGroupClicked() {
         _uiState.update { it.copy(activeSheet = SheetType.EDIT_GROUP) }
     }
@@ -169,6 +178,31 @@ class GroupDetailViewModel(
         resetExpenseForm()
         _uiState.update { it.copy(activeSheet = SheetType.ADD_EXPENSE) }
     }
+
+    fun toggleChip(index: Int) {
+        _uiState.update { state ->
+            val chips = state.expenseForm.chips.toMutableList()
+            val chip = chips[index]
+
+            val newChip = chip.copy(isSelected = !chip.isSelected)
+            chips[index] = newChip
+
+            val newSelectedUsers = state.expenseForm.selectedUsers.toMutableSet()
+            if (newChip.isSelected) {
+                newSelectedUsers.add(newChip.id)
+            } else {
+                newSelectedUsers.remove(newChip.id)
+            }
+
+            state.copy(
+                expenseForm = state.expenseForm.copy(
+                    chips = chips,
+                    selectedUsers = newSelectedUsers
+                )
+            )
+        }
+    }
+
     fun onEditExpenseClicked(expenseId: String) {
         val expenseToEdit = _uiState.value.group?.expenses?.find { it.id == expenseId }
 
@@ -176,8 +210,8 @@ class GroupDetailViewModel(
             val prefilledForm = ExpenseFormState(
                 description = expenseToEdit.description,
                 amount = expenseToEdit.amount.toString(), // for input field
-                date = expenseToEdit.date.toString(),
-                selectedPayerIds = expenseToEdit.debtors.map { it.id }.toSet(),
+                date = expenseToEdit.date,
+                selectedUsers = expenseToEdit.debtors.toMutableSet(),
                 editingExpenseId = expenseToEdit.id,
             )
 
@@ -198,10 +232,22 @@ class GroupDetailViewModel(
                 expenseForm = ExpenseFormState(),
             )
         }
+        if (_uiState.value.group != null){
+            _uiState.value.expenseForm.chips = _uiState.value.group?.users!!.map { ChipItem(it,it.name) }.toMutableList()
+        }
     }
     fun onDismissSheet() {
         _uiState.update { it.copy(activeSheet = null) }
         resetExpenseForm()
+    }
+    fun onExpenseNameChange(newName: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                expenseForm = currentState.expenseForm.copy(
+                    name = newName,
+                ),
+            )
+        }
     }
     fun onExpenseDescriptionChange(newDescription: String) {
         _uiState.update { currentState ->
@@ -225,7 +271,7 @@ class GroupDetailViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 expenseForm = currentState.expenseForm.copy(
-                    date = newDate,
+                    date = LocalDateTime.parse(newDate),
                 ),
             )
         }
@@ -253,7 +299,7 @@ class GroupDetailViewModel(
             }
         }
     }
-    fun onExpensePayerToggle(userId: String) {
+    /*fun onExpensePayerToggle(userId: String) {
         _uiState.update { currentState ->
             val currentSelection = currentState.expenseForm.selectedPayerIds
 
@@ -269,7 +315,7 @@ class GroupDetailViewModel(
                 ),
             )
         }
-    }
+    }*/
     fun saveExpense() {
         val currentState = _uiState.value
         val currentUser = currentState.currentUser
@@ -293,10 +339,11 @@ class GroupDetailViewModel(
                 val newExpense = Expense(
                     id = "", // TODO: check: is this automatically generated?
                     description = currentState.expenseForm.description,
+                    name = currentState.expenseForm.name,
                     amount = amount,
                     payer = currentUser,
-                    debtors = currentGroup.users.filter { it.id in currentState.expenseForm.selectedPayerIds }.toMutableList(),
-                    date = LocalDate.parse(currentState.expenseForm.date),
+                    debtors = currentState.expenseForm.selectedUsers.toMutableList(),
+                    date = currentState.expenseForm.date,
                 )
 
                 val result = appRepository.expenses.addGroupExpense(currentGroup, newExpense)

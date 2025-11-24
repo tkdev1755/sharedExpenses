@@ -41,6 +41,8 @@ import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.expenses.ExpenseInputBottomSheet
 import com.mds.sharedexpenses.ui.expenses.PayerSelectionBottomSheet
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun EditBottomSheet(
@@ -294,8 +296,12 @@ fun GroupDetailScreen(
                     onDescriptionChange = viewModel::onExpenseDescriptionChange,
                     amount = viewModel.uiState.collectAsState().value.expenseForm.amount,
                     onAmountChange = viewModel::onExpenseAmountChange,
-                    date = viewModel.uiState.collectAsState().value.expenseForm.date,
-                    onDateChange = viewModel::onExpenseDateChange
+                    date = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm").format(viewModel.uiState.collectAsState().value.expenseForm.date),
+                    onDateChange = viewModel::onExpenseDateChange,
+                    name = viewModel.uiState.collectAsState().value.expenseForm.name,
+                    onNameChange = viewModel::onExpenseNameChange,
+                    onPayerSelect = viewModel::toggleChip,
+                    payersChips = viewModel.uiState.collectAsState().value.expenseForm.chips,
                 )
             }
             if (uiState.isAddMemberFieldVisible) {
@@ -303,7 +309,7 @@ fun GroupDetailScreen(
                     onDismissRequest = { viewModel.onDismissPayerSelection() },
                     sheetState = rememberModalBottomSheetState(),
                 ) {
-                    PayerSelectionBottomSheet(
+                    /*PayerSelectionBottomSheet(
                         open = uiState.isPayerSelectionVisible,
                         onDismiss = viewModel::onDismissPayerSelection,
                         onSave = viewModel::onDismissPayerSelection,
@@ -312,9 +318,9 @@ fun GroupDetailScreen(
                            This is not a bug however, as we want to save the state also if the Bottom Sheet is closed manually.
                            Users assume, that their selection is the latest thing thats saved, also if they dismiss the Modal Sheet by dragging it.*/
                         allPayers = uiState.group!!.users, // TODO: remove "!!"
-                        selectedPayers = uiState.expenseForm.selectedPayerIds,
+                        selectedPayers = uiState.expenseForm.selectedPayers,
                         onTogglePayer = viewModel::onExpensePayerToggle
-                    )
+                    )*/
                 }
 
             }

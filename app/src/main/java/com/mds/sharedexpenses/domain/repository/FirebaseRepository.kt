@@ -4,8 +4,10 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
+import java.time.format.DateTimeFormatter
 
 interface FirebaseRepository {
+    val formatter : DateTimeFormatter
     suspend fun login(email: String, password: String): Boolean
     suspend fun registerUser(email: String, password: String, name :String ) : Boolean
     fun getCurrentUser(): User?

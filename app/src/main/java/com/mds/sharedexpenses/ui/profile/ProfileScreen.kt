@@ -123,6 +123,17 @@ fun ProfileScreen(
             ) {
                 Text(text = "Update Details")
             }
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        viewModel.logUserOut()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Log out")
+            }
         }
     }
 }

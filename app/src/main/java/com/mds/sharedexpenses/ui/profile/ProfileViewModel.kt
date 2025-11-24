@@ -37,6 +37,10 @@ class ProfileViewModel : BaseViewModel() {
         )
     }
 
+    fun logUserOut(){
+        appRepository.logout()
+    }
+
     fun onNameChange(newName: String) {
         _uiState.update { it.copy(name = newName) }
     }
