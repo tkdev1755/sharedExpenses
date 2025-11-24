@@ -135,6 +135,7 @@ class GroupDetailViewModel(
 
         val totalOwed = group.debts.filter{
             it.debtor == currentUserId
+                && it.expenses.payer.id != currentUserId
         }
         .sumOf {
             it.amount
