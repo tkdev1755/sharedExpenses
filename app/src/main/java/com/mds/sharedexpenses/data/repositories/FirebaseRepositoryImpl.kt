@@ -57,8 +57,8 @@ class FirebaseRepositoryImpl(
      * TODO : Finish to implement this function
      * @return
      */
-    override suspend fun saveNotificationToken() {
-        firebaseService.saveNotificationToken()
+    override suspend fun saveNotificationToken() : Boolean {
+        return firebaseService.saveNotificationToken()
     }
 
     /**

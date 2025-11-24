@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import com.mds.sharedexpenses.domain.di.AppContainer
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 
 enum class AuthStep {
     LOGIN,
@@ -47,6 +48,7 @@ class HomeViewModel : BaseViewModel() {
 
     init {
         fetchGroups()
+
     }
     private fun fetchGroups() {
         // TODO: fetch groups from repository
@@ -85,7 +87,34 @@ class HomeViewModel : BaseViewModel() {
         }
         /**/
     }
+    public fun updateGroup(){
+        viewModelScope.launch {
+            val userResult = appRepository.users.getCurrentUserData()
 
+            if(userResult is DataResult.Success){
+
+                val user = userResult.data
+                val groups = user.groups.toList()
+
+                //Placeholder for recent activity
+                val recentGroup = groups.firstOrNull()
+                _uiState.update { state ->
+                    state.copy(
+                        groupWithRecentActivity = recentGroup,
+                        groups = groups
+                    )
+                }
+            }else if(userResult is DataResult.Error){
+
+                val message = userResult.errorMessage
+                    .orEmpty()
+                    .ifEmpty { "Error getting user data" }
+                showErrorMessage(message)
+            }
+        }
+
+
+    }
     fun onGroupClicked(group: Group) {
         // TODO: navigate to group details page
         viewModelScope.launch {

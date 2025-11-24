@@ -94,13 +94,16 @@ class FirebaseService private constructor(){
         return currentUser != null
     }
 
-    suspend fun saveNotificationToken() {
+    suspend fun saveNotificationToken() : Boolean {
         val token = messaging.token
-        val uid = auth.currentUser?.uid ?: return
+        token.await()
+        val uid = auth.currentUser?.uid ?: return false
         try {
-            db.getReference("users/$uid/fcmToken").setValue(token).await()
+            db.getReference("users/$uid/fcmToken").setValue(token.result).await()
+            return true
         } catch (e: Exception) {
             e.printStackTrace()
+            return false
         }
     }
     fun callCloudFunction(name : String, data : Map<String,*>) : Task<String> {

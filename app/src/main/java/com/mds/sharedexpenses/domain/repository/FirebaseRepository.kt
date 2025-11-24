@@ -24,6 +24,6 @@ interface FirebaseRepository {
     fun createChildReference(dbRef : DatabaseReference) : DataResult<DatabaseReference>
     suspend fun deleteDBRef(dbRef : DatabaseReference) : DataResult<Boolean>
     fun getGroupDirectory(id : String): DatabaseReference
-    suspend fun saveNotificationToken()
+    suspend fun saveNotificationToken() : Boolean
     suspend fun callCloudFunction(functionName:String, data:Map<String,*>) : DataResult<Boolean>
 }
