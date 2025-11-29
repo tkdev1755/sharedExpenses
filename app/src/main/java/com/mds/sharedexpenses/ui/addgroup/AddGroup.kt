@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Deprecated("unused")
 fun AddGroupScreen(
     navController: NavController,
     viewModel: AddGroupViewModel
@@ -41,8 +42,20 @@ fun AddGroupScreen(
         return
     }
 
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddGroupBottomSheet(
+    onCreateGroup: (String, String) -> Unit,
+    onDismiss: () -> Unit,
+){
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+
     ModalBottomSheet(
-        onDismissRequest = { open = false },
+        onDismissRequest = { onDismiss() },
         sheetState = rememberStandardBottomSheetState(
             initialValue = SheetValue.Expanded,
             skipHiddenState = false
@@ -53,8 +66,8 @@ fun AddGroupScreen(
                 .padding(horizontal = 32.dp)
                 .padding(bottom = 64.dp)
                 .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(text = "Create Group")
 
@@ -75,8 +88,8 @@ fun AddGroupScreen(
 
             Button(
                 onClick = {
-                    viewModel.createGroup(name, description)
-                    open = false
+                    onCreateGroup(name, description)
+                    onDismiss()
                 },
                 modifier = Modifier
                     .fillMaxWidth()

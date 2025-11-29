@@ -11,14 +11,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -27,20 +27,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import com.example.auth.LoginScreen
-import com.example.auth.OnboardingScreen
-import com.example.auth.SignUpScreen
 import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.ui.addgroup.AddGroupBottomSheet
 import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.components.InstructionCard
 import com.mds.sharedexpenses.ui.navigation.Screen
-import com.mds.sharedexpenses.ui.welcome.WelcomeScreen
+import com.mds.sharedexpenses.ui.authContent.LogInContent
+import com.mds.sharedexpenses.ui.authContent.OnboardingContent
+import com.mds.sharedexpenses.ui.authContent.SignUpContent
+import com.mds.sharedexpenses.ui.authContent.WelcomeContent
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,19 +79,18 @@ fun HomeScreen(
             when (event){
                 is HomeNavigationEvent.ToGroupDetails ->
                     navController.navigate(Screen.GroupDetail.createRoute((event.groupId)))
-
-                HomeNavigationEvent.ToCreateGroup -> {
-                    navController.navigate(Screen.AddGroup.route)
-                }
             }
         }
 
     }
-    if (uiState.showLoginSheet) {
-        onboardingSheet(viewModel, notificationAsk,uiState)
-    }
-    if (uiState.showGroupAddSheet){
 
+    if (uiState.authenticationStep != null) {
+        OnboardingSheet(viewModel, notificationAsk,uiState)
+    }
+    if (uiState.activeSheet == SheetTypeHome.ADD_GROUP){
+        AddGroupBottomSheet(onCreateGroup = { name, description ->
+            viewModel.createNewGroup(name, description)
+        }, onDismiss = { viewModel.onDismissRequest() })
     }
     Scaffold(
         modifier = modifier,
@@ -238,49 +239,60 @@ private fun GroupsSection(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun onboardingSheet(
+@Composable fun OnboardingSheet(
     viewModel: HomeViewModel,
     notificationAsk: () -> Unit,
     uiState: HomeUiState,
 ){
-    ModalBottomSheet(
-        onDismissRequest = { viewModel.onSheetDismiss() },
-        sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true,
-        ),
+    Dialog(
+        onDismissRequest = { /**/ },
     ) {
-        when (uiState.currentStep) {
-            AuthStep.LOGIN -> LoginScreen(
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
+        ) {
+        when (uiState.authenticationStep) {
+            AuthStep.LOGIN -> LogInContent(
                 onLogin = { email,password ->
                     viewModel.onLogin(email,password)
                 },
-            )
-
-            AuthStep.SIGNUP -> SignUpScreen(
-                onFinished = { email, password, name, phone ->
-                    viewModel.onSignUp(email, password, name, phone)
+                onCancel = {
+                    viewModel.goToAuthStep(AuthStep.WELCOME)
                 },
             )
 
-            AuthStep.ONBOARDING -> OnboardingScreen(
+            AuthStep.SIGNUP -> SignUpContent(
+                onFinished = { email, password, name, phone ->
+                    viewModel.onSignUp(email, password, name, phone)
+                },
+                onCancel = {
+                    viewModel.goToAuthStep(AuthStep.WELCOME)
+                }
+            )
+
+            AuthStep.ONBOARDING -> OnboardingContent(
                 onNotificationActivation = { value ->
                     viewModel.onNotificationActivation(value)
                     notificationAsk
-                                           },
+                },
                 notifictionState = uiState.notificationStatus,
                 onFinish = {
                     viewModel.finishOnboarding()
                 },
             )
 
-            AuthStep.WELCOME -> WelcomeScreen(
+            AuthStep.WELCOME -> WelcomeContent(
                 onLogin = {
-                    viewModel.goToLogin()
+                    viewModel.goToAuthStep(AuthStep.LOGIN)
                 },
                 onSignUp = {
-                    viewModel.goToSignUp()
+                    viewModel.goToAuthStep(AuthStep.SIGNUP)
                 },
             )
+
+            null -> viewModel.finishOnboarding() // but this can basically never be the case
+        }
         }
     }
 }
