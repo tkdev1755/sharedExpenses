@@ -129,7 +129,10 @@ private fun HomeContent(
                 style = MaterialTheme.typography.titleLarge
             )
 
-            RecentActivityCard(group = recentGroup)
+            RecentActivityCard(
+                group = recentGroup,
+                onClick = { onGroupClick(recentGroup) }
+            )
         }
 
         Text(
@@ -147,13 +150,15 @@ private fun HomeContent(
 
 @Composable
 private fun RecentActivityCard(
-    group: Group
+    group: Group,
+    onClick: () -> Unit
 ) {
     val memberNames = group.users.joinToString(", ") { user ->
         user.name.ifEmpty { "Unnamed" }
     }
 
     ElevatedCard(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 140.dp)
