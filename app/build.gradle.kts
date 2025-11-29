@@ -42,14 +42,13 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.8.1"
+        kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-
 }
 
 dependencies {
@@ -82,4 +81,3 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
 }
-
