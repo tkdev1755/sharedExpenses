@@ -29,12 +29,15 @@ data class HomeUiState(
     val showGroupAddSheet: Boolean = false,
     val currentStep : AuthStep = AuthStep.WELCOME,
     val isLoggedIn : Boolean = false,
-    val notificationStatus : Boolean = false
+    val notificationStatus : Boolean = false,
+    //Sheet
+    val activeSheet: SheetTypeHome? = null,
 )
+
+enum class SheetTypeHome  { ADD_GROUP }
 
 sealed class HomeNavigationEvent {
     data class ToGroupDetails(val groupId: String) : HomeNavigationEvent()
-    object ToCreateGroup : HomeNavigationEvent()
 }
 
 class HomeViewModel : BaseViewModel() {
@@ -140,13 +143,12 @@ class HomeViewModel : BaseViewModel() {
         appRepository.logout()
     }
     fun onAddNewGroupClicked(){
-        viewModelScope.launch {
-            _navigationEvents.emit(HomeNavigationEvent.ToCreateGroup)
-        }
+        _uiState.update { it.copy(activeSheet = SheetTypeHome.ADD_GROUP) }
     }
 
     fun onSheetDismiss() {
-        _uiState.value = _uiState.value.copy(showLoginSheet = false)
+        //
+        //_uiState.value = _uiState.value.copy(showLoginSheet = false)
     }
     fun goToLogin(){
         _uiState.value = _uiState.value.copy(currentStep = AuthStep.LOGIN)
@@ -201,5 +203,38 @@ class HomeViewModel : BaseViewModel() {
         viewModelScope.launch {
             getUserData()
         }
+    }
+
+    fun createNewGroup(name: String, description: String){
+        val owner = currentUser.value
+        if (owner == null) {
+            showErrorMessage("Cannot create group: User is not logged in.")
+            return
+        }
+
+        if(name.isEmpty() || description.isEmpty()){
+            showErrorMessage("Group name and description cannot be empty.")
+            return
+        }
+
+        val group = Group(
+            name = name,
+            description = description,
+            users = mutableListOf(owner)
+        )
+
+        viewModelScope.launch {
+            val result = appRepository.groups.createGroup(group)
+            if (result is DataResult.Error) {
+                val message = result.errorMessage
+                    .orEmpty()
+                    .ifEmpty { "Error while creating a group." }
+                showErrorMessage(message)
+            }
+        }
+    }
+
+    fun onDismissRequest(){
+        _uiState.update { it.copy(activeSheet = null) }
     }
 }

@@ -35,6 +35,7 @@ import com.example.auth.LoginScreen
 import com.example.auth.OnboardingScreen
 import com.example.auth.SignUpScreen
 import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.ui.addgroup.AddGroupBottomSheet
 import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
@@ -77,19 +78,17 @@ fun HomeScreen(
             when (event){
                 is HomeNavigationEvent.ToGroupDetails ->
                     navController.navigate(Screen.GroupDetail.createRoute((event.groupId)))
-
-                HomeNavigationEvent.ToCreateGroup -> {
-                    navController.navigate(Screen.AddGroup.route)
-                }
             }
         }
 
     }
     if (uiState.showLoginSheet) {
-        onboardingSheet(viewModel, notificationAsk,uiState)
+        OnboardingSheet(viewModel, notificationAsk,uiState)
     }
-    if (uiState.showGroupAddSheet){
-
+    if (uiState.activeSheet == SheetTypeHome.ADD_GROUP){
+        AddGroupBottomSheet(onCreateGroup = { name, description ->
+            viewModel.createNewGroup(name, description)
+        }, onDismiss = { viewModel.onDismissRequest() })
     }
     Scaffold(
         modifier = modifier,
@@ -238,7 +237,7 @@ private fun GroupsSection(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun onboardingSheet(
+@Composable fun OnboardingSheet(
     viewModel: HomeViewModel,
     notificationAsk: () -> Unit,
     uiState: HomeUiState,
