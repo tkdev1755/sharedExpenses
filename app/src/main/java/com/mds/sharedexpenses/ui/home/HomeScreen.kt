@@ -16,11 +16,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,9 +32,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import com.example.auth.LoginScreen
-import com.example.auth.OnboardingScreen
-import com.example.auth.SignUpScreen
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.ui.addgroup.AddGroupBottomSheet
 import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
@@ -44,7 +39,10 @@ import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.components.InstructionCard
 import com.mds.sharedexpenses.ui.navigation.Screen
-import com.mds.sharedexpenses.ui.welcome.WelcomeScreen
+import com.mds.sharedexpenses.ui.authContent.LogInContent
+import com.mds.sharedexpenses.ui.authContent.OnboardingContent
+import com.mds.sharedexpenses.ui.authContent.SignUpContent
+import com.mds.sharedexpenses.ui.authContent.WelcomeContent
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,7 +83,8 @@ fun HomeScreen(
         }
 
     }
-    if (uiState.showLoginSheet) {
+
+    if (uiState.authenticationStep != null) {
         OnboardingSheet(viewModel, notificationAsk,uiState)
     }
     if (uiState.activeSheet == SheetTypeHome.ADD_GROUP){
@@ -253,8 +252,8 @@ private fun GroupsSection(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
             ),
         ) {
-        when (uiState.currentStep) {
-            AuthStep.LOGIN -> LoginScreen(
+        when (uiState.authenticationStep) {
+            AuthStep.LOGIN -> LogInContent(
                 onLogin = { email,password ->
                     viewModel.onLogin(email,password)
                 },
@@ -263,7 +262,7 @@ private fun GroupsSection(
                 },
             )
 
-            AuthStep.SIGNUP -> SignUpScreen(
+            AuthStep.SIGNUP -> SignUpContent(
                 onFinished = { email, password, name, phone ->
                     viewModel.onSignUp(email, password, name, phone)
                 },
@@ -272,7 +271,7 @@ private fun GroupsSection(
                 }
             )
 
-            AuthStep.ONBOARDING -> OnboardingScreen(
+            AuthStep.ONBOARDING -> OnboardingContent(
                 onNotificationActivation = { value ->
                     viewModel.onNotificationActivation(value)
                     notificationAsk
@@ -283,14 +282,16 @@ private fun GroupsSection(
                 },
             )
 
-            AuthStep.WELCOME -> WelcomeScreen(
+            AuthStep.WELCOME -> WelcomeContent(
                 onLogin = {
-                    viewModel.goToLogin()
+                    viewModel.goToAuthStep(AuthStep.LOGIN)
                 },
                 onSignUp = {
-                    viewModel.goToSignUp()
+                    viewModel.goToAuthStep(AuthStep.SIGNUP)
                 },
             )
+
+            null -> viewModel.finishOnboarding() // but this can basically never be the case
         }
         }
     }

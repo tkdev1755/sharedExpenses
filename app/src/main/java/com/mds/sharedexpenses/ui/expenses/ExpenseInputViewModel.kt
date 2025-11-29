@@ -28,7 +28,6 @@ data class ExpenseInputUiState(
 sealed class ExpenseInputNavigationEvent {
     object Done : ExpenseInputNavigationEvent()
 }
-
 class ExpenseInputViewModel : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(ExpenseInputUiState())
