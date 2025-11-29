@@ -1,11 +1,24 @@
 package com.mds.sharedexpenses.ui.home
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
-import androidx.compose.material3.*
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -13,21 +26,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.auth.LoginScreen
 import com.example.auth.OnboardingScreen
 import com.example.auth.SignUpScreen
 import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
+import com.mds.sharedexpenses.ui.components.InstructionCard
 import com.mds.sharedexpenses.ui.navigation.Screen
-import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import com.mds.sharedexpenses.ui.welcome.WelcomeScreen
 
 
@@ -36,8 +48,8 @@ import com.mds.sharedexpenses.ui.welcome.WelcomeScreen
 fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    notificationAsk : () -> Unit,
-    viewModel: HomeViewModel
+    notificationAsk: () -> Unit,
+    viewModel: HomeViewModel,
 ) {
     //collects state from viewmodel
     val uiState by viewModel.uiState.collectAsState()
@@ -90,8 +102,9 @@ fun HomeScreen(
                 imageVector = Icons.Filled.GroupAdd,
                 iconContentDescription = "Click to create a new Group",
                 text = "Create Group",
-                onClick = { viewModel.onAddNewGroupClicked() })
-        }
+                onClick = { viewModel.onAddNewGroupClicked() },
+            )
+        },
     ) { innerPadding ->
         HomeContent(
             modifier = Modifier
@@ -101,7 +114,7 @@ fun HomeScreen(
             groupWithRecentActivity = uiState.groupWithRecentActivity,
             groups = uiState.groups,
             onAddGroupClick = { viewModel.onAddNewGroupClicked() },
-            onGroupClick = { group -> viewModel.onGroupClicked(group) }
+            onGroupClick = { group -> viewModel.onGroupClicked(group) },
         )
 
     }
@@ -115,62 +128,79 @@ private fun HomeContent(
     groupWithRecentActivity: Group?,
     groups: List<Group>,
     onAddGroupClick: () -> Unit,
-    onGroupClick: (Group) -> Unit
+    onGroupClick: (Group) -> Unit,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(24.dp),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
     ) {
-        // Only show recent activity block if ViewModel provided a group
-        groupWithRecentActivity?.let { recentGroup ->
-            Text(
-                text = "Recent Activity",
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            RecentActivityCard(group = recentGroup)
-        }
-
         Text(
             text = "Groups",
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
         )
 
-        GroupsSection(
-            groups = groups,
-            onAddGroupClick = onAddGroupClick,
-            onGroupClick = onGroupClick
-        )
+        if (groups.isEmpty()) {
+            InstructionCard(
+                title = "No groups found",
+                description = "You are currently not in any group. Ask someone to add you to an existing group or start by creating a new group.",
+                buttonLabel = "Create Group",
+                onButtonClick = { onAddGroupClick() },
+                imageId = com.mds.sharedexpenses.R.drawable.group,
+            )
+        } else {
+            groupWithRecentActivity?.let { recentGroup ->
+                Text(
+                    text = "Recent Activity",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                AnimatedBorderCard(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    RecentActivityCard(
+                        group = recentGroup,
+                        onClick = { onGroupClick(recentGroup) },
+                    )
+                }
+            }
+
+            GroupsSection(
+                groups = groups,
+                onGroupClick = onGroupClick,
+            )
+        }
     }
 }
 
+
 @Composable
 private fun RecentActivityCard(
-    group: Group
+    group: Group,
+    onClick: () -> Unit,
 ) {
     val memberNames = group.users.joinToString(", ") { user ->
         user.name.ifEmpty { "Unnamed" }
     }
 
     ElevatedCard(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 140.dp)
+            .heightIn(min = 140.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = group.name,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
             Text(
                 text = memberNames,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }
@@ -179,27 +209,27 @@ private fun RecentActivityCard(
 @Composable
 private fun GroupsSection(
     groups: List<Group>,
-    onAddGroupClick: () -> Unit,
-    onGroupClick: (Group) -> Unit
+    onGroupClick: (Group) -> Unit,
 ) {
+    println("we have ${groups.size} groups")
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         items(groups) { group ->
             OutlinedCard(
                 onClick = { onGroupClick(group) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp),
-                    contentAlignment = Alignment.CenterStart
+                    contentAlignment = Alignment.CenterStart,
                 ) {
                     Text(
                         text = group.name,
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             }
@@ -209,15 +239,15 @@ private fun GroupsSection(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun onboardingSheet(
-    viewModel : HomeViewModel,
+    viewModel: HomeViewModel,
     notificationAsk: () -> Unit,
-    uiState : HomeUiState
+    uiState: HomeUiState,
 ){
     ModalBottomSheet(
         onDismissRequest = { viewModel.onSheetDismiss() },
         sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true
-        )
+            skipPartiallyExpanded = true,
+        ),
     ) {
         when (uiState.currentStep) {
             AuthStep.LOGIN -> LoginScreen(
@@ -227,9 +257,9 @@ private fun GroupsSection(
             )
 
             AuthStep.SIGNUP -> SignUpScreen(
-                onFinished = { email, password,name,phone ->
-                    viewModel.onSignUp(email,password,name,phone)
-                }
+                onFinished = { email, password, name, phone ->
+                    viewModel.onSignUp(email, password, name, phone)
+                },
             )
 
             AuthStep.ONBOARDING -> OnboardingScreen(
@@ -249,7 +279,7 @@ private fun GroupsSection(
                 },
                 onSignUp = {
                     viewModel.goToSignUp()
-                }
+                },
             )
         }
     }
