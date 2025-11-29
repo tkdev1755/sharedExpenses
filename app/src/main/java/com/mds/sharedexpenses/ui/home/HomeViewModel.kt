@@ -237,4 +237,8 @@ class HomeViewModel : BaseViewModel() {
     fun onDismissRequest(){
         _uiState.update { it.copy(activeSheet = null) }
     }
+
+    fun setAuthStepToWelcome(){
+        _uiState.value = _uiState.value.copy(currentStep = AuthStep.WELCOME)
+    }
 }

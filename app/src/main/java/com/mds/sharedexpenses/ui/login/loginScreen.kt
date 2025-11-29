@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LoginScreen(
     onLogin: (String,String) -> Unit,
+    onCancel: () -> Unit,
 ) {
     Column(
         Modifier
@@ -45,11 +46,24 @@ fun LoginScreen(
 
         Spacer(Modifier.height(32.dp))
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+        OutlinedButton(
+            onClick = { onCancel() },
+            modifier = Modifier.weight(1f),
+        ) {
+            Text("Cancel")
+        }
+
         Button(
             onClick = { onLogin(email, password) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.weight(1f),
         ) {
-            Text("Log in")
+            Text("Continue")
+        }
         }
     }
 }

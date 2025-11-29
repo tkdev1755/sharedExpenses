@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -242,16 +245,21 @@ private fun GroupsSection(
     notificationAsk: () -> Unit,
     uiState: HomeUiState,
 ){
-    ModalBottomSheet(
-        onDismissRequest = { viewModel.onSheetDismiss() },
-        sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true,
-        ),
+    Dialog(
+        onDismissRequest = { /**/ },
     ) {
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
+        ) {
         when (uiState.currentStep) {
             AuthStep.LOGIN -> LoginScreen(
                 onLogin = { email,password ->
                     viewModel.onLogin(email,password)
+                },
+                onCancel = {
+                    viewModel.setAuthStepToWelcome()
                 },
             )
 
@@ -259,13 +267,16 @@ private fun GroupsSection(
                 onFinished = { email, password, name, phone ->
                     viewModel.onSignUp(email, password, name, phone)
                 },
+                onCancel = {
+                    viewModel.setAuthStepToWelcome()
+                }
             )
 
             AuthStep.ONBOARDING -> OnboardingScreen(
                 onNotificationActivation = { value ->
                     viewModel.onNotificationActivation(value)
                     notificationAsk
-                                           },
+                },
                 notifictionState = uiState.notificationStatus,
                 onFinish = {
                     viewModel.finishOnboarding()
@@ -280,6 +291,7 @@ private fun GroupsSection(
                     viewModel.goToSignUp()
                 },
             )
+        }
         }
     }
 }
