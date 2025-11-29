@@ -2,21 +2,17 @@ package com.mds.sharedexpenses.ui.expenses
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -35,9 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.groupdetail.ChipItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +40,6 @@ import com.mds.sharedexpenses.ui.groupdetail.ChipItem
 fun ExpenseInputBottomSheet(
     onDismiss: () -> Unit,
     onSave: () -> Unit,
-    onOpenPayerSelection: () -> Unit,
     name: String,
     onNameChange: (String) -> Unit,
     description: String,
@@ -53,9 +47,9 @@ fun ExpenseInputBottomSheet(
     amount: String,
     onAmountChange: (String) -> Unit,
     date: String,
-    payersChips : MutableList<ChipItem>,
-    onPayerSelect : (Int) -> Unit,
-    onDateChange: (String) -> Unit
+    payersChips: MutableList<ChipItem>,
+    onPayerSelect: (Int) -> Unit,
+    onDateChange: (String) -> Unit,
 ) {
 
     var datePickerOpen by remember { mutableStateOf(false) }
@@ -67,7 +61,7 @@ fun ExpenseInputBottomSheet(
                 .imePadding()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
         ) {
             Text("Add expense", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
@@ -75,25 +69,23 @@ fun ExpenseInputBottomSheet(
                 value = name,
                 onValueChange = onNameChange,
                 label = { Text("Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = description,
                 onValueChange = onDescriptionChange,
                 label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(12.dp))
-
             OutlinedTextField(
                 value = amount,
                 onValueChange = onAmountChange,
                 label = { Text("Amount") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(12.dp))
-
             OutlinedTextField(
                 value = date,
                 onValueChange = onDateChange,
@@ -104,9 +96,8 @@ fun ExpenseInputBottomSheet(
                         Icon(Icons.Default.DateRange, contentDescription = "Select date")
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
-
             if (datePickerOpen) {
                 DatePickerModal(
                     onDateSelected = { millis ->
@@ -117,7 +108,7 @@ fun ExpenseInputBottomSheet(
                             onDateChange(localDate.toString())
                         }
                     },
-                    onDismiss = { datePickerOpen = false }
+                    onDismiss = { datePickerOpen = false },
                 )
             }
 
@@ -127,16 +118,14 @@ fun ExpenseInputBottomSheet(
             val chips = payersChips
             ChipsRow(
                 chips = chips,
-                onChipClicked = { id -> onPayerSelect(id) }
+                onChipClicked = { id -> onPayerSelect(id) },
             )
-
             Spacer(Modifier.height(20.dp))
-
             Button(
                 onClick = onSave,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(48.dp),
             ) {
                 Text("Save expense")
             }
@@ -146,78 +135,21 @@ fun ExpenseInputBottomSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
-@Deprecated("unused")
-fun PayerSelectionBottomSheet(
-    open: Boolean,
-    onDismiss: () -> Unit,
-    onSave: () -> Unit,
-    allPayers: List<User>,
-    selectedPayers: Set<String>,
-    onTogglePayer: (String) -> Unit,
-) {
-    if (!open) return
-
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .imePadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text("Select participants", style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(16.dp))
-
-            allPayers.forEach { user ->
-                val checked = user.id in selectedPayers
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .toggleable(
-                            value = checked,
-                            role = Role.Checkbox,
-                            onValueChange = { onTogglePayer(user.id) },
-                        )
-                        .padding(horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(checked = checked, onCheckedChange = null)
-                    Spacer(Modifier.width(12.dp))
-                    Text(user.name, style = MaterialTheme.typography.bodyLarge)
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = onSave,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-            ) {
-                Text("Save selection")
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 fun DatePickerModal(
     onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val datePickerState = rememberDatePickerState()
 
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = {
-                onDateSelected(datePickerState.selectedDateMillis)
-                onDismiss()
-            }) {
+            TextButton(
+                onClick = {
+                    onDateSelected(datePickerState.selectedDateMillis)
+                    onDismiss()
+                },
+            ) {
                 Text("OK")
             }
         },
@@ -225,7 +157,7 @@ fun DatePickerModal(
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
-        }
+        },
     ) {
         DatePicker(state = datePickerState)
     }
@@ -235,14 +167,14 @@ fun DatePickerModal(
 fun SelectableChip(
     label: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
-    androidx.compose.material3.Surface(
+    Surface(
         onClick = onClick,
-        shape = androidx.compose.material3.MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.medium,
         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-        tonalElevation = if (selected) 4.dp else 0.dp
+        tonalElevation = if (selected) 4.dp else 0.dp,
     ) {
         Text(
             text = label,
@@ -256,10 +188,10 @@ fun SelectableChip(
 @Composable
 fun ChipsRow(
     chips: List<ChipItem>,
-    onChipClicked: (Int) -> Unit
+    onChipClicked: (Int) -> Unit,
 ) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(chips.size) { index ->
             SelectableChip(
@@ -268,7 +200,7 @@ fun ChipsRow(
                 onClick = {
                     onChipClicked(index)
                     println("Hello clicking chip n°$index")
-                }
+                },
             )
         }
     }

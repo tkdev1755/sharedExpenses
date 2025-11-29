@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.Doorbell
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
@@ -49,8 +48,6 @@ import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
 import com.mds.sharedexpenses.ui.expenses.ExpenseInputBottomSheet
-import com.mds.sharedexpenses.ui.expenses.PayerSelectionBottomSheet
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -111,19 +108,21 @@ fun EditBottomSheet(
                 value = newMember,
                 onValueChange = { newMember = it },
                 label = { Text("E-mail") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Button(
                 onClick = { viewModel.addMember(newMember) },
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 8.dp),
             ) {
                 Text("Add")
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
         }
-        Button(onClick = {viewModel.onAddMemberClicked()}) {
+        // TODO: I think we dont need that here do we?
+        // cause the payers are selected via chips
+        Button(onClick = { viewModel.onAddMemberClicked() }) {
             Text("Add Member")
         }
     }
@@ -134,7 +133,7 @@ fun StatsBox(
     amount: Number,
     onButtonClick: () -> Unit,
 ) {
-    Column (
+    Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start,
@@ -161,12 +160,12 @@ fun Int.toOrdinal(): String {
 fun ExpenseRecord(
     expense: Expense,
     currentUser: String,
-    debt : Debt?,
+    debt: Debt?,
     onClickDelete: () -> Unit,
     onClickEdit: () -> Unit,
     modifier: Modifier = Modifier,
     getAmountOwed: (Expense) -> Double,
-    onClickDetail : () -> Unit
+    onClickDetail: () -> Unit,
 ) {
     Row(
         modifier = modifier
@@ -187,7 +186,7 @@ fun ExpenseRecord(
                 modifier = modifier.fillMaxWidth(),
             ) {
                 val isExpensePayer = expense.payer.id == currentUser
-                val name  = if (isExpensePayer) "you" else expense.payer.name
+                val name = if (isExpensePayer) "you" else expense.payer.name
                 Text(expense.name)
                 Text("$name paid ${expense.amount}€", color = Color.Gray)
             }
@@ -196,13 +195,13 @@ fun ExpenseRecord(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.weight(2.0F),
         ) {
-            if (debt != null && debt.user.id != currentUser){
+            if (debt != null && debt.user.id != currentUser) {
                 Text("You owe", color = Color.Gray)
                 Text("${getAmountOwed(expense)}€")
             }
         }
         IconButton(
-            onClick = onClickDetail
+            onClick = onClickDetail,
         ) {
             Icon(
                 imageVector = Icons.Filled.Info,
@@ -215,11 +214,11 @@ fun ExpenseRecord(
 @Composable
 fun ExpenseInfoDialog(
     expense: Expense,
-    currentUser : String,
+    currentUser: String,
     onDismiss: () -> Unit,
-    onNotifyClick : (user:User) -> Unit,
-    onPayClicked: (expense:Expense) -> Unit,
-    getAmountOwed : (expense:Expense,user:User) -> Double,
+    onNotifyClick: (user: User) -> Unit,
+    onPayClicked: (expense: Expense) -> Unit,
+    getAmountOwed: (expense: Expense, user: User) -> Double,
     modifier: Modifier = Modifier,
 ) {
     androidx.compose.material3.AlertDialog(
@@ -235,19 +234,18 @@ fun ExpenseInfoDialog(
                 Spacer(Modifier.height(16.dp))
                 Text("Date : ${expense.date}")
                 Spacer(Modifier.height(16.dp))
-                if (expense.payer.id == currentUser){
+                if (expense.payer.id == currentUser) {
                     ExpenseInfo(
                         expense = expense,
                         onNotifyClick = onNotifyClick,
                         getAmountOwed = getAmountOwed,
-                        modifier = modifier
+                        modifier = modifier,
                     )
-                }
-                else if (expense.debtors.any { it.id == currentUser }){
+                } else if (expense.debtors.any { it.id == currentUser }) {
                     ExpenseActions(
                         expense = expense,
                         modifier = modifier,
-                        onPayClicked = onPayClicked
+                        onPayClicked = onPayClicked,
                     )
                 }
             }
@@ -257,18 +255,18 @@ fun ExpenseInfoDialog(
             Button(onClick = onDismiss) {
                 Text("Close")
             }
-        }
+        },
     )
 }
 
 @Composable
 fun ExpenseActions(
     expense: Expense,
-    onPayClicked : (expense:Expense) -> Unit,
-    modifier: Modifier
-){
+    onPayClicked: (expense: Expense) -> Unit,
+    modifier: Modifier,
+) {
     Button(
-        onClick = {onPayClicked(expense)}
+        onClick = { onPayClicked(expense) },
     ) {
         Text("Pay back")
     }
@@ -278,14 +276,18 @@ fun ExpenseActions(
 fun ExpenseInfo(
     expense: Expense,
     modifier: Modifier,
-    getAmountOwed: (expense:Expense,user:User) -> Double,
-    onNotifyClick : (user:User) -> Unit
-){
+    getAmountOwed: (expense: Expense, user: User) -> Double,
+    onNotifyClick: (user: User) -> Unit,
+) {
     val users = expense.debtors.filter { it.id != expense.payer.id }
     println("ERROR WAS ${users.size}")
     LazyColumn {
         items(users.size) { element ->
-            userActions(users[element], owedAmount = getAmountOwed(expense,users[element]), onNotifyClick = onNotifyClick )
+            userActions(
+                users[element],
+                owedAmount = getAmountOwed(expense, users[element]),
+                onNotifyClick = onNotifyClick,
+            )
         }
     }
 }
@@ -293,13 +295,13 @@ fun ExpenseInfo(
 @Composable
 fun userActions(
     user: User,
-    owedAmount : Double,
-    onNotifyClick : (user:User) -> Unit
-){
+    owedAmount: Double,
+    onNotifyClick: (user: User) -> Unit,
+) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically ,
-        modifier = Modifier.fillMaxWidth()
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Text("${user.name}")
         Column {
@@ -307,11 +309,11 @@ fun userActions(
             Text("${owedAmount}€")
         }
         IconButton(
-            onClick = {onNotifyClick(user)}
+            onClick = { onNotifyClick(user) },
         ) {
             Icon(
                 imageVector = Icons.Filled.Notifications,
-                contentDescription = "Notify user"
+                contentDescription = "Notify user",
             )
         }
 
@@ -388,7 +390,12 @@ fun GroupDetailScreen(
                             debt = entry.component2(),
                             modifier = Modifier,
                             currentUser = uiState.currentUser?.id ?: "",
-                            getAmountOwed = {expense -> viewModel.getOwedAmountFromUser(expense,uiState.currentUser!!)},
+                            getAmountOwed = { expense ->
+                                viewModel.getOwedAmountFromUser(
+                                    expense,
+                                    uiState.currentUser!!,
+                                )
+                            },
                             onClickDetail = { viewModel.onShowExpenseInfo(entry.component1()) },
                         )
                     }
@@ -406,7 +413,7 @@ fun GroupDetailScreen(
                     name = uiState.group!!.name,
                     onNameChange = { viewModel.onGroupNameChange(it) },
                     description = uiState.group!!.description,
-                    onDescriptionChange = { viewModel.onGroupDescriptionChange(it) }
+                    onDescriptionChange = { viewModel.onGroupDescriptionChange(it) },
                     //TODO: investigate: do we need UI state here?
                 )
             }
@@ -419,12 +426,12 @@ fun GroupDetailScreen(
                 ExpenseInputBottomSheet(
                     onDismiss = { viewModel.onDismissSheet() },
                     onSave = { viewModel.saveExpense() },
-                    onOpenPayerSelection = { viewModel.onAddExpenseClicked() },
                     description = viewModel.uiState.collectAsState().value.expenseForm.description,
                     onDescriptionChange = viewModel::onExpenseDescriptionChange,
                     amount = viewModel.uiState.collectAsState().value.expenseForm.amount,
                     onAmountChange = viewModel::onExpenseAmountChange,
-                    date = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm").format(viewModel.uiState.collectAsState().value.expenseForm.date),
+                    date = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm")
+                        .format(viewModel.uiState.collectAsState().value.expenseForm.date),
                     onDateChange = viewModel::onExpenseDateChange,
                     name = viewModel.uiState.collectAsState().value.expenseForm.name,
                     onNameChange = viewModel::onExpenseNameChange,
@@ -458,17 +465,17 @@ fun GroupDetailScreen(
                 expense = uiState.selectedExpense!!,
                 onDismiss = { viewModel.onDismissDialog() },
                 currentUser = uiState.currentUser?.id ?: "",
-                onNotifyClick = { user->
-                  viewModel.onNotifyButtonClicked(uiState.selectedExpense!!,user)
+                onNotifyClick = { user ->
+                    viewModel.onNotifyButtonClicked(uiState.selectedExpense!!, user)
                 },
                 getAmountOwed = viewModel::getOwedAmountFromUser,
                 onPayClicked = { expense ->
-                    if (uiState.currentUser != null){
-                        viewModel.onPayButtonClicked(expense,uiState.currentUser!!)
+                    if (uiState.currentUser != null) {
+                        viewModel.onPayButtonClicked(expense, uiState.currentUser!!)
 
                     }
-                               },
-                modifier = modifier
+                },
+                modifier = modifier,
             )
         }
     }

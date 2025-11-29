@@ -3,7 +3,6 @@ package com.mds.sharedexpenses.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.PersonPin
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,7 +27,7 @@ fun sharedColorPallete() = TopAppBarDefaults.topAppBarColors(
 fun NavigationTopBar(
     title: String,
     onNavigateBack: (() -> Unit)? = {},
-    actions: @Composable () -> Unit = {}
+    actions: @Composable () -> Unit = {},
 ) {
     MediumTopAppBar(
         colors = sharedColorPallete(),
@@ -36,11 +35,11 @@ fun NavigationTopBar(
             Text(text = title)
         },
         navigationIcon = {
-            if (onNavigateBack != null ) {
+            if (onNavigateBack != null) {
                 IconButton(onClick = { onNavigateBack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "go to previous page"
+                        contentDescription = "go to previous page",
                     )
                 }
             }
@@ -54,7 +53,7 @@ fun NavigationTopBar(
 fun HeaderTopBar(
     title: String = "Unnamed",
     onProfileClick: () -> Unit = {},
-){
+) {
     CenterAlignedTopAppBar(
         colors = sharedColorPallete(),
         title = {
@@ -64,10 +63,10 @@ fun HeaderTopBar(
             IconButton(onClick = { onProfileClick() }) {
                 Icon(
                     imageVector = Icons.Rounded.AccountCircle,
-                    contentDescription = "show profile"
+                    contentDescription = "show profile",
                 )
             }
-        }
+        },
     )
 }
 
