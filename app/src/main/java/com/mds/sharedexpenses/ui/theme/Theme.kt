@@ -270,7 +270,7 @@ fun SharedExpensesTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = MaterialTheme.typography,
+        typography = AppTypography,
         content = content
     )
 }
