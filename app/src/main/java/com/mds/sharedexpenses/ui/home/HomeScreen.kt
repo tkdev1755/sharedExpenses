@@ -35,6 +35,7 @@ import com.example.auth.LoginScreen
 import com.example.auth.OnboardingScreen
 import com.example.auth.SignUpScreen
 import com.mds.sharedexpenses.data.models.Group
+import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.components.InstructionCard
@@ -136,7 +137,7 @@ private fun HomeContent(
     ) {
         Text(
             text = "Groups",
-            style = MaterialTheme.typography.displayMedium,
+            style = MaterialTheme.typography.titleLarge,
         )
 
         if (groups.isEmpty()) {
@@ -145,19 +146,22 @@ private fun HomeContent(
                 description = "You are currently not in any group. Ask someone to add you to an existing group or start by creating a new group.",
                 buttonLabel = "Create Group",
                 onButtonClick = { onAddGroupClick() },
+                imageId = com.mds.sharedexpenses.R.drawable.group,
             )
-
         } else {
             groupWithRecentActivity?.let { recentGroup ->
                 Text(
                     text = "Recent Activity",
                     style = MaterialTheme.typography.titleLarge,
                 )
-
-                RecentActivityCard(
-                    group = recentGroup,
-                    onClick = { onGroupClick(recentGroup) },
-                )
+                AnimatedBorderCard(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    RecentActivityCard(
+                        group = recentGroup,
+                        onClick = { onGroupClick(recentGroup) },
+                    )
+                }
             }
 
             GroupsSection(
