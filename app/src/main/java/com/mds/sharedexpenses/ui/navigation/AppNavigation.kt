@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -26,6 +27,7 @@ import com.mds.sharedexpenses.utils.SnackbarManager
 
 
 @Composable
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter") // this padding would lead to the inner scaffold using too much space
 fun AppNavigation(
     notificationAsk : () -> Unit
 ){
@@ -47,7 +49,6 @@ fun AppNavigation(
         composable(route = Screen.Home.route) {
             val homeViewModel : HomeViewModel = viewModel()
             HomeScreen(
-                modifier = Modifier.padding(innerPadding),
                 navController = navController,
                 notificationAsk = notificationAsk,
                 viewModel = homeViewModel
@@ -60,7 +61,6 @@ fun AppNavigation(
             val groupDetailViewModel: GroupDetailViewModel =
                 viewModel()
             GroupDetailScreen(
-                modifier = Modifier.padding(innerPadding),
                 navController = navController,
                 viewModel = groupDetailViewModel
             )
@@ -68,7 +68,6 @@ fun AppNavigation(
         composable(route = Screen.Profile.route) {
             val profileViewModel : ProfileViewModel = viewModel()
             ProfileScreen(
-                modifier = Modifier.padding(innerPadding),
                 navController = navController,
                 viewModel = profileViewModel,
                 onBackClick = { navController.popBackStack() }
