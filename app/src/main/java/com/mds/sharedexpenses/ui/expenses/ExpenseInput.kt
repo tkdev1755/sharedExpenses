@@ -146,6 +146,8 @@ fun ExpenseInputBottomSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+
+@Deprecated("unused")
 fun PayerSelectionBottomSheet(
     open: Boolean,
     onDismiss: () -> Unit,
