@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Deprecated("unused")
 fun AddGroupScreen(
     navController: NavController,
     viewModel: AddGroupViewModel

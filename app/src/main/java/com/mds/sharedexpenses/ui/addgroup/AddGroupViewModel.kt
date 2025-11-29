@@ -6,6 +6,7 @@ import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.ui.BaseViewModel
 import kotlinx.coroutines.launch
 
+@Deprecated("unused")
 class AddGroupViewModel : BaseViewModel() {
 
     fun createGroup(name: String, description: String) {

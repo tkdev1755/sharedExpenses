@@ -258,7 +258,7 @@ private fun GroupsSection(
                     viewModel.onLogin(email,password)
                 },
                 onCancel = {
-                    viewModel.setAuthStepToWelcome()
+                    viewModel.goToAuthStep(AuthStep.WELCOME)
                 },
             )
 
@@ -267,7 +267,7 @@ private fun GroupsSection(
                     viewModel.onSignUp(email, password, name, phone)
                 },
                 onCancel = {
-                    viewModel.setAuthStepToWelcome()
+                    viewModel.goToAuthStep(AuthStep.WELCOME)
                 }
             )
 

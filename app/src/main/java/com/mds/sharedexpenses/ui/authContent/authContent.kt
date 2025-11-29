@@ -32,7 +32,7 @@ fun WelcomeContent(
         Image(
             painter = painterResource(id = R.drawable.counter),
             contentDescription = "Group illustration",
-            modifier = Modifier.height(150.dp), // Adjust height as needed
+            modifier = Modifier.height(150.dp),
         )
 
         Text("Welcome to SharedExpenses!",
