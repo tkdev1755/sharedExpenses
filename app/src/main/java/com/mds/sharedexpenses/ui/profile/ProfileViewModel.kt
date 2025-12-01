@@ -19,9 +19,28 @@ data class ProfileUiState(
 )
 
 class ProfileViewModel : BaseViewModel() {
-    private val _uiState = MutableStateFlow(ProfileUiState())
+    private val _uiState = MutableStateFlow(
+        ProfileUiState(
+            name = currentUser.value?.name ?: "Loading...",
+            email = currentUser.value?.email ?: "Loading...",
+            notificationsEnabled = currentUser.value?.notifications ?: false
+        )
+    )
     val uiState = _uiState.asStateFlow()
 
+    init {
+        currentUser.observeForever { user ->
+            user?.let {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        name = it.name,
+                        email = it.email,
+                        notificationsEnabled = it.notifications ?: false
+                    )
+                }
+            }
+        }
+    }
     fun onNotificationsChange(isEnabled: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(notificationsEnabled = isEnabled)
@@ -30,7 +49,6 @@ class ProfileViewModel : BaseViewModel() {
 
     suspend fun updateDetailsButtonClicked() {
         val currentState = _uiState.value
-        println("Updating details: Name=${currentState.name}, Email=${currentState.email}, Notifications=${currentState.notificationsEnabled}")
 
         appRepository.users.addUser(
             User(name = currentState.name, email = currentState.email)
