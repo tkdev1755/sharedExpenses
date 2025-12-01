@@ -58,11 +58,10 @@ fun HomeScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            println("EVENT !!!!")
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.updateGroup()
-
             }
+
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
@@ -84,12 +83,13 @@ fun HomeScreen(
 
     }
 
-    if (uiState.authenticationStep != null) {
+    if (uiState.authenticationStep != null && !viewModel.checkLoginStatus()) {
         OnboardingSheet(viewModel, notificationAsk,uiState)
     }
     if (uiState.activeSheet == SheetTypeHome.ADD_GROUP){
         AddGroupBottomSheet(onCreateGroup = { name, description ->
             viewModel.createNewGroup(name, description)
+            viewModel.updateGroup()
         }, onDismiss = { viewModel.onDismissRequest() })
     }
     Scaffold(

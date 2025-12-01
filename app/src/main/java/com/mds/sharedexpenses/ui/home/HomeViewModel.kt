@@ -88,6 +88,7 @@ class HomeViewModel : BaseViewModel() {
                 val groups = user.groups.toList()
 
                 val recentGroup = groups.firstOrNull()
+                println("Now updated UI for groups or whatever-> ")
                 _uiState.update { state ->
                     state.copy(
                         groupWithRecentActivity = recentGroup,
@@ -109,7 +110,7 @@ class HomeViewModel : BaseViewModel() {
             _navigationEvents.emit(HomeNavigationEvent.ToGroupDetails(group.id))
         }
     }
-    suspend fun checkLoginStatus() : Boolean {
+    fun checkLoginStatus() : Boolean {
         return appRepository.checkLoginStatus()
     }
     fun onNotificationActivation(value:Boolean){
