@@ -58,6 +58,10 @@ fun HomeScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
+            println("EVENT !!!!")
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.updateGroup()
+            }
 
         }
         lifecycleOwner.lifecycle.addObserver(observer)
