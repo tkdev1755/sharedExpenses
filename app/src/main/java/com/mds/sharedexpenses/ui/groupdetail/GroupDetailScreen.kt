@@ -1,5 +1,7 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,9 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Doorbell
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
@@ -24,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -61,8 +66,9 @@ fun EditBottomSheet(
     onNameChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
 ) {
-    var nameValue by remember { mutableStateOf(TextFieldValue("")) } //TODO: bind to viewModel
-    var descriptionValue by remember { mutableStateOf(TextFieldValue("")) } //TODO: bind to viewModel
+    var nameValue by remember { mutableStateOf(TextFieldValue("" +
+        name)) } //TODO: bind to viewModel
+    var descriptionValue by remember { mutableStateOf(TextFieldValue(description)) } //TODO: bind to viewModel
     var newMemberEmail by remember { mutableStateOf("") }
 
     Column(
@@ -163,51 +169,88 @@ fun ExpenseRecord(
     currentUser: String,
     debt : Debt?,
     onClickDelete: () -> Unit,
-    onClickEdit: () -> Unit,
+    onClickEdit: (Expense) -> Unit,
     modifier: Modifier = Modifier,
     getAmountOwed: (Expense) -> Double,
     onClickDetail : () -> Unit
 ) {
-    Row(
+    var expanded by remember { mutableStateOf(false) }
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(all = 2.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = expense.date.dayOfMonth.toOrdinal(),
-            modifier = modifier.weight(1.5F),
-            textAlign = TextAlign.Center,
-        )
+            .clickable { expanded = !expanded } // ← clique = expand / collapse
+            .animateContentSize() // ← animation automatique de taille
+            .padding(2.dp)
+    ){
         Row(
-            modifier = modifier.weight(4.0F),
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(all = 2.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                modifier = modifier.fillMaxWidth(),
-            ) {
-                val isExpensePayer = expense.payer.id == currentUser
-                val name  = if (isExpensePayer) "you" else expense.payer.name
-                Text(expense.name)
-                Text("$name paid ${expense.amount}€", color = Color.Gray)
-            }
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier.weight(2.0F),
-        ) {
-            if (debt != null && debt.user.id != currentUser){
-                Text("You owe", color = Color.Gray)
-                Text("${getAmountOwed(expense)}€")
-            }
-        }
-        IconButton(
-            onClick = onClickDetail
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Info,
-                contentDescription = "See details",
+            Text(
+                text = expense.date.dayOfMonth.toOrdinal(),
+                modifier = modifier.weight(1.5F),
+                textAlign = TextAlign.Center,
             )
+            Row(
+                modifier = modifier.weight(4.0F),
+            ) {
+                Column(
+                    modifier = modifier.fillMaxWidth(),
+                ) {
+                    val isExpensePayer = expense.payer.id == currentUser
+                    val name = if (isExpensePayer) "you" else expense.payer.name
+                    Text(expense.name)
+                    Text("$name paid ${expense.amount}€", color = Color.Gray)
+                }
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier.weight(2.0F),
+            ) {
+                if (debt != null && debt.user.id != currentUser) {
+                    Text("You owe", color = Color.Gray)
+                    Text("${getAmountOwed(expense)}€")
+                }
+            }
+            IconButton(
+                onClick = onClickDetail,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Info,
+                    contentDescription = "See details",
+                )
+            }
+        }
+        if (expanded) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                OutlinedButton(
+                    onClick = { onClickEdit(expense) },
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Edit")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                OutlinedButton(
+                    onClick = onClickDelete
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Delete")
+                }
+            }
         }
     }
 }
@@ -343,6 +386,7 @@ fun GroupDetailScreen(
                 title = groupName.ifEmpty { "Group" },
                 onNavigateBack = { navController.popBackStack() },
                 actions = {
+
                     IconButton(onClick = { viewModel.onEditGroupClicked() }) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
@@ -384,7 +428,7 @@ fun GroupDetailScreen(
                         ExpenseRecord(
                             expense = entry.component1(),
                             onClickDelete = { },
-                            onClickEdit = { },
+                            onClickEdit = viewModel::onEditExpenseClicked,
                             debt = entry.component2(),
                             modifier = Modifier,
                             currentUser = uiState.currentUser?.id ?: "",
@@ -432,25 +476,29 @@ fun GroupDetailScreen(
                     payersChips = viewModel.uiState.collectAsState().value.expenseForm.chips,
                 )
             }
-            if (uiState.isAddMemberFieldVisible) {
-                ModalBottomSheet(
-                    onDismissRequest = { viewModel.onDismissPayerSelection() },
-                    sheetState = rememberModalBottomSheetState(),
-                ) {
-                    /*PayerSelectionBottomSheet(
-                        open = uiState.isPayerSelectionVisible,
-                        onDismiss = viewModel::onDismissPayerSelection,
-                        onSave = viewModel::onDismissPayerSelection,
-                        /*TODO: this is somewhat redundant, the users are updated and saved when they are selected.
-                           The save button does basically nothing except for closing the dialog.
-                           This is not a bug however, as we want to save the state also if the Bottom Sheet is closed manually.
-                           Users assume, that their selection is the latest thing thats saved, also if they dismiss the Modal Sheet by dragging it.*/
-                        allPayers = uiState.group!!.users, // TODO: remove "!!"
-                        selectedPayers = uiState.expenseForm.selectedPayers,
-                        onTogglePayer = viewModel::onExpensePayerToggle
-                    )*/
-                }
 
+        }
+        if (uiState.activeSheet == SheetType.EDIT_EXPENSE){
+            println("DISPLAYING EDIT_EXPENSE SHEET")
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.onDismissSheet() },
+                sheetState = rememberModalBottomSheetState(),
+            ) {
+                ExpenseInputBottomSheet(
+                    onDismiss = { viewModel.onDismissSheet() },
+                    onSave = { viewModel.saveExpense(edit = true) },
+                    onOpenPayerSelection = { viewModel.onAddExpenseClicked() },
+                    description = viewModel.uiState.collectAsState().value.expenseForm.description,
+                    onDescriptionChange = viewModel::onExpenseDescriptionChange,
+                    amount = viewModel.uiState.collectAsState().value.expenseForm.amount,
+                    onAmountChange = viewModel::onExpenseAmountChange,
+                    date = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH-mm").format(viewModel.uiState.collectAsState().value.expenseForm.date),
+                    onDateChange = viewModel::onExpenseDateChange,
+                    name = viewModel.uiState.collectAsState().value.expenseForm.name,
+                    onNameChange = viewModel::onExpenseNameChange,
+                    onPayerSelect = viewModel::toggleChip,
+                    payersChips = viewModel.uiState.collectAsState().value.expenseForm.chips,
+                )
             }
         }
         if (uiState.detailVisible && uiState.selectedExpense != null) {

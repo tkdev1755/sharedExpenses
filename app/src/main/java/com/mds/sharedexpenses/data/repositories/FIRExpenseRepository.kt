@@ -95,9 +95,9 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
         }
     }
 
-    suspend fun addGroupExpense(group: Group, expense: Expense): DataResult<Boolean> {
+    suspend fun addGroupExpense(group: Group, expense: Expense,edit:Boolean=false): DataResult<Boolean> {
         val expensesDirectory : DatabaseReference = getGroupExpensesDirectory(group.id)
-        val result : DataResult<DatabaseReference> =  firebaseRepository.createChildReference(expensesDirectory)
+        val result : DataResult<DatabaseReference> = if (!edit) firebaseRepository.createChildReference(expensesDirectory) else DataResult.Success(expensesDirectory.child(expense.id))
         var newExpenseDirectory : DatabaseReference? = null
         if (result is DataResult.Success){
             newExpenseDirectory = result.data
