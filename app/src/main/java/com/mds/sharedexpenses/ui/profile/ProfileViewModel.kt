@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.ui.BaseViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -15,18 +17,26 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val name: String = "",
     val email: String = "",
-    val notificationsEnabled: Boolean = false
+    val notificationsEnabled: Boolean = false,
 )
+
+sealed class ProfileNavigationEvent {
+    object NavigateToHome : ProfileNavigationEvent()
+}
 
 class ProfileViewModel : BaseViewModel() {
     private val _uiState = MutableStateFlow(
         ProfileUiState(
             name = currentUser.value?.name ?: "Loading...",
             email = currentUser.value?.email ?: "Loading...",
-            notificationsEnabled = currentUser.value?.notifications ?: false
-        )
+            notificationsEnabled = currentUser.value?.notifications ?: false,
+        ),
     )
     val uiState = _uiState.asStateFlow()
+
+    // Nav events
+    private val _navigationEvents = MutableSharedFlow<ProfileNavigationEvent>()
+    val navigationEvents = _navigationEvents.asSharedFlow()
 
     init {
         currentUser.observeForever { user ->
@@ -35,7 +45,7 @@ class ProfileViewModel : BaseViewModel() {
                     currentState.copy(
                         name = it.name,
                         email = it.email,
-                        notificationsEnabled = it.notifications ?: false
+                        notificationsEnabled = it.notifications ?: false,
                     )
                 }
             }
@@ -51,12 +61,15 @@ class ProfileViewModel : BaseViewModel() {
         val currentState = _uiState.value
 
         appRepository.users.addUser(
-            User(name = currentState.name, email = currentState.email)
+            User(name = currentState.name, email = currentState.email),
         )
     }
 
     fun logUserOut(){
-        appRepository.logout()
+        viewModelScope.launch {
+            appRepository.logout()
+            _navigationEvents.emit(ProfileNavigationEvent.NavigateToHome)
+        }
     }
 
     fun onNameChange(newName: String) {
