@@ -21,6 +21,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
+import com.mds.sharedexpenses.ui.navigation.Screen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,10 +41,25 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: ProfileViewModel,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.navigationEvents.collect { event ->
+            when (event) {
+                is ProfileNavigationEvent.NavigateToHome -> {
+                    navController.navigate(Screen.Home.route) {
+                        // user shouldn't be able to "tap back" into a authenticated stage
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -58,7 +75,7 @@ fun ProfileScreen(
                 .padding(innerPadding)
                 .padding(24.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
             Box(
@@ -66,7 +83,7 @@ fun ProfileScreen(
                     .size(100.dp)
                     .clip(CircleShape)
                     .background(Color.LightGray),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(":D", color = Color.DarkGray)
             }
@@ -77,7 +94,7 @@ fun ProfileScreen(
                 value = uiState.name,
                 onValueChange = { viewModel.onNameChange(it) },
                 label = { Text("Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -86,7 +103,7 @@ fun ProfileScreen(
                 value = uiState.email,
                 onValueChange = { viewModel.onEmailChange(it) },
                 label = { Text("E-Mail") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
 
@@ -96,7 +113,7 @@ fun ProfileScreen(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(text = "Allow notifications")
                 Switch(
@@ -107,7 +124,7 @@ fun ProfileScreen(
                         checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
                         uncheckedThumbColor = MaterialTheme.colorScheme.secondary,
                         uncheckedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                    )
+                    ),
                 )
             }
 
@@ -119,18 +136,14 @@ fun ProfileScreen(
                         viewModel.updateDetailsButtonClicked()
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(text = "Update Details")
             }
 
             Button(
-                onClick = {
-                    scope.launch {
-                        viewModel.logUserOut()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
+                onClick = { viewModel.logUserOut() },
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(text = "Log out")
             }
