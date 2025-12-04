@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.ui.components.scaffold
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -26,13 +27,22 @@ fun sharedColorPallete() = TopAppBarDefaults.topAppBarColors(
 @Composable
 fun NavigationTopBar(
     title: String,
+    subtitle: String? = null,
     onNavigateBack: (() -> Unit)? = {},
     actions: @Composable () -> Unit = {},
 ) {
     MediumTopAppBar(
         colors = sharedColorPallete(),
         title = {
-            Text(text = title)
+            Column {
+                Text(text = title)
+                if (subtitle != null && subtitle.isNotEmpty()) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         },
         navigationIcon = {
             if (onNavigateBack != null) {
