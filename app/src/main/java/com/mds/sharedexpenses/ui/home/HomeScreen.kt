@@ -39,10 +39,10 @@ import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.HeaderTopBar
 import com.mds.sharedexpenses.ui.components.InstructionCard
 import com.mds.sharedexpenses.ui.navigation.Screen
-import com.mds.sharedexpenses.ui.authContent.LogInContent
-import com.mds.sharedexpenses.ui.authContent.OnboardingContent
-import com.mds.sharedexpenses.ui.authContent.SignUpContent
-import com.mds.sharedexpenses.ui.authContent.WelcomeContent
+import com.mds.sharedexpenses.ui.components.LogInContent
+import com.mds.sharedexpenses.ui.components.OnboardingContent
+import com.mds.sharedexpenses.ui.components.SignUpContent
+import com.mds.sharedexpenses.ui.components.WelcomeContent
 
 
 @OptIn(ExperimentalMaterial3Api::class)
