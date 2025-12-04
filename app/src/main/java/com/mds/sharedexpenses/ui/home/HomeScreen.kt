@@ -35,8 +35,8 @@ import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.models.Group
 import com.mds.sharedexpenses.ui.components.AddGroupBottomSheet
 import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
-import com.mds.sharedexpenses.ui.components.CustomActionButton
-import com.mds.sharedexpenses.ui.components.HeaderTopBar
+import com.mds.sharedexpenses.ui.components.scaffold.CustomActionButton
+import com.mds.sharedexpenses.ui.components.scaffold.HeaderTopBar
 import com.mds.sharedexpenses.ui.components.InstructionCard
 import com.mds.sharedexpenses.ui.navigation.Screen
 import com.mds.sharedexpenses.ui.components.LogInContent
