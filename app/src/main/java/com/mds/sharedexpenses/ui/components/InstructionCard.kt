@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.mds.sharedexpenses.R
 import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 
+//shows a card with an action button
+//used if groups or expenses are empty to generate user action
 @Composable
 fun InstructionCard(
     title: String,

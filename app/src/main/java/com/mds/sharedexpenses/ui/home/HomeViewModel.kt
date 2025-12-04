@@ -19,6 +19,9 @@ enum class AuthStep {
     WELCOME,
 }
 
+// just modular designed for future expandability
+enum class SheetTypeHome  { ADD_GROUP }
+
 data class HomeUiState(
     val groupWithRecentActivity: Group? = null,
     val groups: List<Group> = emptyList(),
@@ -29,8 +32,6 @@ data class HomeUiState(
     //Sheet
     val activeSheet: SheetTypeHome? = null,
 )
-
-enum class SheetTypeHome  { ADD_GROUP }
 
 sealed class HomeNavigationEvent {
     data class ToGroupDetails(val groupId: String) : HomeNavigationEvent()
