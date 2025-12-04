@@ -1,4 +1,4 @@
-package com.mds.sharedexpenses.ui.addgroup
+package com.mds.sharedexpenses.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
