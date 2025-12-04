@@ -33,7 +33,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.models.Group
-import com.mds.sharedexpenses.ui.components.AddGroupBottomSheet
+import com.mds.sharedexpenses.ui.components.bottomsheets.AddGroupBottomSheet
 import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
 import com.mds.sharedexpenses.ui.components.scaffold.CustomActionButton
 import com.mds.sharedexpenses.ui.components.scaffold.HeaderTopBar

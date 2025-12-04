@@ -1,4 +1,4 @@
-package com.mds.sharedexpenses.ui.components
+package com.mds.sharedexpenses.ui.components.bottomsheets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
