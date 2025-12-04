@@ -47,7 +47,7 @@ import com.mds.sharedexpenses.data.models.Expense
 import com.mds.sharedexpenses.data.models.User
 import com.mds.sharedexpenses.ui.components.CustomActionButton
 import com.mds.sharedexpenses.ui.components.NavigationTopBar
-import com.mds.sharedexpenses.ui.expenses.ExpenseInputBottomSheet
+import com.mds.sharedexpenses.ui.components.ExpenseInputBottomSheet
 import java.time.format.DateTimeFormatter
 
 @Composable

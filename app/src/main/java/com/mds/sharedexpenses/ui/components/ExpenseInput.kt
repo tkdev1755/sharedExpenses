@@ -1,4 +1,4 @@
-package com.mds.sharedexpenses.ui.expenses
+package com.mds.sharedexpenses.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mds.sharedexpenses.ui.groupdetail.ChipItem
+import java.time.Instant
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,8 +104,8 @@ fun ExpenseInputBottomSheet(
                 DatePickerModal(
                     onDateSelected = { millis ->
                         millis?.let {
-                            val localDate = java.time.Instant.ofEpochMilli(it)
-                                .atZone(java.time.ZoneId.systemDefault())
+                            val localDate = Instant.ofEpochMilli(it)
+                                .atZone(ZoneId.systemDefault())
                                 .toLocalDateTime()
                             onDateChange(localDate.toString())
                         }
