@@ -258,7 +258,8 @@ fun GroupDetailScreen(
         modifier = modifier,
         topBar = {
             NavigationTopBar(
-                title = groupName.ifEmpty { "Group" },
+                title = groupName.ifEmpty { "Unnamed Group" },
+                subtitle = uiState.group?.description, // can be null
                 onNavigateBack = { navController.popBackStack() },
                 actions = {
                     IconButton(onClick = { viewModel.onEditGroupClicked() }) {
