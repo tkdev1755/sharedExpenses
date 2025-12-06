@@ -40,8 +40,9 @@ data class GroupDetailUiState(
     val isAddMemberFieldVisible: Boolean = false,
     val isPayerSelectionVisible: Boolean = false,
     // Dialog
-    val detailVisible: Boolean = false,
+    val detailDialogVisible: Boolean = false,
     val selectedExpense: Expense? = null,
+    val deleteDialogVisible : Boolean = false,
 )
 
 data class ExpenseFormState(
@@ -255,6 +256,27 @@ class GroupDetailViewModel(
         }
     }
 
+    fun onDeleteExpenseClicked(expenseToRemove:Expense){
+        _uiState.update {
+            it.copy(
+                selectedExpense = expenseToRemove,
+                deleteDialogVisible = true,
+            )
+        }
+    }
+    fun onDeleteExpenseDismissed(){
+        _uiState.update {
+            it.copy(
+                selectedExpense = null,
+                deleteDialogVisible = false
+            )
+        }
+    }
+
+    fun onDeleteExpense(expense:Expense){
+        deleteExpense(expense)
+        onDeleteExpenseDismissed()
+    }
     private fun resetExpenseForm() {
         _uiState.update {
             it.copy(
@@ -353,6 +375,35 @@ class GroupDetailViewModel(
             )
         }
     }*/
+
+
+    fun deleteExpense(expense : Expense){
+        val currentState = _uiState.value
+        val currentGroup = currentState.group
+        if (currentGroup == null){
+            showErrorMessage("No groups were loaded beforehand")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+
+                val result = appRepository.expenses.removeGroupExpense(currentGroup!!, expense)
+
+                if (result is DataResult.Success) {
+                    showErrorMessage("Deleted Expense (fixme: not an error)")
+                    loadGroupDetails()
+                } else {
+                    showErrorMessage("There was an error while deleting this expense")
+                }
+            } catch (e: Exception) {
+                showErrorMessage("an error occurred")
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
     fun saveExpense(edit: Boolean=false) {
         val currentState = _uiState.value
         val currentUser = currentState.currentUser
@@ -404,7 +455,7 @@ class GroupDetailViewModel(
     fun onShowExpenseInfo(expense: Expense) {
         _uiState.update {
             it.copy(
-                detailVisible = true,
+                detailDialogVisible = true,
                 selectedExpense = expense,
             )
         }
@@ -413,7 +464,7 @@ class GroupDetailViewModel(
     fun onDismissDialog() {
         _uiState.update {
             it.copy(
-                detailVisible = true,
+                detailDialogVisible = true,
                 selectedExpense = null,
             )
         }

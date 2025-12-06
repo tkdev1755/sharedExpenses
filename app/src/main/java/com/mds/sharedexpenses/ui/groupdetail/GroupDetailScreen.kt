@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Doorbell
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
@@ -28,13 +27,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -84,7 +85,7 @@ fun ExpenseRecord(
     expense: Expense,
     currentUser: String,
     debt: Debt?,
-    onClickDelete: () -> Unit,
+    onClickDelete: (Expense) -> Unit,
     onClickEdit: (Expense) -> Unit,
     modifier: Modifier = Modifier,
     getAmountOwed: (Expense) -> Double,
@@ -160,7 +161,7 @@ fun ExpenseRecord(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 OutlinedButton(
-                    onClick = onClickDelete
+                    onClick = { onClickDelete(expense) },
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
@@ -218,6 +219,33 @@ fun ExpenseInfoDialog(
         },
     )
 }
+
+@Composable
+fun ExpenseDeleteDialog(
+    expense: Expense,
+    onDismissClicked : () -> Unit,
+    onDeleteClicked : (expense:Expense) -> Unit,
+    ){
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = { onDismissClicked() },
+        title = {
+            Text("Are you sure to delete this expense ?")
+        },
+        text = {
+            Text("You won't be able to recover this expense afterwards")
+
+        },
+        confirmButton = {
+            Button(onClick = { onDeleteClicked(expense) }) {
+                Text("Yes")
+            }
+            Button(onClick = onDismissClicked) {
+                Text("No")
+            }
+        },
+    )
+}
+
 
 @Composable
 fun ExpenseActions(
@@ -347,7 +375,7 @@ fun GroupDetailScreen(
                         HorizontalDivider()
                         ExpenseRecord(
                             expense = entry.component1(),
-                            onClickDelete = { },
+                            onClickDelete = viewModel::onDeleteExpenseClicked,
                             onClickEdit = viewModel::onEditExpenseClicked,
                             debt = entry.component2(),
                             modifier = Modifier,
@@ -412,7 +440,6 @@ fun GroupDetailScreen(
                 ExpenseInputBottomSheet(
                     onDismiss = { viewModel.onDismissSheet() },
                     onSave = { viewModel.saveExpense(edit = true) },
-                    onOpenPayerSelection = { viewModel.onAddExpenseClicked() },
                     description = viewModel.uiState.collectAsState().value.expenseForm.description,
                     onDescriptionChange = viewModel::onExpenseDescriptionChange,
                     amount = viewModel.uiState.collectAsState().value.expenseForm.amount,
@@ -426,7 +453,7 @@ fun GroupDetailScreen(
                 )
             }
         }
-        if (uiState.detailVisible && uiState.selectedExpense != null) {
+        if (uiState.detailDialogVisible && uiState.selectedExpense != null) {
             ExpenseInfoDialog(
                 expense = uiState.selectedExpense!!,
                 onDismiss = { viewModel.onDismissDialog() },
@@ -442,6 +469,13 @@ fun GroupDetailScreen(
                     }
                 },
                 modifier = modifier,
+            )
+        }
+        if (uiState.deleteDialogVisible && uiState.selectedExpense != null){
+            ExpenseDeleteDialog(
+                expense = uiState.selectedExpense!!,
+                onDismissClicked = viewModel::onDeleteExpenseDismissed,
+                onDeleteClicked = viewModel::onDeleteExpense,
             )
         }
     }

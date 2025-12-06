@@ -112,10 +112,10 @@ class FIRExpenseRepository(private val firebaseRepository: FirebaseRepository) {
         return DataResult.Error("FIREBASE_ERROR", "Failed to write to new expense database reference.")
     }
 
-    suspend fun removeGroupExpense(group: Group, expense: Expense) {
+    suspend fun removeGroupExpense(group: Group, expense: Expense) : DataResult<Boolean> {
         val groupExpensesDirectory : DatabaseReference = getGroupExpensesDirectory(group.id)
 
         val expenseDirectory : DatabaseReference = groupExpensesDirectory.child(expense.id.toString())
-        firebaseRepository.deleteDBRef(expenseDirectory)
+        return firebaseRepository.deleteDBRef(expenseDirectory)
     }
 }
