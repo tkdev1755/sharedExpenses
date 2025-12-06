@@ -31,7 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mds.sharedexpenses.ui.components.NavigationTopBar
+import com.mds.sharedexpenses.ui.components.scaffold.NavigationTopBar
 import com.mds.sharedexpenses.ui.navigation.Screen
 import kotlinx.coroutines.launch
 

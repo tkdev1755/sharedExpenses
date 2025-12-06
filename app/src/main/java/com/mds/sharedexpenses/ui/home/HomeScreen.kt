@@ -33,16 +33,16 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.mds.sharedexpenses.data.models.Group
-import com.mds.sharedexpenses.ui.addgroup.AddGroupBottomSheet
+import com.mds.sharedexpenses.ui.components.bottomsheets.AddGroupBottomSheet
 import com.mds.sharedexpenses.ui.components.AnimatedBorderCard
-import com.mds.sharedexpenses.ui.components.CustomActionButton
-import com.mds.sharedexpenses.ui.components.HeaderTopBar
+import com.mds.sharedexpenses.ui.components.scaffold.CustomActionButton
+import com.mds.sharedexpenses.ui.components.scaffold.HeaderTopBar
 import com.mds.sharedexpenses.ui.components.InstructionCard
 import com.mds.sharedexpenses.ui.navigation.Screen
-import com.mds.sharedexpenses.ui.authContent.LogInContent
-import com.mds.sharedexpenses.ui.authContent.OnboardingContent
-import com.mds.sharedexpenses.ui.authContent.SignUpContent
-import com.mds.sharedexpenses.ui.authContent.WelcomeContent
+import com.mds.sharedexpenses.ui.components.LogInContent
+import com.mds.sharedexpenses.ui.components.OnboardingContent
+import com.mds.sharedexpenses.ui.components.SignUpContent
+import com.mds.sharedexpenses.ui.components.WelcomeContent
 
 
 @OptIn(ExperimentalMaterial3Api::class)

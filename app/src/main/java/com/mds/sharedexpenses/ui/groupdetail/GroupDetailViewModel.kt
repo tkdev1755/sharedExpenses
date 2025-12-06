@@ -14,16 +14,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.exp
 
 data class ChipItem(
     val id: User,
     val label: String,
-    var isSelected: Boolean = false
+    var isSelected: Boolean = false,
 )
 
 data class GroupDetailUiState(
@@ -42,8 +40,8 @@ data class GroupDetailUiState(
     val isAddMemberFieldVisible: Boolean = false,
     val isPayerSelectionVisible: Boolean = false,
     // Dialog
-    val detailVisible : Boolean = false,
-    val selectedExpense : Expense? = null,
+    val detailVisible: Boolean = false,
+    val selectedExpense: Expense? = null,
 )
 
 data class ExpenseFormState(
@@ -53,7 +51,7 @@ data class ExpenseFormState(
     val amount: String = "",
     val date: LocalDateTime = LocalDateTime.now(),
     val selectedUsers: MutableSet<User> = mutableSetOf(),
-    var chips : MutableList<ChipItem> = mutableListOf<ChipItem>(),
+    var chips: MutableList<ChipItem> = mutableListOf<ChipItem>(),
     val editingExpenseId: String? = null,
 )
 
@@ -68,9 +66,11 @@ class GroupDetailViewModel(
     }
     private val _uiState = MutableStateFlow(GroupDetailUiState())
     val uiState = _uiState.asStateFlow()
+
     init {
-            loadGroupDetails()
+        loadGroupDetails()
     }
+
     private fun loadGroupDetails() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -105,12 +105,13 @@ class GroupDetailViewModel(
                 _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg) }
             }
 
-            }
         }
+    }
+
     private fun calculateGroupStats(
         group: Group,
         currentUserId: String,
-    ): Pair<Map<String, List<Pair<Expense,Debt?>>>, Double> {
+    ): Pair<Map<String, List<Pair<Expense, Debt?>>>, Double> {
         val formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
 
         val expensesByMonth = group.expenses
@@ -129,44 +130,47 @@ class GroupDetailViewModel(
             }
 
 
-        val filterExpenses = group.expenses.filter {
-            expense -> expense.debtors.any { it.id == currentUserId } && expense.payer.id != currentUserId
+        val filterExpenses = group.expenses.filter { expense ->
+            expense.debtors.any { it.id == currentUserId } && expense.payer.id != currentUserId
         }
 
 
-        val totalOwed = group.debts.filter{
+        val totalOwed = group.debts.filter {
             it.debtor == currentUserId
                 && it.expenses.payer.id != currentUserId
         }
-        .sumOf {
-            it.amount
-        }
+            .sumOf {
+                it.amount
+            }
 
 
         return Pair(expensesWithDebts, totalOwed)
     }
 
-    fun onAddMemberClicked(){
+    fun onAddMemberClicked() {
         _uiState.value = _uiState.value.copy(isAddMemberFieldVisible = true)
     }
-    fun onAddMember(currentGroup : Group ,email:String){
+
+    fun onAddMember(currentGroup: Group, email: String) {
     }
 
     fun members(): List<User> {
         return _uiState.value.group?.users.orEmpty()
     }
 
-    fun addMember(email:String) {
-        if (_uiState.value.group == null){
+    fun addMember(email: String) {
+        if (_uiState.value.group == null) {
             showErrorMessage("Group was not loaded correctly")
             return
         }
         viewModelScope.launch {
-            val res : DataResult<Boolean>  = appRepository.groups.inviteUser(_uiState.value.group!!,email)
+            val res: DataResult<Boolean> =
+                appRepository.groups.inviteUser(_uiState.value.group!!, email)
             when (res) {
                 is DataResult.Success -> {
                     _uiState.value = _uiState.value.copy(isAddMemberFieldVisible = false)
                 }
+
                 is DataResult.Error -> {
                     val message =
                         res.errorMessage.orEmpty().ifEmpty { "Error inviting user" }
@@ -174,6 +178,7 @@ class GroupDetailViewModel(
                     showErrorMessage(message)
 
                 }
+
                 is DataResult.NotFound -> {
 
                 }
@@ -182,13 +187,14 @@ class GroupDetailViewModel(
     }
 
     fun removeMember(member: User) {
-        if (_uiState.value.group == null){
+        if (_uiState.value.group == null) {
             showErrorMessage("Group was not loaded correctly")
             return
         }
         viewModelScope.launch {
-            val res:DataResult<Boolean> = appRepository.groups.removeGroupUser(_uiState.value.group!!, member)
-            if (res is DataResult.Error){
+            val res: DataResult<Boolean> =
+                appRepository.groups.removeGroupUser(_uiState.value.group!!, member)
+            if (res is DataResult.Error) {
                 println("Unable to remove user from group -> ${res.errorMessage}")
                 showErrorMessage("Unable to remove user from group")
             }
@@ -198,6 +204,7 @@ class GroupDetailViewModel(
     fun onEditGroupClicked() {
         _uiState.update { it.copy(activeSheet = SheetType.EDIT_GROUP) }
     }
+
     fun onAddExpenseClicked() {
         resetExpenseForm()
         _uiState.update { it.copy(activeSheet = SheetType.ADD_EXPENSE) }
@@ -221,8 +228,8 @@ class GroupDetailViewModel(
             state.copy(
                 expenseForm = state.expenseForm.copy(
                     chips = chips,
-                    selectedUsers = newSelectedUsers
-                )
+                    selectedUsers = newSelectedUsers,
+                ),
             )
         }
     }
@@ -247,20 +254,24 @@ class GroupDetailViewModel(
             )
         }
     }
+
     private fun resetExpenseForm() {
         _uiState.update {
             it.copy(
                 expenseForm = ExpenseFormState(),
             )
         }
-        if (_uiState.value.group != null){
-            _uiState.value.expenseForm.chips = _uiState.value.group?.users!!.map { ChipItem(it,it.name) }.toMutableList()
+        if (_uiState.value.group != null) {
+            _uiState.value.expenseForm.chips =
+                _uiState.value.group?.users!!.map { ChipItem(it, it.name) }.toMutableList()
         }
     }
+
     fun onDismissSheet() {
         _uiState.update { it.copy(activeSheet = null) }
         resetExpenseForm()
     }
+
     fun onExpenseNameChange(newName: String) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -270,6 +281,7 @@ class GroupDetailViewModel(
             )
         }
     }
+
     fun onExpenseDescriptionChange(newDescription: String) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -279,6 +291,7 @@ class GroupDetailViewModel(
             )
         }
     }
+
     fun onExpenseAmountChange(newAmount: String) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -288,6 +301,7 @@ class GroupDetailViewModel(
             )
         }
     }
+
     fun onExpenseDateChange(newDate: String) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -302,10 +316,12 @@ class GroupDetailViewModel(
         val groupToUpdate = _uiState.value.group ?: return
         updateGroup(groupToUpdate.copy(name = newName))
     }
+
     fun onGroupDescriptionChange(newDescription: String) {
         val groupToUpdate = _uiState.value.group ?: return
         updateGroup(groupToUpdate.copy(description = newDescription))
     }
+
     private fun updateGroup(newGroupObject: Group) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -386,27 +402,32 @@ class GroupDetailViewModel(
     }
 
     fun onShowExpenseInfo(expense: Expense) {
-        _uiState.update { it.copy(
-            detailVisible = true,
-            selectedExpense = expense
-        )}
+        _uiState.update {
+            it.copy(
+                detailVisible = true,
+                selectedExpense = expense,
+            )
+        }
     }
 
     fun onDismissDialog() {
-        _uiState.update { it.copy(
-            detailVisible = true,
-            selectedExpense = null
-        )}
+        _uiState.update {
+            it.copy(
+                detailVisible = true,
+                selectedExpense = null,
+            )
+        }
     }
 
-    fun onPayButtonClicked(expense:Expense, user:User){
+    fun onPayButtonClicked(expense: Expense, user: User) {
         val group = uiState.value.group
-        if (group == null){
+        if (group == null) {
             showErrorMessage("Group data wasn't fetched correctly")
             return
         }
-        val associatedDebt = group.debts.filter { it.expenses.id == expense.id && it.debtor == user.id }
-        if (associatedDebt.isEmpty()){
+        val associatedDebt =
+            group.debts.filter { it.expenses.id == expense.id && it.debtor == user.id }
+        if (associatedDebt.isEmpty()) {
             showErrorMessage("Expense was not found")
             return
         }
@@ -418,29 +439,29 @@ class GroupDetailViewModel(
             expense,
             amount,
             issuer = user,
-            receiver =expense.payer
+            receiver = expense.payer,
         )
         println("Created transaction")
         viewModelScope.launch {
             println("Adding transaction right now")
-            val result : DataResult<Boolean>  = appRepository.transactions.addGroupTransaction(group!!,newTransaction)
-            if (result is DataResult.Success){
+            val result: DataResult<Boolean> =
+                appRepository.transactions.addGroupTransaction(group!!, newTransaction)
+            if (result is DataResult.Success) {
                 println("Transaction added successfully")
-            }
-            else if (result is DataResult.Error){
+            } else if (result is DataResult.Error) {
                 showErrorMessage("${result.errorMessage}")
                 println("Transaction was not added : ${result.errorMessage}")
             }
         }
     }
 
-    fun onNotifyButtonClicked(expense:Expense, user:User){
+    fun onNotifyButtonClicked(expense: Expense, user: User) {
         viewModelScope.launch {
-            if (uiState.value.group != null){
+            if (uiState.value.group != null) {
                 appRepository.groups.notifyUserFromExpense(
                     uiState.value.group!!,
                     user,
-                    expense
+                    expense,
                 )
             }
 
@@ -448,23 +469,23 @@ class GroupDetailViewModel(
         return
     }
 
-    fun getOwedAmountFromUser(expense:Expense, user:User) : Double{
-        if (uiState.value.group != null){
+    fun getOwedAmountFromUser(expense: Expense, user: User): Double {
+        if (uiState.value.group != null) {
             val group = uiState.value.group!!
-            val debts = group.debts.filter { it.expenses.id == expense.id  && it.debtor == user.id}
+            val debts = group.debts.filter { it.expenses.id == expense.id && it.debtor == user.id }
             val transactions = group.transactions.filter {
                 it.expense.id == expense.id && it.issuer.id == user.id
             }
-            if (debts.size > 1){
+            if (debts.size > 1) {
                 println("Debts are superior to 1 -> Weird....")
             }
-            val amount : Double = debts.sumOf { it.amount }
+            val amount: Double = debts.sumOf { it.amount }
             return amount
-        }
-        else{
+        } else {
             return -1.0;
         }
     }
+
     // Methods for the user Selection
     fun onDismissPayerSelection() {
         _uiState.update { it.copy(isPayerSelectionVisible = false) }

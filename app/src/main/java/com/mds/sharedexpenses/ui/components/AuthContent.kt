@@ -1,4 +1,4 @@
-package com.mds.sharedexpenses.ui.authContent
+package com.mds.sharedexpenses.ui.components
 
 
 import androidx.compose.foundation.Image

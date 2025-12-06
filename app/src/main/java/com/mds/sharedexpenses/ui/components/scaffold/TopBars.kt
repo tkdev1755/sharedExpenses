@@ -1,9 +1,9 @@
-package com.mds.sharedexpenses.ui.components
+package com.mds.sharedexpenses.ui.components.scaffold
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.PersonPin
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,20 +27,29 @@ fun sharedColorPallete() = TopAppBarDefaults.topAppBarColors(
 @Composable
 fun NavigationTopBar(
     title: String,
+    subtitle: String? = null,
     onNavigateBack: (() -> Unit)? = {},
-    actions: @Composable () -> Unit = {}
+    actions: @Composable () -> Unit = {},
 ) {
     MediumTopAppBar(
         colors = sharedColorPallete(),
         title = {
-            Text(text = title)
+            Column {
+                Text(text = title)
+                if (subtitle != null && subtitle.isNotEmpty()) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         },
         navigationIcon = {
-            if (onNavigateBack != null ) {
+            if (onNavigateBack != null) {
                 IconButton(onClick = { onNavigateBack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "go to previous page"
+                        contentDescription = "go to previous page",
                     )
                 }
             }
@@ -54,7 +63,7 @@ fun NavigationTopBar(
 fun HeaderTopBar(
     title: String = "Unnamed",
     onProfileClick: () -> Unit = {},
-){
+) {
     CenterAlignedTopAppBar(
         colors = sharedColorPallete(),
         title = {
@@ -64,10 +73,10 @@ fun HeaderTopBar(
             IconButton(onClick = { onProfileClick() }) {
                 Icon(
                     imageVector = Icons.Rounded.AccountCircle,
-                    contentDescription = "show profile"
+                    contentDescription = "show profile",
                 )
             }
-        }
+        },
     )
 }
 

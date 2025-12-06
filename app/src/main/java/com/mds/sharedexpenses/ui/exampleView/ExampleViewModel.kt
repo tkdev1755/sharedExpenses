@@ -11,6 +11,7 @@ import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.di.AppContainer
 import kotlinx.coroutines.launch
 
+// View Model only for illustrational purposes
 class ExampleViewModel : ViewModel() {
     private val appRepository = AppContainer.appRepository
 

@@ -1,5 +1,6 @@
-package com.mds.sharedexpenses.ui.components
+package com.mds.sharedexpenses.ui.components.scaffold
 
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -33,7 +34,7 @@ fun CustomActionButtonPreview() {
     SharedExpensesTheme {
         CustomActionButton(
             onClick = {},
-            imageVector = androidx.compose.material.icons.Icons.Filled.GroupAdd,
+            imageVector = Icons.Filled.GroupAdd,
             iconContentDescription = "Click to create a new Group",
             text = "Create Group"
         )
