@@ -40,11 +40,13 @@ data class GroupDetailUiState(
     val isAddMemberFieldVisible: Boolean = false,
     val isPayerSelectionVisible: Boolean = false,
     // Dialog
-    val detailVisible: Boolean = false,
+    val detailDialogVisible: Boolean = false,
     val selectedExpense: Expense? = null,
+    val deleteDialogVisible : Boolean = false,
 )
 
 data class ExpenseFormState(
+    val id : String? = null,
     val name: String = "",
     val description: String = "",
     val amount: String = "",
@@ -233,31 +235,48 @@ class GroupDetailViewModel(
         }
     }
 
-    //TODO: leave in, this just needs to get wired to the frontend once the buttons exist
-    fun onEditExpenseClicked(expenseId: String) {
-        val expenseToEdit = _uiState.value.group?.expenses?.find { it.id == expenseId }
+    fun onEditExpenseClicked(expenseToEdit: Expense) {
+        val prefilledForm = ExpenseFormState(
+            name = expenseToEdit.name,
+            description = expenseToEdit.description,
+            amount = expenseToEdit.amount.toString(), // for input field
+            date = expenseToEdit.date,
+            selectedUsers = expenseToEdit.debtors.toMutableSet(),
+            editingExpenseId = expenseToEdit.id,
+        )
+        if (_uiState.value.group != null){
+            prefilledForm.chips = _uiState.value.group?.users!!.map { ChipItem(it,it.name, isSelected = (expenseToEdit.debtors.any { user -> user.id == it.id })) }.toMutableList()
 
-        if (expenseToEdit != null) {
-            val prefilledForm = ExpenseFormState(
-                description = expenseToEdit.description,
-                amount = expenseToEdit.amount.toString(), // for input field
-                date = expenseToEdit.date,
-                selectedUsers = expenseToEdit.debtors.toMutableSet(),
-                editingExpenseId = expenseToEdit.id,
+        }
+        _uiState.update {
+            it.copy(
+                activeSheet = SheetType.EDIT_EXPENSE,
+                expenseForm = prefilledForm,
             )
-
-
-            _uiState.update {
-                it.copy(
-                    activeSheet = SheetType.EDIT_EXPENSE,
-                    expenseForm = prefilledForm,
-                )
-            }
-        } else {
-            showErrorMessage("Expense not found")
         }
     }
 
+    fun onDeleteExpenseClicked(expenseToRemove:Expense){
+        _uiState.update {
+            it.copy(
+                selectedExpense = expenseToRemove,
+                deleteDialogVisible = true,
+            )
+        }
+    }
+    fun onDeleteExpenseDismissed(){
+        _uiState.update {
+            it.copy(
+                selectedExpense = null,
+                deleteDialogVisible = false
+            )
+        }
+    }
+
+    fun onDeleteExpense(expense:Expense){
+        deleteExpense(expense)
+        onDeleteExpenseDismissed()
+    }
     private fun resetExpenseForm() {
         _uiState.update {
             it.copy(
@@ -339,8 +358,53 @@ class GroupDetailViewModel(
             }
         }
     }
+    /*fun onExpensePayerToggle(userId: String) {
+        _uiState.update { currentState ->
+            val currentSelection = currentState.expenseForm.selectedPayerIds
 
-    fun saveExpense() {
+            val newSelection = if (userId in currentSelection) {
+                currentSelection - userId
+            } else {
+                currentSelection + userId
+            }
+
+            currentState.copy(
+                expenseForm = currentState.expenseForm.copy(
+                    selectedPayerIds = newSelection,
+                ),
+            )
+        }
+    }*/
+
+
+    fun deleteExpense(expense : Expense){
+        val currentState = _uiState.value
+        val currentGroup = currentState.group
+        if (currentGroup == null){
+            showErrorMessage("No groups were loaded beforehand")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+
+                val result = appRepository.expenses.removeGroupExpense(currentGroup!!, expense)
+
+                if (result is DataResult.Success) {
+                    showErrorMessage("Deleted Expense (fixme: not an error)")
+                    loadGroupDetails()
+                } else {
+                    showErrorMessage("There was an error while deleting this expense")
+                }
+            } catch (e: Exception) {
+                showErrorMessage("an error occurred")
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun saveExpense(edit: Boolean=false) {
         val currentState = _uiState.value
         val currentUser = currentState.currentUser
         val currentGroup = currentState.group
@@ -360,8 +424,9 @@ class GroupDetailViewModel(
             _uiState.update { it.copy(isLoading = true) }
 
             try {
+                println("expenseID is ${currentState.expenseForm.editingExpenseId}")
                 val newExpense = Expense(
-                    id = "", // TODO: check: is this automatically generated?
+                    id = if (edit) currentState.expenseForm.editingExpenseId!! else "", // indeed this is automatically generated
                     description = currentState.expenseForm.description,
                     name = currentState.expenseForm.name,
                     amount = amount,
@@ -370,10 +435,10 @@ class GroupDetailViewModel(
                     date = currentState.expenseForm.date,
                 )
 
-                val result = appRepository.expenses.addGroupExpense(currentGroup, newExpense)
+                val result = appRepository.expenses.addGroupExpense(currentGroup, newExpense, edit=edit)
 
                 if (result is DataResult.Success) {
-                    showErrorMessage("ExpenseAdded (fixme: not an error)")
+                    showErrorMessage("${if (edit) "ExpenseUpdated" else "ExpenseAdded"} (fixme: not an error)")
                     onDismissSheet()
                     loadGroupDetails()
                 } else {
@@ -390,7 +455,7 @@ class GroupDetailViewModel(
     fun onShowExpenseInfo(expense: Expense) {
         _uiState.update {
             it.copy(
-                detailVisible = true,
+                detailDialogVisible = true,
                 selectedExpense = expense,
             )
         }
@@ -399,7 +464,7 @@ class GroupDetailViewModel(
     fun onDismissDialog() {
         _uiState.update {
             it.copy(
-                detailVisible = true,
+                detailDialogVisible = true,
                 selectedExpense = null,
             )
         }
