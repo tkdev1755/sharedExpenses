@@ -506,6 +506,46 @@ class GroupDetailViewModel(
         }
     }
 
+    fun onPayAllButtonClicked(user: User) {
+        val group = uiState.value.group
+        if (group == null) {
+            showErrorMessage("Group data wasn't fetched correctly")
+            return
+        }
+        val associatedDebts =
+            group.debts.filter { it.debtor == user.id }
+        if (associatedDebts.isEmpty()) {
+            showErrorMessage("Expense was not found")
+            return
+        }
+
+        for(debt in associatedDebts) {
+            val amount = debt.amount
+            val expense = debt.expenses
+            val receiver = expense.payer
+            val newTransaction = Transaction(
+                "",
+                expense,
+                amount,
+                issuer = user,
+                receiver = receiver
+            )
+            println("Created transaction")
+            viewModelScope.launch {
+                println("Adding transaction right now")
+                val result: DataResult<Boolean> =
+                    appRepository.transactions.addGroupTransaction(group!!, newTransaction)
+                if (result is DataResult.Success) {
+                    println("Transaction added successfully")
+                } else if (result is DataResult.Error) {
+                    showErrorMessage("${result.errorMessage}")
+                    println("Transaction was not added : ${result.errorMessage}")
+                }
+            }
+        }
+        println("All transactions added")
+    }
+
     fun onNotifyButtonClicked(expense: Expense, user: User) {
         viewModelScope.launch {
             if (uiState.value.group != null) {

@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,24 @@ import com.mds.sharedexpenses.ui.components.bottomsheets.ExpenseInputBottomSheet
 import com.mds.sharedexpenses.ui.components.bottomsheets.EditBottomSheet
 import java.time.format.DateTimeFormatter
 
+@Composable
+fun AllPayButton(
+    enabled : Boolean,
+    onClick : () -> Unit,
+){
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.AttachMoney,
+            contentDescription = null
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text("Pay all debts")
+    }
+}
 @Composable
 fun StatsBox(
     amount: Number,
@@ -368,7 +387,13 @@ fun GroupDetailScreen(
                 }
             } else {
                 StatsBox(totalOwe, { /* show Modal*/ })
-
+                Spacer(modifier = Modifier.height(16.dp))
+                AllPayButton(
+                    enabled = totalOwe > 0,
+                    onClick = {
+                        uiState.currentUser?.let { user -> viewModel.onPayAllButtonClicked(user) }
+                    }
+                )
                 expenses.forEach { (month, entries) ->
                     Text(month, modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold)
                     entries.forEach { entry ->
