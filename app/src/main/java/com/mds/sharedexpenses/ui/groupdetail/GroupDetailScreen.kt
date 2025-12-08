@@ -68,7 +68,7 @@ fun AllPayButton(
             contentDescription = null
         )
         Spacer(modifier = Modifier.width(16.dp))
-        Text("Pay all debts")
+        Text("Pay all debts!!")
     }
 }
 @Composable
