@@ -134,14 +134,16 @@ class HomeViewModel : BaseViewModel() {
     }
     fun onLogin(email:String, password:String){
         viewModelScope.launch {
-            val result: Boolean = appRepository.login(email,password)
+            val result: DataResult<Unit> = appRepository.login(email,password)
 
             when (result) {
-                true -> hideAuthenticationFlow()
-                false -> showErrorMessage("Invalid credentials")
+                is DataResult.Success -> hideAuthenticationFlow()
+                is DataResult.Error -> showErrorMessage(result.errorMessage ?: "Unknown Error")
+                is DataResult.NotFound -> showErrorMessage("Unknown Error")
             }
         }
     }
+
     fun onSignUp(email:String, password:String, name:String, phone:String){
         viewModelScope.launch {
             val result: Boolean = appRepository.registerUser(email, password,name)
@@ -173,13 +175,15 @@ class HomeViewModel : BaseViewModel() {
             }
         }
     }
+
     fun finishOnboarding(){
         hideAuthenticationFlow()
         viewModelScope.launch {
             getUserData()
         }
     }
-    private fun hideAuthenticationFlow() {
+
+    fun hideAuthenticationFlow() {
         _uiState.update { it.copy(authenticationStep = null) }
     }
     fun createNewGroup(name: String, description: String){
