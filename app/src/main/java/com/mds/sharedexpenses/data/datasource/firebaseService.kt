@@ -1,6 +1,7 @@
 package com.mds.sharedexpenses.data.datasource
 
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -20,14 +21,8 @@ class FirebaseService private constructor(){
         }
     }
 
-    suspend fun login(email: String, password: String): Boolean {
-        return try {
-            auth.signInWithEmailAndPassword(email, password).await()
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+    suspend fun login(email: String, password: String){
+        val authRes: AuthResult = auth.signInWithEmailAndPassword(email, password).await()
     }
     fun logout(){
         auth.signOut()

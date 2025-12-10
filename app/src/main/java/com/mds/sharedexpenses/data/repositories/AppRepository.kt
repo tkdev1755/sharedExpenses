@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.data.repositories
 import com.mds.sharedexpenses.data.datasource.FirebaseService
+import com.mds.sharedexpenses.data.utils.DataResult
 import com.mds.sharedexpenses.domain.repository.FirebaseRepository
 
 // /data/repositories/AppRepository.kt
@@ -23,7 +24,7 @@ class AppRepository(private val firebaseService: FirebaseService) {
 
     // --- Base functions (authentification, etc.) ---
 
-    suspend fun login(email: String, password: String) = firebaseRepository.login(email, password)
+    suspend fun login(email: String, password: String) : DataResult<Boolean> = firebaseRepository.login(email, password)
 
 
     fun logout() = firebaseRepository.logout()

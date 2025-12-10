@@ -1,4 +1,6 @@
 package com.mds.sharedexpenses.data.repositories
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.database.DatabaseException
 import com.google.firebase.database.DatabaseReference
 import com.mds.sharedexpenses.data.datasource.FirebaseService
@@ -24,11 +26,23 @@ class FirebaseRepositoryImpl(
     }
     /**
      * Logs the selected user in
-     * @return True if the user is correctly logged in, false otherwise
+     * @return DataResult.Success(True) if logged in, DataResult.Success(False) if false credentials. DataResult.Error(false) if there is a network error
      * TODO : Update return type to have authContext with info about the user and more info if there was an error while trying to log in
      */
-    override suspend fun login(email: String, password: String): Boolean {
-        return firebaseService.login(email, password)
+    override suspend fun login(email: String, password: String): DataResult<Boolean> {
+        try {
+            firebaseService.login(email, password)
+            return DataResult.Success(true)
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            // Maybe log or show a message
+            println("Invalid credentials")
+            return DataResult.Success(false)
+        } catch (e: FirebaseNetworkException) {
+            return DataResult.Error("503", "There seems to be no internet, please check your internet connection")
+
+        } catch (e: Exception) {
+            return DataResult.Error("404", "There was an error while logging in")
+        }
     }
     /**
      * Get the logged in user info
