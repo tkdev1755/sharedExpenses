@@ -9,8 +9,7 @@ import java.time.format.DateTimeFormatter
 interface FirebaseRepository {
     val formatter : DateTimeFormatter
 
-    /** @return true if login is successful, false otherwise */
-    suspend fun login(email: String, password: String): Boolean
+    suspend fun login(email: String, password: String): DataResult<Boolean>
     suspend fun registerUser(email: String, password: String, name :String ) : Boolean
     fun getCurrentUser(): User?
     fun checkLoginStatus(): Boolean
