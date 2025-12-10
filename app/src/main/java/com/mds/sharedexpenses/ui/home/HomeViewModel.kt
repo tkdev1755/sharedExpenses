@@ -134,8 +134,12 @@ class HomeViewModel : BaseViewModel() {
     }
     fun onLogin(email:String, password:String){
         viewModelScope.launch {
-            appRepository.login(email,password)
-            hideAuthenticationFlow()
+            val result: Boolean = appRepository.login(email,password)
+
+            when (result) {
+                true -> hideAuthenticationFlow()
+                false -> showErrorMessage("Invalid credentials")
+            }
         }
     }
     fun onSignUp(email:String, password:String, name:String, phone:String){
