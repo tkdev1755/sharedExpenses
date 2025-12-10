@@ -31,6 +31,8 @@ data class HomeUiState(
     val notificationStatus : Boolean = false,
     //Sheet
     val activeSheet: SheetTypeHome? = null,
+
+    val errorMessage: String? = null,
 )
 
 sealed class HomeNavigationEvent {
@@ -138,7 +140,7 @@ class HomeViewModel : BaseViewModel() {
 
             when (result) {
                 is DataResult.Success -> hideAuthenticationFlow()
-                is DataResult.Error -> showErrorMessage(result.errorMessage ?: "Unknown Error")
+                is DataResult.Error -> _uiState.value = _uiState.value.copy(errorMessage = result.errorMessage)
                 is DataResult.NotFound -> showErrorMessage("Unknown Error")
             }
         }

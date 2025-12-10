@@ -260,6 +260,7 @@ private fun GroupsSection(
                 onCancel = {
                     viewModel.goToAuthStep(AuthStep.WELCOME)
                 },
+                uiState = uiState
             )
 
             AuthStep.SIGNUP -> SignUpContent(
