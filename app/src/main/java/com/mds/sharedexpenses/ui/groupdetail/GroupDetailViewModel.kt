@@ -391,7 +391,7 @@ class GroupDetailViewModel(
                 val result = appRepository.expenses.removeGroupExpense(currentGroup!!, expense)
 
                 if (result is DataResult.Success) {
-                    displaySnackbarMessage("Deleted Expense (fixme: not an error)")
+                    displaySnackbarMessage("Deleted Expense")
                     loadGroupDetails()
                 } else {
                     displaySnackbarMessage("There was an error while deleting this expense")
@@ -438,7 +438,7 @@ class GroupDetailViewModel(
                 val result = appRepository.expenses.addGroupExpense(currentGroup, newExpense, edit=edit)
 
                 if (result is DataResult.Success) {
-                    displaySnackbarMessage("${if (edit) "ExpenseUpdated" else "ExpenseAdded"} (fixme: not an error)")
+                    displaySnackbarMessage("${if (edit) "ExpenseUpdated" else "ExpenseAdded"}")
                     onDismissSheet()
                     loadGroupDetails()
                 } else {
