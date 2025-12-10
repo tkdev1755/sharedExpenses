@@ -70,7 +70,7 @@ class HomeViewModel : BaseViewModel() {
                     val message = userResult.errorMessage
                         .orEmpty()
                         .ifEmpty { "Error getting user data" }
-                    showErrorMessage(message)
+                    displaySnackbarMessage(message)
                 }
             }
         }
@@ -100,7 +100,7 @@ class HomeViewModel : BaseViewModel() {
                 val message = userResult.errorMessage
                     .orEmpty()
                     .ifEmpty { "Error getting user data" }
-                showErrorMessage(message)
+                displaySnackbarMessage(message)
             }
         }
 
@@ -142,7 +142,7 @@ class HomeViewModel : BaseViewModel() {
         viewModelScope.launch {
             val result: Boolean = appRepository.registerUser(email, password,name)
             if (!result){
-                showErrorMessage("Unable to register user")
+                displaySnackbarMessage("Unable to register user")
             }
             else{
                 val userID = appRepository.getUserID()
@@ -159,11 +159,11 @@ class HomeViewModel : BaseViewModel() {
                             _uiState.value.copy(authenticationStep = AuthStep.ONBOARDING)
                     }
                     is DataResult.Error -> {
-                        showErrorMessage(userRes.errorMessage.orEmpty())
+                        displaySnackbarMessage(userRes.errorMessage.orEmpty())
                     }
 
                     DataResult.NotFound -> {
-                        showErrorMessage("User not found")
+                        displaySnackbarMessage("User not found")
                     }
                 }
             }
@@ -181,12 +181,12 @@ class HomeViewModel : BaseViewModel() {
     fun createNewGroup(name: String, description: String){
         val owner = currentUser.value
         if (owner == null) {
-            showErrorMessage("Cannot create group: User is not logged in.")
+            displaySnackbarMessage("Cannot create group: User is not logged in.")
             return
         }
 
         if(name.isEmpty() || description.isEmpty()){
-            showErrorMessage("Group name and description cannot be empty.")
+            displaySnackbarMessage("Group name and description cannot be empty.")
             return
         }
 
@@ -202,7 +202,7 @@ class HomeViewModel : BaseViewModel() {
                 val message = result.errorMessage
                     .orEmpty()
                     .ifEmpty { "Error while creating a group." }
-                showErrorMessage(message)
+                displaySnackbarMessage(message)
             }
         }
     }
