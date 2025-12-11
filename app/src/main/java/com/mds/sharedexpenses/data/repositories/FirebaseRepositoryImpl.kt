@@ -29,17 +29,14 @@ class FirebaseRepositoryImpl(
      * @return DataResult.Success(True) if logged in, DataResult.Success(False) if false credentials. DataResult.Error(false) if there is a network error
      * TODO : Update return type to have authContext with info about the user and more info if there was an error while trying to log in
      */
-    override suspend fun login(email: String, password: String): DataResult<Boolean> {
+    override suspend fun login(email: String, password: String): DataResult<Unit> {
         try {
             firebaseService.login(email, password)
-            return DataResult.Success(true)
+            return DataResult.Success(Unit)
         } catch (e: FirebaseAuthInvalidCredentialsException) {
-            // Maybe log or show a message
-            println("Invalid credentials")
-            return DataResult.Success(false)
+            return DataResult.Error("401", "Invalid credentials")
         } catch (e: FirebaseNetworkException) {
             return DataResult.Error("503", "There seems to be no internet, please check your internet connection")
-
         } catch (e: Exception) {
             return DataResult.Error("404", "There was an error while logging in")
         }

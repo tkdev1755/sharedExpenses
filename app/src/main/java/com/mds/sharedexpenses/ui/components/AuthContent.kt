@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mds.sharedexpenses.R
+import com.mds.sharedexpenses.ui.home.HomeUiState
 
 @Composable
 fun WelcomeContent(
@@ -185,6 +186,7 @@ fun SignUpContent(
 fun LogInContent(
     onLogin: (String,String) -> Unit,
     onCancel: () -> Unit,
+    uiState: HomeUiState
 ) {
     Column(
         Modifier
@@ -215,6 +217,15 @@ fun LogInContent(
         )
 
         Spacer(Modifier.height(32.dp))
+
+        if (uiState.errorMessage != null) {
+            Text(
+                text = uiState.errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),

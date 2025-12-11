@@ -24,7 +24,7 @@ class AppRepository(private val firebaseService: FirebaseService) {
 
     // --- Base functions (authentification, etc.) ---
 
-    suspend fun login(email: String, password: String) : DataResult<Boolean> = firebaseRepository.login(email, password)
+    suspend fun login(email: String, password: String) : DataResult<Unit> = firebaseRepository.login(email, password)
 
 
     fun logout() = firebaseRepository.logout()
