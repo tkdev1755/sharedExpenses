@@ -102,7 +102,7 @@ class GroupDetailViewModel(
                 val errorMsg = (groupResult as? DataResult.Error)?.errorMessage
                     ?: (userResult as? DataResult.Error)?.errorMessage
                     ?: "Failed to load data"
-                showErrorMessage(errorMsg)
+                displaySnackbarMessage(errorMsg)
                 _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg) }
             }
 
@@ -161,7 +161,7 @@ class GroupDetailViewModel(
 
     fun addMember(email: String) {
         if (_uiState.value.group == null) {
-            showErrorMessage("Group was not loaded correctly")
+            displaySnackbarMessage("Group was not loaded correctly")
             return
         }
         viewModelScope.launch {
@@ -176,7 +176,7 @@ class GroupDetailViewModel(
                     val message =
                         res.errorMessage.orEmpty().ifEmpty { "Error inviting user" }
                     println("Error while calling cloud function -> inviteUser ${res.errorMessage} ${res.errorCode}")
-                    showErrorMessage(message)
+                    displaySnackbarMessage(message)
 
                 }
 
@@ -189,7 +189,7 @@ class GroupDetailViewModel(
 
     fun removeMember(member: User) {
         if (_uiState.value.group == null) {
-            showErrorMessage("Group was not loaded correctly")
+            displaySnackbarMessage("Group was not loaded correctly")
             return
         }
         viewModelScope.launch {
@@ -197,7 +197,7 @@ class GroupDetailViewModel(
                 appRepository.groups.removeGroupUser(_uiState.value.group!!, member)
             if (res is DataResult.Error) {
                 println("Unable to remove user from group -> ${res.errorMessage}")
-                showErrorMessage("Unable to remove user from group")
+                displaySnackbarMessage("Unable to remove user from group")
             }
         }
     }
@@ -354,7 +354,7 @@ class GroupDetailViewModel(
             try {
                 appRepository.groups.createGroup(newGroupObject)
             } catch (e: Exception) {
-                showErrorMessage("Group update error")
+                displaySnackbarMessage("Group update error")
             }
         }
     }
@@ -381,7 +381,7 @@ class GroupDetailViewModel(
         val currentState = _uiState.value
         val currentGroup = currentState.group
         if (currentGroup == null){
-            showErrorMessage("No groups were loaded beforehand")
+            displaySnackbarMessage("No groups were loaded beforehand")
             return
         }
         viewModelScope.launch {
@@ -391,13 +391,13 @@ class GroupDetailViewModel(
                 val result = appRepository.expenses.removeGroupExpense(currentGroup!!, expense)
 
                 if (result is DataResult.Success) {
-                    showErrorMessage("Deleted Expense (fixme: not an error)")
+                    displaySnackbarMessage("Deleted Expense")
                     loadGroupDetails()
                 } else {
-                    showErrorMessage("There was an error while deleting this expense")
+                    displaySnackbarMessage("There was an error while deleting this expense")
                 }
             } catch (e: Exception) {
-                showErrorMessage("an error occurred")
+                displaySnackbarMessage("an error occurred")
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }
@@ -411,12 +411,12 @@ class GroupDetailViewModel(
 
         val amount = currentState.expenseForm.amount.toDoubleOrNull()
         if (currentState.expenseForm.description.isBlank() || amount == null || amount <= 0) {
-            showErrorMessage("invalid input")
+            displaySnackbarMessage("invalid input")
             return
         }
 
         if (currentUser == null || currentGroup == null) {
-            showErrorMessage("data not loaded")
+            displaySnackbarMessage("data not loaded")
             return
         }
 
@@ -438,14 +438,14 @@ class GroupDetailViewModel(
                 val result = appRepository.expenses.addGroupExpense(currentGroup, newExpense, edit=edit)
 
                 if (result is DataResult.Success) {
-                    showErrorMessage("${if (edit) "ExpenseUpdated" else "ExpenseAdded"} (fixme: not an error)")
+                    displaySnackbarMessage("${if (edit) "ExpenseUpdated" else "ExpenseAdded"}")
                     onDismissSheet()
                     loadGroupDetails()
                 } else {
-                    showErrorMessage("an error occurred")
+                    displaySnackbarMessage("an error occurred")
                 }
             } catch (e: Exception) {
-                showErrorMessage("an error occurred")
+                displaySnackbarMessage("an error occurred")
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }
@@ -473,13 +473,13 @@ class GroupDetailViewModel(
     fun onPayButtonClicked(expense: Expense, user: User) {
         val group = uiState.value.group
         if (group == null) {
-            showErrorMessage("Group data wasn't fetched correctly")
+            displaySnackbarMessage("Group data wasn't fetched correctly")
             return
         }
         val associatedDebt =
             group.debts.filter { it.expenses.id == expense.id && it.debtor == user.id }
         if (associatedDebt.isEmpty()) {
-            showErrorMessage("Expense was not found")
+            displaySnackbarMessage("Expense was not found")
             return
         }
         val amount = associatedDebt.sumOf {
@@ -500,7 +500,7 @@ class GroupDetailViewModel(
             if (result is DataResult.Success) {
                 println("Transaction added successfully")
             } else if (result is DataResult.Error) {
-                showErrorMessage("${result.errorMessage}")
+                displaySnackbarMessage("${result.errorMessage}")
                 println("Transaction was not added : ${result.errorMessage}")
             }
         }
