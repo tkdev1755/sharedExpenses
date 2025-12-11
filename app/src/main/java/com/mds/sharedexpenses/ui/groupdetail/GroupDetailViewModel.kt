@@ -546,6 +546,7 @@ class GroupDetailViewModel(
         println("All transactions added")
     }
 
+
     fun onNotifyButtonClicked(expense: Expense, user: User) {
         viewModelScope.launch {
             if (uiState.value.group != null) {
@@ -576,6 +577,13 @@ class GroupDetailViewModel(
             return -1.0;
         }
     }
+
+    fun getTowardPerson(debtor : User, creditor : User):Double {
+        val group = _uiState.value.group ?: return 0.0
+        return group.debts.filter{it.debtor == debtor.id && it.debtor == creditor.id}.sumOf { it.amount }
+    }
+
+
 
     // Methods for the user Selection
     fun onDismissPayerSelection() {
