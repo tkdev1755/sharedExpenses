@@ -31,6 +31,8 @@ data class HomeUiState(
     val notificationStatus : Boolean = false,
     //Sheet
     val activeSheet: SheetTypeHome? = null,
+
+    val errorMessage: String? = null,
 )
 
 sealed class HomeNavigationEvent {
@@ -134,10 +136,16 @@ class HomeViewModel : BaseViewModel() {
     }
     fun onLogin(email:String, password:String){
         viewModelScope.launch {
-            appRepository.login(email,password)
-            hideAuthenticationFlow()
+            val result: DataResult<Unit> = appRepository.login(email,password)
+
+            when (result) {
+                is DataResult.Success -> hideAuthenticationFlow()
+                is DataResult.Error -> _uiState.value = _uiState.value.copy(errorMessage = result.errorMessage)
+                is DataResult.NotFound -> showErrorMessage("Unknown Error")
+            }
         }
     }
+
     fun onSignUp(email:String, password:String, name:String, phone:String){
         viewModelScope.launch {
             val result: Boolean = appRepository.registerUser(email, password,name)
@@ -169,13 +177,15 @@ class HomeViewModel : BaseViewModel() {
             }
         }
     }
+
     fun finishOnboarding(){
         hideAuthenticationFlow()
         viewModelScope.launch {
             getUserData()
         }
     }
-    private fun hideAuthenticationFlow() {
+
+    fun hideAuthenticationFlow() {
         _uiState.update { it.copy(authenticationStep = null) }
     }
     fun createNewGroup(name: String, description: String){
