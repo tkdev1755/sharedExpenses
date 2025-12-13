@@ -578,10 +578,37 @@ class GroupDetailViewModel(
         }
     }
 
-    fun getTowardPerson(debtor : User, creditor : User):Double {
-        val group = _uiState.value.group ?: return 0.0
-        return group.debts.filter{it.debtor == debtor.id && it.debtor == creditor.id}.sumOf { it.amount }
-    }
+        fun getDebtTowardPerson(expense: Expense, creditor : User):Double {
+            val currentUser = uiState.value.currentUser ?: return 0.0
+            if (uiState.value.group != null) {
+                val group = uiState.value.group!!
+                val debts = group.debts.filter { it.expenses.id == expense.id && it.debtor == currentUser.id && it.user.id == creditor.id}
+                if (debts.size > 1) {
+                    println("Debts are superior to 1 -> Weird....")
+                }
+                val amount: Double = debts.sumOf { it.amount }
+                return amount
+            } else {
+                return 0.0;
+            }
+        }
+
+        fun getDebtAllPerson(group: Group, user: User): List<Pair<User, Double>> {
+            val currentUser = uiState.value.currentUser ?: return emptyList()
+            val userAmounts = mutableListOf<Pair<User, Double>>()
+            for(user in group.users) {
+                if(user.id != currentUser.id) {
+                    var totalDebt = 0.0
+                    for(expense in group.expenses) {
+                        totalDebt += getDebtTowardPerson(expense, user)
+                    }
+                    if (totalDebt != 0.0) {
+                        userAmounts.add(Pair(user, totalDebt))
+                    }
+                }
+            }
+            return userAmounts
+        }
 
 
 

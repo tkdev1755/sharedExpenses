@@ -52,6 +52,22 @@ import com.mds.sharedexpenses.ui.components.scaffold.NavigationTopBar
 import com.mds.sharedexpenses.ui.components.bottomsheets.ExpenseInputBottomSheet
 import com.mds.sharedexpenses.ui.components.bottomsheets.EditBottomSheet
 import java.time.format.DateTimeFormatter
+import kotlin.math.exp
+
+@Composable
+fun DebtAllPersonLazyColumn(
+    debtList: List<Pair<User, Double>>,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        items(debtList.size) { index ->
+            val (user, amount) = debtList[index]
+            Text("${user.name}: $amount€")
+        }
+    }
+}
 
 @Composable
 fun AllPayButton(
@@ -75,6 +91,8 @@ fun AllPayButton(
 fun StatsBox(
     amount: Number,
     onButtonClick: () -> Unit,
+    debtList: List<Pair<User, Double>>,
+    modifier: Modifier
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -85,6 +103,10 @@ fun StatsBox(
         Spacer(Modifier.height(16.dp))
         Text("$amount€", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(16.dp))
+        DebtAllPersonLazyColumn(
+            debtList = debtList,
+            modifier = modifier
+        )
     }
 }
 
@@ -344,6 +366,11 @@ fun GroupDetailScreen(
     val totalOwe = uiState.totalOwed
     val nothingOwed = totalOwe == 0.0
     val isLoading = uiState.isLoading
+    val debtList = if (uiState.currentUser != null) {
+        viewModel.getDebtAllPerson(uiState.group!!, uiState.currentUser!!)
+    } else {
+        emptyList()
+    }
 
     Scaffold(
         modifier = modifier,
@@ -386,7 +413,7 @@ fun GroupDetailScreen(
                     Text("Loading group details...")
                 }
             } else {
-                StatsBox(totalOwe, { /* show Modal*/ })
+                StatsBox(amount = totalOwe, onButtonClick = { /* show Modal*/ }, debtList = debtList, modifier = Modifier)
                 Spacer(modifier = Modifier.height(16.dp))
                 AllPayButton(
                     enabled = totalOwe > 0,
