@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,11 +52,47 @@ import com.mds.sharedexpenses.ui.components.scaffold.NavigationTopBar
 import com.mds.sharedexpenses.ui.components.bottomsheets.ExpenseInputBottomSheet
 import com.mds.sharedexpenses.ui.components.bottomsheets.EditBottomSheet
 import java.time.format.DateTimeFormatter
+import kotlin.math.exp
 
+@Composable
+fun DebtAllPersonLazyColumn(
+    debtList: List<Pair<User, Double>>,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        items(debtList.size) { index ->
+            val (user, amount) = debtList[index]
+            Text("${user.name}: $amount€")
+        }
+    }
+}
+
+@Composable
+fun AllPayButton(
+    enabled : Boolean,
+    onClick : () -> Unit,
+){
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.AttachMoney,
+            contentDescription = null
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text("Pay all debts!!")
+    }
+}
 @Composable
 fun StatsBox(
     amount: Number,
     onButtonClick: () -> Unit,
+    debtList: List<Pair<User, Double>>,
+    modifier: Modifier
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -66,6 +103,10 @@ fun StatsBox(
         Spacer(Modifier.height(16.dp))
         Text("$amount€", style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(16.dp))
+        DebtAllPersonLazyColumn(
+            debtList = debtList,
+            modifier = modifier
+        )
     }
 }
 
@@ -325,6 +366,11 @@ fun GroupDetailScreen(
     val totalOwe = uiState.totalOwed
     val nothingOwed = totalOwe == 0.0
     val isLoading = uiState.isLoading
+    val debtList = if (uiState.currentUser != null) {
+        viewModel.getDebtAllPerson(uiState.group!!, uiState.currentUser!!)
+    } else {
+        emptyList()
+    }
 
     Scaffold(
         modifier = modifier,
@@ -367,8 +413,14 @@ fun GroupDetailScreen(
                     Text("Loading group details...")
                 }
             } else {
-                StatsBox(totalOwe, { /* show Modal*/ })
-
+                StatsBox(amount = totalOwe, onButtonClick = { /* show Modal*/ }, debtList = debtList, modifier = Modifier)
+                Spacer(modifier = Modifier.height(16.dp))
+                AllPayButton(
+                    enabled = totalOwe > 0,
+                    onClick = {
+                        uiState.currentUser?.let { user -> viewModel.onPayAllButtonClicked(user) }
+                    }
+                )
                 expenses.forEach { (month, entries) ->
                     Text(month, modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold)
                     entries.forEach { entry ->

@@ -506,6 +506,47 @@ class GroupDetailViewModel(
         }
     }
 
+    fun onPayAllButtonClicked(user: User) {
+        val group = uiState.value.group
+        if (group == null) {
+            showErrorMessage("Group data wasn't fetched correctly")
+            return
+        }
+        val associatedDebts =
+            group.debts.filter { it.debtor == user.id }
+        if (associatedDebts.isEmpty()) {
+            showErrorMessage("Expense was not found")
+            return
+        }
+
+        for(debt in associatedDebts) {
+            val amount = debt.amount
+            val expense = debt.expenses
+            val receiver = expense.payer
+            val newTransaction = Transaction(
+                "",
+                expense,
+                amount,
+                issuer = user,
+                receiver = receiver
+            )
+            println("Created transaction")
+            viewModelScope.launch {
+                println("Adding transaction right now")
+                val result: DataResult<Boolean> =
+                    appRepository.transactions.addGroupTransaction(group!!, newTransaction)
+                if (result is DataResult.Success) {
+                    println("Transaction added successfully")
+                } else if (result is DataResult.Error) {
+                    showErrorMessage("${result.errorMessage}")
+                    println("Transaction was not added : ${result.errorMessage}")
+                }
+            }
+        }
+        println("All transactions added")
+    }
+
+
     fun onNotifyButtonClicked(expense: Expense, user: User) {
         viewModelScope.launch {
             if (uiState.value.group != null) {
@@ -536,6 +577,40 @@ class GroupDetailViewModel(
             return -1.0;
         }
     }
+
+        fun getDebtTowardPerson(expense: Expense, creditor : User):Double {
+            val currentUser = uiState.value.currentUser ?: return 0.0
+            if (uiState.value.group != null) {
+                val group = uiState.value.group!!
+                val debts = group.debts.filter { it.expenses.id == expense.id && it.debtor == currentUser.id && it.user.id == creditor.id}
+                if (debts.size > 1) {
+                    println("Debts are superior to 1 -> Weird....")
+                }
+                val amount: Double = debts.sumOf { it.amount }
+                return amount
+            } else {
+                return 0.0;
+            }
+        }
+
+        fun getDebtAllPerson(group: Group, user: User): List<Pair<User, Double>> {
+            val currentUser = uiState.value.currentUser ?: return emptyList()
+            val userAmounts = mutableListOf<Pair<User, Double>>()
+            for(user in group.users) {
+                if(user.id != currentUser.id) {
+                    var totalDebt = 0.0
+                    for(expense in group.expenses) {
+                        totalDebt += getDebtTowardPerson(expense, user)
+                    }
+                    if (totalDebt != 0.0) {
+                        userAmounts.add(Pair(user, totalDebt))
+                    }
+                }
+            }
+            return userAmounts
+        }
+
+
 
     // Methods for the user Selection
     fun onDismissPayerSelection() {
