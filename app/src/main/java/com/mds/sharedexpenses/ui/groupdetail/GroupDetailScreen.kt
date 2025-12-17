@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -130,6 +131,7 @@ fun ExpenseRecord(
     onClickEdit: (Expense) -> Unit,
     modifier: Modifier = Modifier,
     getAmountOwed: (Expense) -> Double,
+    icons : Map<String,ImageVector>,
     onClickDetail: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -147,6 +149,18 @@ fun ExpenseRecord(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 4.dp,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Icon(
+                    imageVector = icons[expense.icon] ?: Icons.Filled.AttachMoney,
+                    contentDescription = null,
+                    modifier = Modifier.padding(12.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Text(
                 text = expense.date.dayOfMonth.toOrdinal(),
                 modifier = modifier.weight(1.5F),
@@ -432,12 +446,13 @@ fun GroupDetailScreen(
                             debt = entry.component2(),
                             modifier = Modifier,
                             currentUser = uiState.currentUser?.id ?: "",
-                            getAmountOwed = { expense ->
+                            getAmountOwed = { expense  ->
                                 viewModel.getOwedAmountFromUser(
                                     expense,
                                     uiState.currentUser!!,
                                 )
                             },
+                            icons = viewModel.expenseIcons,
                             onClickDetail = { viewModel.onShowExpenseInfo(entry.component1()) },
                         )
                     }
@@ -479,6 +494,8 @@ fun GroupDetailScreen(
                     onNameChange = viewModel::onExpenseNameChange,
                     onPayerSelect = viewModel::toggleChip,
                     payersChips = viewModel.uiState.collectAsState().value.expenseForm.chips,
+                    onIconSelected = viewModel::onExpenseIconChange,
+                    selectedIcon = viewModel.uiState.collectAsState().value.expenseForm.icon
                 )
             }
 
@@ -502,6 +519,9 @@ fun GroupDetailScreen(
                     onNameChange = viewModel::onExpenseNameChange,
                     onPayerSelect = viewModel::toggleChip,
                     payersChips = viewModel.uiState.collectAsState().value.expenseForm.chips,
+                    onIconSelected = viewModel::onExpenseIconChange,
+                    selectedIcon = viewModel.uiState.collectAsState().value.expenseForm.icon
+
                 )
             }
         }

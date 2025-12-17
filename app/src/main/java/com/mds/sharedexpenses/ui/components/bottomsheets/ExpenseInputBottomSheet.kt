@@ -36,7 +36,18 @@ import androidx.compose.ui.unit.dp
 import com.mds.sharedexpenses.ui.groupdetail.ChipItem
 import java.time.Instant
 import java.time.ZoneId
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.vector.ImageVector
 
+
+val ExpenseIcons = listOf(
+    Pair("Restaurant",Icons.Filled.Restaurant),
+    Pair("Shopping",Icons.Filled.ShoppingCart),
+    Pair("Car",Icons.Filled.DirectionsCar),
+    Pair("Hotel",Icons.Filled.Home),
+    Pair("Flight",Icons.Filled.Flight),
+    Pair("Money",Icons.Filled.AttachMoney),
+)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseInputBottomSheet(
@@ -52,6 +63,8 @@ fun ExpenseInputBottomSheet(
     payersChips: MutableList<ChipItem>,
     onPayerSelect: (Int) -> Unit,
     onDateChange: (String) -> Unit,
+    selectedIcon: String,
+    onIconSelected: (String) -> Unit,
 ) {
 
     var datePickerOpen by remember { mutableStateOf(false) }
@@ -67,6 +80,9 @@ fun ExpenseInputBottomSheet(
         ) {
             Text("Add expense", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
+            Text("Category icon", style = MaterialTheme.typography.titleMedium)
+            IconRow(selectedIcon,onIconSelected)
+            Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = name,
                 onValueChange = onNameChange,
@@ -206,4 +222,39 @@ fun ChipsRow(
             )
         }
     }
+}
+
+@Composable
+fun IconRow(
+    selectedIcon:String,
+    onIconSelected: (String) -> Unit
+){
+    Spacer(Modifier.height(8.dp))
+
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        items(ExpenseIcons.size) { index ->
+            val icon = ExpenseIcons[index].second
+            val name = ExpenseIcons[index].first
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = if (name == selectedIcon) 4.dp else 0.dp,
+                color = if (name == selectedIcon)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.surfaceVariant,
+                onClick = { onIconSelected(name) },
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.padding(12.dp),
+                    tint = if (name == selectedIcon)
+                        MaterialTheme.colorScheme.onPrimary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+
 }

@@ -1,5 +1,12 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Flight
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.mds.sharedexpenses.data.models.Debt
@@ -17,6 +24,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.vector.ImageVector
 
 data class ChipItem(
     val id: User,
@@ -33,6 +42,7 @@ data class GroupDetailUiState(
     // UI
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+
     //Sheet
     val activeSheet: SheetType? = null,
     //Form state
@@ -54,6 +64,7 @@ data class ExpenseFormState(
     val selectedUsers: MutableSet<User> = mutableSetOf(),
     var chips: MutableList<ChipItem> = mutableListOf<ChipItem>(),
     val editingExpenseId: String? = null,
+    var icon:String =  "",
 )
 
 enum class SheetType { EDIT_GROUP, ADD_EXPENSE, EDIT_EXPENSE }
@@ -108,7 +119,14 @@ class GroupDetailViewModel(
 
         }
     }
-
+    public val expenseIcons: Map<String, ImageVector> = mapOf(
+        "Restaurant" to Icons.Filled.Restaurant,
+        "Shopping" to Icons.Filled.ShoppingCart,
+        "Car" to Icons.Filled.DirectionsCar,
+        "Hotel" to Icons.Filled.Home,
+        "Flight" to Icons.Filled.Flight,
+        "Money" to Icons.Filled.AttachMoney,
+    )
     private fun calculateGroupStats(
         group: Group,
         currentUserId: String,
@@ -294,6 +312,15 @@ class GroupDetailViewModel(
         resetExpenseForm()
     }
 
+    fun onExpenseIconChange(icon:String){
+        _uiState.update { currentState ->
+            currentState.copy(
+                expenseForm = currentState.expenseForm.copy(
+                    icon = icon,
+                ),
+            )
+        }
+    }
     fun onExpenseNameChange(newName: String) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -303,6 +330,7 @@ class GroupDetailViewModel(
             )
         }
     }
+
 
     fun onExpenseDescriptionChange(newDescription: String) {
         _uiState.update { currentState ->
@@ -432,6 +460,7 @@ class GroupDetailViewModel(
                     amount = amount,
                     payer = currentUser,
                     debtors = currentState.expenseForm.selectedUsers.toMutableList(),
+                    icon = currentState.expenseForm.icon,
                     date = currentState.expenseForm.date,
                 )
 
