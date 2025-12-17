@@ -3,6 +3,7 @@ package com.mds.sharedexpenses.ui.groupdetail
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -53,6 +55,7 @@ import com.mds.sharedexpenses.ui.components.scaffold.NavigationTopBar
 import com.mds.sharedexpenses.ui.components.bottomsheets.ExpenseInputBottomSheet
 import com.mds.sharedexpenses.ui.components.bottomsheets.EditBottomSheet
 import java.time.format.DateTimeFormatter
+import com.mds.sharedexpenses.ui.theme.SharedExpensesTheme
 import kotlin.math.exp
 
 @Composable
@@ -135,96 +138,102 @@ fun ExpenseRecord(
     onClickDetail: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Column(
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { expanded = !expanded } // ← clique = expand / collapse
-            .animateContentSize() // ← animation automatique de taille
+            .clickable { expanded = !expanded }
+            .animateContentSize()
             .padding(2.dp)
-    ){
-        Row(
+    ) {
+        Icon(
+            imageVector = icons[expense.icon] ?: Icons.Filled.AttachMoney,
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomStart) // ou Center, BottomEnd, etc.
+                .size(60.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+        )
+        Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(all = 2.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                tonalElevation = 4.dp,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-            ) {
-                Icon(
-                    imageVector = icons[expense.icon] ?: Icons.Filled.AttachMoney,
-                    contentDescription = null,
-                    modifier = Modifier.padding(12.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Text(
-                text = expense.date.dayOfMonth.toOrdinal(),
-                modifier = modifier.weight(1.5F),
-                textAlign = TextAlign.Center,
-            )
+                .clickable { expanded = !expanded } // ← clique = expand / collapse
+                .animateContentSize() // ← animation automatique de taille
+                .padding(2.dp)
+        ){
             Row(
-                modifier = modifier.weight(4.0F),
-            ) {
-                Column(
-                    modifier = modifier.fillMaxWidth(),
-                ) {
-                    val isExpensePayer = expense.payer.id == currentUser
-                    val name = if (isExpensePayer) "you" else expense.payer.name
-                    Text(expense.name)
-                    Text("$name paid ${expense.amount}€", color = Color.Gray)
-                }
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier.weight(2.0F),
-            ) {
-                if (debt != null && debt.user.id != currentUser) {
-                    Text("You owe", color = Color.Gray)
-                    Text("${getAmountOwed(expense)}€")
-                }
-            }
-            IconButton(
-                onClick = onClickDetail,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Info,
-                    contentDescription = "See details",
-                )
-            }
-        }
-        if (expanded) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.End
+                    .padding(all = 2.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                OutlinedButton(
-                    onClick = { onClickEdit(expense) },
+
+                Text(
+                    text = expense.date.dayOfMonth.toOrdinal(),
+                    modifier = modifier.weight(1.5F),
+                    textAlign = TextAlign.Center,
+                )
+                Row(
+                    modifier = modifier.weight(4.0F),
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Edit")
+                    Column(
+                        modifier = modifier.fillMaxWidth(),
+                    ) {
+                        val isExpensePayer = expense.payer.id == currentUser
+                        val name = if (isExpensePayer) "you" else expense.payer.name
+                        Text(expense.name, style = MaterialTheme.typography.titleMedium)
+                        Text("$name paid ${expense.amount}€", color = Color.Gray)
+                    }
                 }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                OutlinedButton(
-                    onClick = { onClickDelete(expense) },
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = modifier.weight(2.0F),
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Delete")
+                    if (debt != null && debt.user.id != currentUser) {
+                        Text("You owe", color = Color.Gray)
+                        Text("${getAmountOwed(expense)}€")
+                    }
+                }
+                IconButton(
+                    onClick = onClickDetail,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = "See details",
+                    )
+                }
+            }
+            if (expanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    OutlinedButton(
+                        onClick = { onClickEdit(expense) },
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Edit")
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    OutlinedButton(
+                        onClick = { onClickDelete(expense) },
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Delete")
+                    }
                 }
             }
         }
     }
+
 }
 
 @Composable
@@ -436,7 +445,7 @@ fun GroupDetailScreen(
                     }
                 )
                 expenses.forEach { (month, entries) ->
-                    Text(month, modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Bold)
+                    Text(month, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleLarge)
                     entries.forEach { entry ->
                         HorizontalDivider()
                         ExpenseRecord(
