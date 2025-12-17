@@ -444,8 +444,10 @@ fun GroupDetailScreen(
                         uiState.currentUser?.let { user -> viewModel.onPayAllButtonClicked(user) }
                     }
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 expenses.forEach { (month, entries) ->
                     Text(month, modifier = Modifier.fillMaxWidth(), style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(16.dp))
                     entries.forEach { entry ->
                         HorizontalDivider()
                         ExpenseRecord(
@@ -468,7 +470,6 @@ fun GroupDetailScreen(
                 }
             }
         }
-
         if (uiState.activeSheet == SheetType.EDIT_GROUP) {
             ModalBottomSheet(
                 onDismissRequest = { viewModel.onDismissSheet() },
