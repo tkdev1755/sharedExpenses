@@ -40,7 +40,7 @@ open class BaseViewModel : ViewModel() {
                 }
                 else if (userData is DataResult.Error){
                     _errorData.postValue("Error getting user data")
-                    showErrorMessage("${userData.errorMessage}")
+                    displaySnackbarMessage("${userData.errorMessage}")
                 }
             }
 
@@ -48,7 +48,7 @@ open class BaseViewModel : ViewModel() {
 
         }
     }
-    fun showErrorMessage(message: String) {
+    fun displaySnackbarMessage(message: String) {
         SnackbarManager.showMessage(message)
     }
     fun handleException(
