@@ -1,5 +1,6 @@
 package com.mds.sharedexpenses.ui.groupdetail
 
+import androidx.compose.animation.core.copy
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.DirectionsCar
@@ -362,14 +363,18 @@ class GroupDetailViewModel(
         }
     }
 
-    fun onGroupNameChange(newName: String) {
+    fun onGroupSave(newName: String, newDescription: String){
         val groupToUpdate = _uiState.value.group ?: return
-        updateGroup(groupToUpdate.copy(name = newName))
-    }
+        val updatedGroup = groupToUpdate.copy(name = newName, description = newDescription)
+        _uiState.update { it.copy(group = updatedGroup, activeSheet = null) }
 
-    fun onGroupDescriptionChange(newDescription: String) {
-        val groupToUpdate = _uiState.value.group ?: return
-        updateGroup(groupToUpdate.copy(description = newDescription))
+        viewModelScope.launch {
+            try {
+                appRepository.groups.createGroup(updatedGroup)
+            } catch (e: Exception) {
+                showErrorMessage("Fehler beim Speichern")
+            }
+        }
     }
 
     private fun updateGroup(newGroupObject: Group) {

@@ -3,7 +3,9 @@ package com.mds.sharedexpenses.ui.components.bottomsheets
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Remove
@@ -30,14 +32,13 @@ import com.mds.sharedexpenses.ui.groupdetail.GroupDetailViewModel
 @Composable
 fun EditBottomSheet(
     viewModel: GroupDetailViewModel,
-    name: String,
-    description: String,
-    onNameChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
+    initialName: String,
+    initialDescription: String,
+    onSave: (String, String) -> Unit,
 ) {
-    var nameValue by remember { mutableStateOf(TextFieldValue("")) } //TODO: bind to viewModel
-    var descriptionValue by remember { mutableStateOf(TextFieldValue("")) } //TODO: bind to viewModel
-    var newMemberEmail by remember { mutableStateOf("") }
+    // local state for input
+    var tempName by remember { mutableStateOf(initialName) }
+    var tempDescription by remember { mutableStateOf(initialDescription) }
 
     Column(
         modifier = Modifier
@@ -45,17 +46,26 @@ fun EditBottomSheet(
             .fillMaxWidth(),
     ) {
         OutlinedTextField(
-            value = nameValue,
-            onValueChange = { nameValue = it },
+            value = tempName,
+            onValueChange = { tempName = it },
             label = { Text("Name") },
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
-            value = descriptionValue,
-            onValueChange = { descriptionValue = it },
+            value = tempDescription,
+            onValueChange = { tempDescription = it },
             label = { Text("Description") },
             modifier = Modifier.fillMaxWidth(),
         )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {onSave(tempName, tempDescription)},
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("save")
+        }
+
         HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp))
         Text("Group Members", style = TextStyle(fontWeight = FontWeight.Bold))
         Column(
@@ -77,7 +87,6 @@ fun EditBottomSheet(
                 }
             }
         }
-        //TODO: refactor this (this should become a parameter) - but works for now
         if (viewModel.uiState.collectAsState().value.isAddMemberFieldVisible) {
             var newMember by remember { mutableStateOf("") }
 
@@ -97,8 +106,6 @@ fun EditBottomSheet(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
         }
-        // TODO: I think we dont need that here do we?
-        // cause the payers are selected via chips
         Button(onClick = { viewModel.onAddMemberClicked() }) {
             Text("Add Member")
         }

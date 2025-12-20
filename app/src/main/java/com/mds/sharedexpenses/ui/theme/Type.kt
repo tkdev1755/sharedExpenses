@@ -9,7 +9,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.mds.sharedexpenses.R
 
-//TODO: add correct files once they are added
 val clashgrotesk = FontFamily(
     Font(R.font.clashgrotesk_extralight, FontWeight.ExtraLight),
     Font(R.font.clashgrotesk_light, FontWeight.Light),

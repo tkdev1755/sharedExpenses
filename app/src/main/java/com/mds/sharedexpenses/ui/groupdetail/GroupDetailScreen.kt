@@ -477,10 +477,11 @@ fun GroupDetailScreen(
             ) {
                 EditBottomSheet(
                     viewModel,
-                    name = uiState.group!!.name,
-                    onNameChange = { viewModel.onGroupNameChange(it) },
-                    description = uiState.group!!.description,
-                    onDescriptionChange = { viewModel.onGroupDescriptionChange(it) },
+                    initialName = uiState.group?.name.orEmpty(),
+                    initialDescription = uiState.group?.description.orEmpty(),
+                    onSave = ({ name, description ->
+                        viewModel.onGroupSave(name, description)
+                    })
                     //TODO: investigate: do we need UI state here?
                 )
             }
