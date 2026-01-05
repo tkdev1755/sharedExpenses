@@ -108,7 +108,6 @@ class HomeViewModel : BaseViewModel() {
 
     }
     fun onGroupClicked(group: Group) {
-        // TODO: navigate to group details page
         viewModelScope.launch {
             _navigationEvents.emit(HomeNavigationEvent.ToGroupDetails(group.id))
         }
